@@ -6,6 +6,8 @@ One web app (`www/`) shipped as a PWA, an Android app (Capacitor 8) and a deskto
 Edit **only `www/`**. The version lives in `package.json` (Tauri and Android read it from there),
 `src-tauri/tauri.conf.json` and `APP_VERSION` in `www/index.html`.
 
+Downloads: [releases](https://github.com/pham-noah/decider/releases) (Windows installer/MSI, Android APK/AAB).
+
 ## Run
 ```bash
 npm install
