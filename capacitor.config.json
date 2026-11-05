@@ -1,0 +1,19 @@
+{
+  "appId": "app.decider.wheel",
+  "appName": "Decider",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#0c0922"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false,
+      "backgroundColor": "#0c0922",
+      "androidScaleType": "CENTER_INSIDE",
+      "showSpinner": false
+    },
+    "SystemBars": {
+      "insetsHandling": "native"
+    }
+  }
+}

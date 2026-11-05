@@ -1,0 +1,36 @@
+{
+  "name": "decider",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Decider \u2013 wheel, bottle & decision toolkit",
+  "scripts": {
+    "prepare:fonts": "node scripts/copy-fonts.mjs",
+    "prepare:icons": "python3 scripts/make-icons.py",
+    "serve": "node scripts/bump-cache.mjs && npx serve www",
+    "android:add": "cap add android && node scripts/patch-android.mjs",
+    "android:sync": "node scripts/bump-cache.mjs && cap sync android",
+    "android:open": "cap open android",
+    "android:run": "cap run android",
+    "android:build": "node scripts/bump-cache.mjs && cap sync android && cd android && ./gradlew assembleDebug",
+    "android:release": "node scripts/bump-cache.mjs && cap sync android && cd android && ./gradlew bundleRelease",
+    "desktop:dev": "tauri dev",
+    "desktop:build": "tauri build",
+    "android:icons": "npx @capacitor/assets generate --android --assetPath assets --iconBackgroundColor \"#7b6cff\" --iconBackgroundColorDark \"#0c0922\" --splashBackgroundColor \"#0c0922\" --splashBackgroundColorDark \"#0c0922\"",
+    "pwa:bump": "node scripts/bump-cache.mjs"
+  },
+  "dependencies": {
+    "@capacitor-community/keep-awake": "^8.0.1",
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/share": "^8.0.3",
+    "@capacitor/splash-screen": "^8.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.0",
+    "@fontsource/bricolage-grotesque": "^5.3.0",
+    "@tauri-apps/cli": "^2.12.4"
+  }
+}
