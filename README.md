@@ -102,14 +102,19 @@ built Tauri window on Windows 11:
 - wheel labels stay upright and truncate with an ellipsis; canvas and label metrics are cached (no
   per-frame reallocation, no `measureText` per spin);
 - dark mode, high contrast, reduce motion and all four text sizes re-render correctly;
-- `cargo build` links the desktop app; `tauri-plugin-opener` hands links to the system browser.
+- `cargo build` links the desktop app; `tauri-plugin-opener` hands links to the system browser;
+- `npm run android:add` + `gradlew assembleDebug` produce a working `app-debug.apk` (4.5 MB) with the
+  local Android SDK and JDK 21 (Capacitor 8, compileSdk 36);
+- the About card's update check was exercised against the live GitHub API.
 
 ## Not done yet
 - **Your own icon.** `assets/icon-*.png` and `splash*.png` are generated placeholders. Replace them
   (1024 px; foreground = transparent PNG, logo inside the central ~60 %), then run `npm run android:icons`,
   `npx tauri icon assets/icon-only.png` and copy 192/512 px versions into `www/icons/`.
-- **Android device pass.** Share sheet, vibration, keep-awake, splash and the back button are written
-  against the plugin APIs but have not run on hardware yet.
+- **Android device pass.** The APK builds, but share sheet, vibration, keep-awake, splash and the back
+  button have only been exercised in a desktop browser, not on hardware.
 - **Desktop auto-update.** The update check points at GitHub releases; the Tauri updater plugin needs
   signing keys and a release host.
+- **Licence.** The repo has none yet (Kairn uses Apache-2.0); pick one before making it the public face
+  of the app.
 - **Store listing:** screenshots, feature graphic, and the contact address in the privacy policy.
