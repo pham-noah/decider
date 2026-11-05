@@ -1,120 +1,43 @@
 # Decider
 
-Wheel, coin, dice, finger chooser, spin-the-bottle and an oracle. One web app (`www/index.html`),
-shipped three ways:
+A wheel, a coin, dice, a finger chooser, spin-the-bottle and an oracle — for settling things.
+One web app (`www/`) shipped as a PWA, an Android app (Capacitor 8) and a desktop app (Tauri 2).
 
-| Target  | Tool        | Notes                                                                      |
-|---------|-------------|----------------------------------------------------------------------------|
-| Android | Capacitor 8 | `native-bridge.js` maps share / vibrate / wake-lock / Back / splash / bars |
-| Desktop | Tauri 2     | Windows / macOS / Linux installers, a few MB                               |
-| Web     | PWA         | `manifest.json` + `sw.js`, host `www/` on any static host                  |
+Edit **only `www/`**. The version lives in `package.json` (Tauri and Android read it from there),
+`src-tauri/tauri.conf.json` and `APP_VERSION` in `www/index.html`.
 
-Edit **only `www/`**. The version lives in three places: `package.json`, `src-tauri/tauri.conf.json`
-and `APP_VERSION` in `www/index.html`.
-
-## Quick start
+## Run
 ```bash
 npm install
-npm run serve              # http://localhost:3000
-npm run desktop:dev        # Tauri window (needs Rust)
+npm run serve          # http://localhost:3000
+npm run desktop:dev    # desktop window (needs Rust)
 ```
 
-## Android
-Requires Android Studio (SDK + JDK 17+).
+## Build
 ```bash
-npm run android:add        # generates ./android (once)
-npm run android:icons      # launcher icons + splash from ./assets
-npm run android:build      # debug APK: android/app/build/outputs/apk/debug/
-npm run android:release    # signed .aab (needs signingConfigs, below)
+npm run desktop:build  # installers in src-tauri/target/release/bundle/
+npm run android:add    # generates ./android (once)
+npm run android:icons  # launcher icons + splash from ./assets
+npm run android:build  # debug APK
+npm run android:release # signed APK + AAB
 ```
-After changing `www/`: `npm run android:sync`.
+Android signing reads `android/keystore.properties` (`storeFile`, `storePassword`, `keyAlias`,
+`keyPassword`) and falls back to an unsigned build when it is missing. The keystore lives outside the
+repo; without it you cannot update an app already published under the same id.
+`appId` is `app.decider.wheel` and cannot change after the first Play upload.
 
-### Signing
-```bash
-keytool -genkey -v -keystore decider.keystore -alias decider -keyalg RSA -keysize 2048 -validity 10000
-```
-Add a `signingConfigs` block to `android/app/build.gradle`, then `npm run android:release`. Back the
-keystore up; it is git-ignored. `appId` (`app.decider.wheel`) cannot change after the first Play upload.
+## Release a version
+1. Bump the version in `package.json`, `tauri.conf.json` and `APP_VERSION`.
+2. `npm run desktop:build` and `npm run android:release`.
+3. `gh release create vX.Y.Z` with the `.exe`/`.msi` and the `.apk`/`.aab`, then bump `CACHE` in the PWA.
 
-## Desktop
-Requires [Rust](https://rustup.rs) and the Tauri 2 system deps.
-```bash
-npm run desktop:dev        # live window
-npm run desktop:build      # installers in src-tauri/target/release/bundle/
-```
-Links (GitHub, privacy policy) open in the system browser through `tauri-plugin-opener`. The CSP allows
-two origins: the app itself and `https://api.github.com`, which only the update check uses.
+## Updates
+The About card checks `github.com/pham-noah/decider` for a newer release once a day (switchable, and the
+only network request the app makes). "Check for updates now" also refreshes the PWA service worker.
+Credits and legal links live in the same card.
 
-## PWA
-Deploy `www/` to any HTTPS host. `scripts/bump-cache.mjs` rewrites `CACHE` in `www/sw.js` from a hash of
-`www/` and runs before `serve`, `android:sync`, `android:build` and `android:release`; run
-`npm run pwa:bump` before deploying by hand.
-
-## What's in it
-- **Wheel** - weighted options (1-6x), presets, drag-and-flick or Spin, tap a slice to rename, hold to
-  delete (undo), "remove winner after each spin", up to 12 saved wheels, share/import as a `dw1.` code.
-- **Coin** - two editable sides, pick the side you hope for, flip by button, tap or swipe up.
-- **Dice** - 1-4 dice, d4 to d100; max rolls glow gold.
-- **Fingers** - 2+ fingers on the glass (mouse clicks on desktop), four modes: winner, two winners,
-  order, teams.
-- **Bottle** - 2-10 players, optional truth-or-dare, party mode turns the result to face the winner.
-- **Oracle** - yes / no / maybe, colour-coded.
-- **More (gear)** - themes, shake and tilt, full-screen results, keep-awake, party mode, player names,
-  high contrast, reduce motion, text size, history with per-tool counts, About.
-
-Keyboard (desktop/PWA): `Space` = the current tab's main action, `1`-`7` jump to a tab, arrows move
-between tabs, `Esc` closes the top overlay. Ignored while typing; each tab shows its shortcut as a
-tooltip. Android Back closes the top overlay first, then returns to Wheel, then exits.
-
-## About, credits and updates
-The About card shows the version, credits **Noah Pham** ([github.com/pham-noah](https://github.com/pham-noah)),
-links the repo and the issue tracker, and holds the update check:
-
-- **Check for updates** (on by default) - once a day the app asks `api.github.com` for
-  `pham-noah/decider`'s latest release and compares it with `APP_VERSION`. A newer version puts a dot on
-  the gear icon and adds a "See what's new" link. Switch it off and the app never touches the network.
-- **Check for updates now** - the same check on demand, plus a service-worker update in the PWA
-  ("Reload now" when a new build is waiting).
-
-That request is the app's only network access and it carries no identifier, so the Play data-safety form
-still answers "no data collected".
-
-## Privacy
-`www/privacy.html` only needs the contact address filled in (`YOUR-EMAIL@example.com`). Host it (it ships
-with the PWA, e.g. `https://you.github.io/decider/privacy.html`) and paste that URL into Play Console.
-The About card links to it.
-
-## Accessibility
-High contrast, reduce motion (also follows the OS setting), four text sizes, 44 px+ touch targets,
-`aria-label` on icon-only controls, `aria-live` result areas, full keyboard operation.
-
-## Icons and fonts
-`npm run prepare:icons` regenerates placeholder icons (Python + Pillow); `npm run prepare:fonts` re-copies
-Bricolage Grotesque from `@fontsource` into `www/fonts`. Desktop icons come from
-`npx tauri icon assets/icon-only.png`.
-
-## Verified
-Headless Chromium at 320, 360, 380, 412, 430, 480, 640, 768, 834 and 1440 px, light and dark, plus the
-built Tauri window on Windows 11:
-
-- no console errors, no horizontal overflow, every tab's main button above the dock;
-- all six tools produce results and history entries; share/import codes round-trip; undo restores;
-- wheel labels stay upright and truncate with an ellipsis; canvas and label metrics are cached (no
-  per-frame reallocation, no `measureText` per spin);
-- dark mode, high contrast, reduce motion and all four text sizes re-render correctly;
-- `cargo build` links the desktop app; `tauri-plugin-opener` hands links to the system browser;
-- `npm run android:add` + `gradlew assembleDebug` produce a working `app-debug.apk` (4.5 MB) with the
-  local Android SDK and JDK 21 (Capacitor 8, compileSdk 36);
-- the About card's update check was exercised against the live GitHub API.
-
-## Not done yet
-- **Your own icon.** `assets/icon-*.png` and `splash*.png` are generated placeholders. Replace them
-  (1024 px; foreground = transparent PNG, logo inside the central ~60 %), then run `npm run android:icons`,
-  `npx tauri icon assets/icon-only.png` and copy 192/512 px versions into `www/icons/`.
-- **Android device pass.** The APK builds, but share sheet, vibration, keep-awake, splash and the back
-  button have only been exercised in a desktop browser, not on hardware.
-- **Desktop auto-update.** The update check points at GitHub releases; the Tauri updater plugin needs
-  signing keys and a release host.
-- **Licence.** The repo has none yet (Kairn uses Apache-2.0); pick one before making it the public face
-  of the app.
-- **Store listing:** screenshots, feature graphic, and the contact address in the privacy policy.
+## Notes
+- `www/privacy.html` is the Play-ready policy; it and the GitHub links are reachable from About.
+- Placeholder-free icons and splash screens are generated by `npm run prepare:icons` (Pillow) from the
+  wheel mark; `npx tauri icon assets/icon-only.png` refreshes the desktop set.
+- Licence: Apache-2.0.

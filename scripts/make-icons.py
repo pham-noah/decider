@@ -1,78 +1,107 @@
-"""Generates all app icons (PWA, Tauri desktop, Capacitor asset sources) with Pillow.
-Replace assets/icon-only.png etc. with your own art any time; this script is just a starting point."""
-import math, os
+#!/usr/bin/env python3
+"""Renders Decider's app icons and splash screens into ./assets (Pillow).
+
+    python scripts/make-icons.py
+
+Draws at 4x and downsamples, so every edge is antialiased.
+"""
+import math
 from PIL import Image, ImageDraw
 
-S = 2048  # supersample
-COLORS = [(255,95,162),(111,139,255),(47,224,196),(255,179,71)]
+S = 1024
+SS = S * 4                      # supersampled canvas
+PAL = ["#ff6fae", "#ffb347", "#ffe066", "#5eead4", "#69a7ff", "#a78bfa"]
+A1, A2 = (255, 95, 162), (123, 108, 255)
+DARK = (12, 9, 34)
 
-def gradient(size, c1=(123,108,255), c2=(255,95,162)):
+
+def gradient(size, c1, c2):
+    """Diagonal gradient, c1 top-left to c2 bottom-right."""
     img = Image.new("RGB", (size, size))
     px = img.load()
     for y in range(size):
         for x in range(size):
-            t = (x + y) / (2 * size)
-            px[x, y] = tuple(int(c1[i] + (c2[i] - c1[i]) * t) for i in range(3))
+            t = (x + y) / (2 * (size - 1))
+            px[x, y] = tuple(int(c1[k] + (c2[k] - c1[k]) * t) for k in range(3))
     return img
 
-def wheel(size, scale=1.0):
-    """Transparent RGBA image containing just the wheel glyph, scaled inside the canvas."""
-    im = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    d = ImageDraw.Draw(im)
+
+def rounded_mask(size, radius):
+    m = Image.new("L", (size, size), 0)
+    ImageDraw.Draw(m).rounded_rectangle([0, 0, size - 1, size - 1], radius=radius, fill=255)
+    return m
+
+
+def wheel(size, hole=True):
+    """The wheel mark on a transparent canvas of side `size` (supersampled)."""
+    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
     cx = cy = size / 2
-    r = size * 0.36 * scale
-    d.ellipse([cx-r-size*0.02*scale, cy-r-size*0.02*scale, cx+r+size*0.02*scale, cy+r+size*0.02*scale], fill=(255,255,255,255))
-    n = 8
+    r = size * 0.44
+    n = len(PAL)
+    step = 360 / n
+    for i, col in enumerate(PAL):
+        d.pieslice([cx - r, cy - r, cx + r, cy + r], start=-90 + i * step, end=-90 + (i + 1) * step,
+                   fill=col)
+    # rim + slice separators
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=(255, 255, 255, 235), width=int(size * 0.035))
     for i in range(n):
-        a0 = -90 + i * 360 / n
-        d.pieslice([cx-r, cy-r, cx+r, cy+r], a0, a0 + 360 / n, fill=COLORS[i % 4] + (255,))
-    h = r * 0.2
-    d.ellipse([cx-h, cy-h, cx+h, cy+h], fill=(255,255,255,255))
-    # pointer
-    pw, ph = r * 0.22, r * 0.34
-    top = cy - r - size*0.02*scale
-    d.polygon([(cx-pw, top-ph*0.55), (cx+pw, top-ph*0.55), (cx, top+ph*0.55)], fill=(29,19,64,255))
-    return im
+        a = math.radians(-90 + i * step)
+        d.line([(cx, cy), (cx + r * math.cos(a), cy + r * math.sin(a))], fill=(255, 255, 255, 90),
+               width=int(size * 0.012))
+    if hole:
+        hr = r * 0.17
+        d.ellipse([cx - hr, cy - hr, cx + hr, cy + hr], fill=(255, 255, 255, 245),
+                  outline=(255, 255, 255, 255), width=int(size * 0.02))
+    # pointer: a drop that overlaps the rim, so it still reads at 48 px
+    pw, ph = size * 0.19, size * 0.26
+    px, py = cx, cy - r
+    d.polygon([(px, py + ph * 0.30), (px - pw / 2, py - ph * 0.30), (px - pw * 0.26, py - ph * 0.62),
+               (px + pw * 0.26, py - ph * 0.62), (px + pw / 2, py - ph * 0.30)], fill=(255, 255, 255, 252))
+    d.line([(px, py + ph * 0.28), (px - pw / 2 + 2, py - ph * 0.30)], fill=(255, 190, 220, 200),
+           width=int(size * 0.012))
+    return img
 
-def compose(size, scale=1.0, rounded=True):
-    bg = gradient(S).convert("RGBA")
-    bg.alpha_composite(wheel(S, scale))
-    if rounded:
-        mask = Image.new("L", (S, S), 0)
-        ImageDraw.Draw(mask).rounded_rectangle([0, 0, S-1, S-1], radius=int(S*0.22), fill=255)
-        bg.putalpha(mask)
-    return bg.resize((size, size), Image.LANCZOS)
 
-os.makedirs("www/icons", exist_ok=True)
-os.makedirs("assets", exist_ok=True)
-os.makedirs("src-tauri/icons", exist_ok=True)
+def gloss(img):
+    """Soft top-left highlight so the icon is not flat."""
+    w, h = img.size
+    hl = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(hl)
+    d.ellipse([-w * 0.35, -h * 0.6, w * 0.85, h * 0.55], fill=(255, 255, 255, 46))
+    return Image.alpha_composite(img, hl)
 
-# PWA
-compose(192).save("www/icons/icon-192.png")
-compose(512).save("www/icons/icon-512.png")
-compose(512, scale=0.78, rounded=False).save("www/icons/icon-maskable-512.png")
-compose(180, rounded=False).convert("RGB").save("www/icons/apple-touch-icon.png")
-compose(32).save("www/icons/favicon.png")
 
-# Capacitor asset sources (for `npx @capacitor/assets generate --android`)
-compose(1024).save("assets/icon-only.png")
-compose(1024, rounded=False).convert("RGB").save("assets/icon-background.png") if False else None
-gradient(1024).save("assets/icon-background.png")
-fg = wheel(S, 0.78).resize((1024, 1024), Image.LANCZOS)
-fg.save("assets/icon-foreground.png")
+def save(img, path, size=S):
+    img.resize((size, size), Image.LANCZOS).save(path)
+    print("wrote", path)
 
-# Splash screens for `npx @capacitor/assets` (2732px square, glyph kept inside the central safe area)
-for name in ("splash.png", "splash-dark.png"):
-    sp = Image.new("RGBA", (2732, 2732), (12, 9, 34, 255))
-    g = wheel(S, 0.55).resize((2732, 2732), Image.LANCZOS)
-    sp.alpha_composite(g)
-    sp.convert("RGB").save("assets/" + name)
 
-# Tauri
-master = compose(1024)
-master.save("src-tauri/icons/icon.png")
-for name, sz in [("32x32.png", 32), ("128x128.png", 128), ("128x128@2x.png", 256)]:
-    master.resize((sz, sz), Image.LANCZOS).save(f"src-tauri/icons/{name}")
-master.save("src-tauri/icons/icon.ico", sizes=[(16,16),(24,24),(32,32),(48,48),(64,64),(128,128),(256,256)])
-master.save("src-tauri/icons/icon.icns")
-print("icons written")
+def main():
+    bg = gradient(SS, A1, A2).convert("RGBA")
+    bg = gloss(bg)
+
+    icon = bg.copy()
+    icon.alpha_composite(wheel(int(SS * 0.86), hole=True), (int(SS * 0.07), int(SS * 0.07)))
+    icon.putalpha(rounded_mask(SS, int(SS * 0.225)))
+    save(icon, "assets/icon-only.png")
+
+    # Android adaptive icon: logo sits inside the central 66 % safe zone
+    fg = Image.new("RGBA", (SS, SS), (0, 0, 0, 0))
+    fg.alpha_composite(wheel(int(SS * 0.60), hole=True), (int(SS * 0.20), int(SS * 0.20)))
+    save(fg, "assets/icon-foreground.png")
+
+    gbg = gradient(SS, A1, A2).convert("RGBA")
+    gbg = gloss(gbg)
+    save(gloss(gbg), "assets/icon-background.png")
+
+    # splash: mark on the app's dark background
+    for name, colour in (("assets/splash.png", DARK), ("assets/splash-dark.png", DARK)):
+        sp = Image.new("RGBA", (SS, SS), colour + (255,))
+        mark = wheel(int(SS * 0.46), hole=True)
+        sp.alpha_composite(mark, (int(SS * 0.27), int(SS * 0.27)))
+        save(sp, name, 2732)
+
+
+if __name__ == "__main__":
+    main()
