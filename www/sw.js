@@ -1,11 +1,14 @@
 // Simple offline cache for the PWA build. Bump CACHE when you ship changes.
-const CACHE = "decider-57e1b3291e";
+const CACHE = "decider-98d2463175";
 const FILES = [
   "./", "index.html", "fonts.css", "manifest.json", "native-bridge.js", "app-nav.js",
   "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png",
   "icons/apple-touch-icon.png", "icons/favicon.png",
   "fonts/bricolage-400.woff2", "fonts/bricolage-600.woff2", "fonts/bricolage-800.woff2",
-  "fonts/bricolage-400-ext.woff2", "fonts/bricolage-600-ext.woff2", "fonts/bricolage-800-ext.woff2"
+  "fonts/bricolage-400-ext.woff2", "fonts/bricolage-600-ext.woff2", "fonts/bricolage-800-ext.woff2",
+  /* games:start */
+  "games/_kit.js", "games/balloons.js", "games/basketball.js", "games/blackjack.js", "games/bowling.js", "games/claw.js", "games/coinpusher.js", "games/dart.js", "games/domino.js", "games/fidget.js", "games/gacha.js", "games/highcard.js", "games/pachinko.js", "games/plinko.js", "games/ringtoss.js", "games/scratch.js", "games/slots.js", "games/spincoin.js", "games/tarot.js"
+  /* games:end */
 ];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

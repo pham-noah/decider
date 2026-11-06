@@ -13,6 +13,27 @@
 <link rel="icon" href="icons/favicon.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="stylesheet" href="fonts.css">
+<!-- games:start -->
+<script src="games/_kit.js"></script>
+<script src="games/balloons.js"></script>
+<script src="games/basketball.js"></script>
+<script src="games/blackjack.js"></script>
+<script src="games/bowling.js"></script>
+<script src="games/claw.js"></script>
+<script src="games/coinpusher.js"></script>
+<script src="games/dart.js"></script>
+<script src="games/domino.js"></script>
+<script src="games/fidget.js"></script>
+<script src="games/gacha.js"></script>
+<script src="games/highcard.js"></script>
+<script src="games/pachinko.js"></script>
+<script src="games/plinko.js"></script>
+<script src="games/ringtoss.js"></script>
+<script src="games/scratch.js"></script>
+<script src="games/slots.js"></script>
+<script src="games/spincoin.js"></script>
+<script src="games/tarot.js"></script>
+<!-- games:end -->
 <script src="native-bridge.js"></script>
 <style>
 *{box-sizing:border-box;margin:0}
@@ -156,6 +177,13 @@ main{height:100%;overflow:hidden;display:flex;flex-direction:column}
 .view.on{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;align-content:center;align-content:safe center}
 .view.on::-webkit-scrollbar{display:none}
 
+/* plug-in toy games (www/games/*.js) */
+.toy{width:100%;aspect-ratio:1/1.12;display:block;border-radius:20px;touch-action:none;max-height:62vh}
+.toy.wide{aspect-ratio:4/3}
+.cards3{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap}
+.cardface{width:82px;height:118px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:30px;background:#fffdf8;box-shadow:0 10px 24px var(--sh);color:#241a55}
+.cardface.red{color:#d6215b}
+.cardface.down{background:repeating-linear-gradient(45deg,#3b2b7a,#3b2b7a 6px,#4a3a90 6px,#4a3a90 12px);color:transparent}
 /* new games */
 .c3row{display:flex;gap:clamp(8px,2.4vw,16px);justify-content:center;flex-wrap:wrap;max-width:100%}
 .c3row .c3c{width:clamp(44px,13vw,76px);height:clamp(44px,13vw,76px);font-size:clamp(15px,4vw,24px)}
@@ -1075,6 +1103,25 @@ let cur='wheel';
 /* the bar holds four pinned games plus two fixed buttons, so adding a game never widens it */
 const GAMES=[{v:'wheel',n:'Wheel'},{v:'coin',n:'Coin'},{v:'dice',n:'Dice'},{v:'fingers',n:'Fingers'},{v:'bottle',n:'Bottle'},{v:'oracle',n:'Oracle'},
  {v:'rps',n:'Rock paper scissors',s:'RPS'},{v:'stakes',n:'Stakes'},{v:'deck',n:'Truth or dare',s:'Truth / dare'},{v:'tmer',n:'Timed call',s:'Timer'}];
+/* ---- plug-in games: each module in www/games/*.js registers itself ---- */
+(function plugInGames(){
+ const mods=window.DECIDER_GAMES||[];if(!mods.length)return;
+ const host=document.querySelector('main');
+ mods.forEach(g=>{
+  if(document.getElementById(g.id))return;
+  const sec=document.createElement('section');
+  sec.className='view';sec.id=g.id;
+  sec.innerHTML=`<div class="glass center">${g.body||''}${g.tune?`<button class="chip tune-btn" data-tune="tune${g.id}">${g.label||'Options'}</button><div class="tune" id="tune${g.id}">${g.tune}</div>`:''}</div>`;
+  host.appendChild(sec);
+  GAMES.push({v:g.id,n:g.name,s:g.short||g.name});
+  try{ g.init&&g.init(sec.querySelector('.glass.center')) }catch(e){ console.warn('game '+g.id,e) }
+ });
+ const by={};mods.forEach(g=>by[g.id]=g);
+ window.__viewHook=function(v){
+  mods.forEach(g=>{ if(g.id===v){ try{g.enter&&g.enter()}catch(e){} } else if(g.leave){ try{g.leave()}catch(e){} } });
+ };
+ window.__gameAction=function(){const g=by[cur];if(g&&g.action){g.action();return true}return false};
+})();
 const MAXPIN=4;
 let pin=store.get('d.pin',['wheel','coin','dice','bottle']).filter(v=>GAMES.some(g=>g.v===v)).slice(0,MAXPIN);
 if(!pin.length)pin=['wheel'];
@@ -1088,7 +1135,7 @@ function goTo(v){
  $$('.view').forEach(x=>x.classList.toggle('on',x.id===v));
  $$('.dock button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
  $('#allbtn').classList.toggle('on',v!=='hist'&&!pin.includes(v));
- pill();tip(v);tone(700,.08,.05,'sine',900);draw();
+ pill();tip(v);tone(700,.08,.05,'sine',900);draw();if(window.__viewHook)try{window.__viewHook(v)}catch(e){}
 }
 function renderDock(){
  const d=$('#dock'),gear=$('#gear');

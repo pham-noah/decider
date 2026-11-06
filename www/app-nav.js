@@ -64,6 +64,7 @@
       var view = document.querySelector('.view.on'); if (!view) return;
       var sel = ACTION[view.id], btn = sel && $(sel);
       if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
+      else if (!sel && window.__gameAction && window.__gameAction()) e.preventDefault();  // plug-in toys
       else if (sel) e.preventDefault();           // keep the page from scrolling
       return;
     }
