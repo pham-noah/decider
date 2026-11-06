@@ -1,6 +1,6 @@
 {
   "name": "decider",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": true,
   "description": "Decider \u2013 wheel, bottle & decision toolkit",
   "scripts": {
