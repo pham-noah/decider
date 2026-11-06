@@ -1,5 +1,5 @@
 // Simple offline cache for the PWA build. Bump CACHE when you ship changes.
-const CACHE = "decider-2723c6ad40";
+const CACHE = "decider-148599b268";
 const FILES = [
   "./", "index.html", "fonts.css", "manifest.json", "native-bridge.js", "app-nav.js",
   "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png",
@@ -7,7 +7,7 @@ const FILES = [
   "fonts/bricolage-400.woff2", "fonts/bricolage-600.woff2", "fonts/bricolage-800.woff2",
   "fonts/bricolage-400-ext.woff2", "fonts/bricolage-600-ext.woff2", "fonts/bricolage-800-ext.woff2",
   /* games:start */
-  "games/_kit.js", "games/antistress.js", "games/balloons.js", "games/basketball.js", "games/blackjack.js", "games/blek.js", "games/bowling.js", "games/claw.js", "games/coinpusher.js", "games/dart.js", "games/domino.js", "games/fidget.js", "games/gacha.js", "games/highcard.js", "games/infinitecraft.js", "games/linerider.js", "games/pachinko.js", "games/plinko.js", "games/ringtoss.js", "games/sandspiel.js", "games/scratch.js", "games/slots.js", "games/spincoin.js", "games/tarot.js", "games/windowsill.js"
+  "games/_kit.js", "games/antistress.js", "games/balloons.js", "games/basketball.js", "games/blackjack.js", "games/blek.js", "games/bowling.js", "games/claw.js", "games/coinpusher.js", "games/dart.js", "games/domino.js", "games/fidget.js", "games/gacha.js", "games/highcard.js", "games/infinitecraft.js", "games/linerider.js", "games/pachinko.js", "games/plinko.js", "games/ringtoss.js", "games/sandspiel.js", "games/scratch.js", "games/slots.js", "games/spincoin.js", "games/tarot.js", "games/vignettes.js", "games/windowsill.js"
   /* games:end */
 ];
 self.addEventListener("install", e => {

@@ -88,10 +88,12 @@
 
   function layout() {
     const c = cv(); if (!c) return; g = K.fit(c); COLS = Math.max(2, Math.floor((g.w - PAD * 2 + GX) / (CW + GX)));
+    const rows = Math.ceil(chips.length / COLS), contentH = rows * (CHH + GY) - GY;
+    const top = Math.max(PAD, (g.h - contentH) / 2);
     chips.forEach((ch, i) => {
-      ch.hx = PAD + (i % COLS) * (CW + GX); ch.hy = PAD + Math.floor(i / COLS) * (CHH + GY);
+      ch.hx = PAD + (i % COLS) * (CW + GX); ch.hy = top + Math.floor(i / COLS) * (CHH + GY);
     });
-    boardH = PAD * 2 + Math.ceil(chips.length / COLS) * (CHH + GY); pan = Math.max(0, Math.min(maxPan(), pan));
+    boardH = contentH + PAD * 2; pan = Math.max(0, Math.min(maxPan(), pan));
   }
 
   function addChip(name, src) {

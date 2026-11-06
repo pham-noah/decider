@@ -38,6 +38,7 @@
 <script src="games/slots.js"></script>
 <script src="games/spincoin.js"></script>
 <script src="games/tarot.js"></script>
+<script src="games/vignettes.js"></script>
 <script src="games/windowsill.js"></script>
 <!-- games:end -->
 <script src="native-bridge.js"></script>
@@ -974,7 +975,7 @@ document.addEventListener('visibilitychange',()=>document.documentElement.classL
 applyA11y();renderFS();
 
 /* about + updates (the app's only network request) */
-const APP_VERSION='1.0.7',REPO='pham-noah/decider',REPO_URL='https://github.com/'+REPO;
+const APP_VERSION='1.0.8',REPO='pham-noah/decider',REPO_URL='https://github.com/'+REPO;
 $('#ver').textContent='v'+APP_VERSION;
 function openExt(url){
  if(window.__TAURI_INTERNALS__&&window.__TAURI_INTERNALS__.invoke){

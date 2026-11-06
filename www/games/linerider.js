@@ -345,7 +345,6 @@
       <div class="res" id="lrRes" aria-live="polite" style="min-height:26px;font-size:calc(clamp(14px,3.3vw,17px)*var(--fs,1))"><span class="muted">Drag on the snow to draw a track</span></div>`,
     init(card) {
       L = K.loop(frame);
-      window.__lrDbg = () => ({ pts: strokes.map(s => s.length), segs: segs.length, rider: rider && { x: Math.round(rider.x), y: Math.round(rider.y) }, dist: Math.round(dist), running, crashed, geo: { w: Math.round(geo.w), h: Math.round(geo.h) } });
       card.querySelector('#lrGo').onclick = toggle;
       card.querySelector('#lrClear').onclick = clearAll;
       const c = cv();

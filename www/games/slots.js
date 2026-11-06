@@ -1,16 +1,46 @@
-/* Slot machine — three reels of labels; pairs and triples decide. */
+/* Slot machine — three reels of labels and a lever on the right.
+ * Pull the lever down and let go: how far you pull sets how long the reels run
+ * and how hard they stop — the last reel overshoots its mark and rolls back.
+ * A tap anywhere on the machine spins with an average pull. */
 (function () {
   const K = window.DKIT;
   const cv = () => document.getElementById('slCv');
   const TAU = Math.PI * 2;
-  let L = null, g = null, pool = [], reels = [], spinning = false, spinStart = 0, done = false;
+  let L = null, g = null, pool = [], reels = [], spinning = false, spinStart = 0, power = 0.5;
+  let LM = null;                       // lever metrics, refreshed every frame
+  let pull = 0, pulling = false, armed = false, startX = 0, startY = 0;
 
-  function start() {
-    pool = K.options(5);
-    if (pool.length < 2) pool = ['Yes', 'No', 'Maybe'];
-    spinning = true; done = false; spinStart = performance.now();
-    reels = [0, 1, 2].map(() => ({ pos: Math.floor(Math.random() * pool.length), vel: 0.62 + Math.random() * 0.18, target: null, stopAt: 0, settled: false }));
-    reels.forEach((r, i) => { r.stopAt = 480 + i * 380; });
+  const PULL_PX = 92;                  // finger travel for a full pull
+
+  function layout() {
+    const w = g.w, h = g.h;
+    const leverW = Math.max(38, Math.min(54, w * 0.135));
+    const right = w - 10;
+    const leverX = right - leverW / 2;
+    const m = 14, gap = 9;
+    const reelRight = right - leverW - 4;
+    const rw = Math.max(28, (reelRight - m - 2 * gap) / 3);
+    const top = h * 0.19, wh = h * 0.50;
+    const restY = top + 32, travel = wh * 0.56;
+    return { leverW, leverX, right, m, gap, reelRight, rw, top, wh, restY, travel, pivotY: top - 8, maxY: restY + travel };
+  }
+
+  const easeOutBack = (u, s) => 1 + (s + 1) * Math.pow(u - 1, 3) + s * Math.pow(u - 1, 2);
+
+  function start(p) {
+    if (spinning || !reels.length) return;
+    power = Math.max(0, Math.min(1, p == null ? 0.5 : p));
+    spinning = true;
+    spinStart = performance.now();
+    const base = 520 + power * 1050;                        // harder pull = longer run
+    reels.forEach((r, i) => {
+      r.vel = 0.60 + power * 1.05 + i * 0.05;
+      r.phase = 'spin'; r.settled = false; r.target = null;
+      r.stopAt = base + i * (280 + 90 * power);
+      r.back = i === 2 ? 2.0 + 1.2 * power : 1.0 + 0.5 * power;   // how far it overshoots
+      r.dur = i === 2 ? 660 - 210 * power : 420;                  // harder pull = harder stop
+      r.t0 = 0; r.p0 = r.pos;
+    });
     K.setResult(document.getElementById('slRes'), '…');
     try { tone(300, .12, .05, 'square', 700); } catch (e) {}
   }
@@ -33,38 +63,51 @@
   }
 
   function tick(dt, now) {
+    if (!g && cv()) g = K.fit(cv());
     if (!g) return;
+
     if (spinning) {
       reels.forEach((r, i) => {
-        if (r.target === null) {
+        const prev = r.pos;
+        if (r.phase === 'spin') {
           r.pos += r.vel * dt;
           if (now - spinStart > r.stopAt) {
-            r.target = Math.round(r.pos) + 2 + Math.floor(Math.random() * 2);
-            r.vel = Math.max(r.vel, 0.3);
+            r.phase = 'ease'; r.t0 = now; r.p0 = r.pos;
+            r.target = Math.ceil(r.pos) + 2 + (i === 2 && power > 0.6 ? 1 : 0);
+            try { tone(520 - i * 70, .06, .04, 'square', 300); } catch (e) {}
           }
-        } else if (!r.settled) {
-          const d = r.target - r.pos;
-          r.vel = (r.vel + d * 0.26 * dt) * Math.pow(0.80, dt);
-          r.pos += r.vel * dt;
-          if (Math.abs(d) < 0.005 && Math.abs(r.vel) < 0.03) {
-            r.pos = r.target; r.settled = true;
+        } else if (r.phase === 'ease') {
+          const u = Math.min(1, (now - r.t0) / r.dur);
+          r.pos = r.p0 + (r.target - r.p0) * easeOutBack(u, r.back);
+          if (u >= 1) {
+            r.pos = r.target; r.phase = 'done'; r.settled = true;
             try { tone(620 - i * 90, .10, .05, 'square', 330); } catch (e) {}
           }
         }
+        r.spd = (r.pos - prev) / Math.max(.001, dt);
       });
-      if (reels.length === 3 && reels.every(r => r.settled)) { spinning = false; finish(); }
+      if (reels.every(r => r.settled)) { spinning = false; finish(); }
     } else if (reels.length === 3) {
       // idle: a soft wobble so the reels never sit dead still
-      reels.forEach((r, i) => { r.pos += Math.sin(now / 900 + i * 2) * 0.0004 * dt; });
+      reels.forEach((r, i) => { r.spd = 0; r.pos += Math.sin(now / 900 + i * 2) * 0.0004 * dt; });
     }
+
+    // a released lever springs back up
+    if (!pulling && pull !== 0) {
+      pull += (0 - pull) * 0.24 * dt;
+      if (Math.abs(pull) < 0.004) pull = 0;
+    }
+
     draw(now);
   }
 
   function draw(now) {
     const x = g.x, w = g.w, h = g.h;
     x.clearRect(0, 0, w, h);
+    const M = LM = layout();
+    const { m, gap, rw, top, wh, reelRight } = M;
 
-    K.rr(x, 8, 6, w - 16, h - 14, 26);
+    K.rr(x, 6, 4, w - 12, h - 10, 26);
     const bg = x.createLinearGradient(0, 0, w, h);
     bg.addColorStop(0, 'rgba(64,32,128,.93)');
     bg.addColorStop(.55, 'rgba(38,20,80,.95)');
@@ -83,10 +126,8 @@
     x.fillStyle = 'rgba(255,255,255,.55)';
     x.font = '700 10px "Bricolage Grotesque",system-ui,sans-serif';
     x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.fillText('PICK A REEL', w / 2, 48);
+    x.fillText('PULL THE LEVER', (m + reelRight) / 2, 48);
 
-    const top = h * 0.20, wh = h * 0.46, m = 18, gap = 10;
-    const rw = (w - 2 * m - 2 * gap) / 3;
     const bob = spinning ? 0 : Math.sin(now / 700) * 2;
 
     reels.forEach((r, i) => {
@@ -134,10 +175,10 @@
         }
         x.restore();
       };
-      const blur = Math.min(0.5, Math.abs(r.vel) * 0.45);
+      const blur = Math.min(0.5, Math.abs(r.spd || 0) * 0.30);
       if (blur > 0.05) {
-        strip(-r.vel * cell * 0.30, 0.22);
-        strip(r.vel * cell * 0.30, 0.22);
+        strip(-(r.spd || 0) * cell * 0.30, 0.22);
+        strip((r.spd || 0) * cell * 0.30, 0.22);
       }
       strip(0, 1);
       // glass
@@ -151,22 +192,22 @@
     const ly = top + wh / 2;
     x.save();
     x.strokeStyle = 'rgba(255,255,255,.5)'; x.lineWidth = 1; x.setLineDash([4, 6]);
-    x.beginPath(); x.moveTo(m - 6, ly); x.lineTo(w - m + 6, ly); x.stroke();
+    x.beginPath(); x.moveTo(m - 6, ly); x.lineTo(reelRight + 4, ly); x.stroke();
     x.setLineDash([]);
     [-1, 1].forEach(s => {
-      const px = s < 0 ? m - 8 : w - m + 8;
+      const px = s < 0 ? m - 8 : reelRight + 6;
       x.beginPath(); x.moveTo(px, ly); x.lineTo(px - s * 8, ly - 6); x.lineTo(px - s * 8, ly + 6);
       x.closePath(); x.fillStyle = 'rgba(255,255,255,.8)'; x.fill();
     });
     x.restore();
 
     // coin tray
-    const trayY = top + wh + 20, trayH = h * 0.14;
-    K.rr(x, m, trayY, w - 2 * m, trayH, 14);
+    const trayY = top + wh + 16, trayH = h * 0.14;
+    K.rr(x, m, trayY, reelRight - m, trayH, 14);
     x.fillStyle = 'rgba(0,0,0,.26)'; x.fill();
     x.strokeStyle = 'rgba(255,255,255,.16)'; x.lineWidth = 1; x.stroke();
     for (let i = 0; i < 3; i++) {
-      const cx2 = w / 2 + (i - 1) * 26, cy2 = trayY + trayH * 0.40;
+      const cx2 = (m + reelRight) / 2 + (i - 1) * 26, cy2 = trayY + trayH * 0.40;
       x.beginPath(); x.ellipse(cx2, cy2, 9, 7.4, 0, 0, TAU);
       const cg = x.createRadialGradient(cx2 - 3, cy2 - 3, 1, cx2, cy2, 10);
       cg.addColorStop(0, '#fff3c4'); cg.addColorStop(1, '#b8861c');
@@ -175,25 +216,133 @@
     x.fillStyle = 'rgba(255,255,255,.5)';
     x.font = '700 10px "Bricolage Grotesque",system-ui,sans-serif';
     x.textAlign = 'center';
-    x.fillText('PAIR ×2 · TRIPLE ×3', w / 2, trayY + trayH * 0.82);
+    x.fillText('PAIR ×2 · TRIPLE ×3', (m + reelRight) / 2, trayY + trayH * 0.82);
+
+    drawLever(x, now, M);
   }
 
+  function drawLever(x, now, M) {
+    const { leverX: lx, leverW, pivotY, restY, travel, maxY } = M;
+    const p = Math.max(0, Math.min(1, pull));
+    const ky = restY + travel * p;
+    const kr = Math.max(10, leverW * 0.36);
+    const live = spinning ? 0.55 : 1;
+
+    // the slot it runs in
+    K.rr(x, lx - 5.5, pivotY + 6, 11, maxY - pivotY + 4, 5.5);
+    x.fillStyle = 'rgba(4,2,14,.62)'; x.fill();
+    x.strokeStyle = 'rgba(255,255,255,.16)'; x.lineWidth = 1; x.stroke();
+
+    // depth ticks beside the slot
+    x.save();
+    x.strokeStyle = 'rgba(255,255,255,.20)'; x.lineWidth = 1;
+    for (let i = 1; i <= 3; i++) {
+      const ty = restY + travel * i / 4;
+      x.beginPath(); x.moveTo(lx - 13, ty); x.lineTo(lx - 8, ty); x.stroke();
+    }
+    x.restore();
+
+    // rod
+    x.save();
+    x.globalAlpha = live;
+    x.lineCap = 'round';
+    x.lineWidth = Math.max(6, leverW * 0.17);
+    const rod = x.createLinearGradient(lx - 6, 0, lx + 6, 0);
+    rod.addColorStop(0, '#6f779b'); rod.addColorStop(.42, '#ffffff');
+    rod.addColorStop(.62, '#cfd6ea'); rod.addColorStop(1, '#6a7295');
+    x.strokeStyle = rod;
+    x.beginPath(); x.moveTo(lx, pivotY + 6); x.lineTo(lx, ky); x.stroke();
+    // collar where it leaves the case
+    x.fillStyle = '#4a3a78';
+    K.rr(x, lx - 7, pivotY + 2, 14, 7, 3.5); x.fill();
+    x.restore();
+
+    // shadow the knob drops into the case
+    x.save();
+    x.globalAlpha = .3 * live;
+    x.beginPath(); x.ellipse(lx + 3, ky + 9, kr * .9, kr * .42, 0, 0, TAU);
+    x.fillStyle = '#07031a'; x.fill();
+    x.restore();
+
+    // knob
+    x.save();
+    x.globalAlpha = live;
+    if (!spinning) {
+      const glow = 0.16 + 0.10 * Math.sin(now / 380);
+      x.beginPath(); x.arc(lx, ky, kr * 1.5, 0, TAU);
+      x.fillStyle = 'rgba(255,120,90,' + glow.toFixed(3) + ')'; x.fill();   // "pull me" halo
+    }
+    x.beginPath(); x.arc(lx, ky, kr, 0, TAU);
+    const kg = x.createRadialGradient(lx - kr * .35, ky - kr * .40, kr * .12, lx, ky, kr * 1.05);
+    kg.addColorStop(0, '#ffe2d6'); kg.addColorStop(.42, '#ff6b57'); kg.addColorStop(1, '#a2153c');
+    x.fillStyle = kg; x.fill();
+    x.strokeStyle = 'rgba(255,255,255,.55)'; x.lineWidth = 1.2; x.stroke();
+    x.beginPath(); x.arc(lx - kr * .28, ky - kr * .34, kr * .26, 0, TAU);
+    x.fillStyle = 'rgba(255,255,255,.72)'; x.fill();
+    x.restore();
+
+    // chevrons under the knob: pull down
+    x.save();
+    x.globalAlpha = (spinning ? .12 : .34) * (1 - p * .8);
+    x.strokeStyle = '#fff'; x.lineWidth = 1.6; x.lineCap = 'round';
+    for (let i = 0; i < 2; i++) {
+      const cy = Math.min(maxY + 12, ky + kr + 8) + i * 6;
+      x.beginPath(); x.moveTo(lx - 4, cy); x.lineTo(lx, cy + 4); x.lineTo(lx + 4, cy); x.stroke();
+    }
+    x.restore();
+  }
+
+  const at = (e) => { const r = cv().getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+
   K && window.DECIDER_GAMES.push({
-    id: 'slots', name: 'Slot machine', short: 'Slots', label: 'Reels', noResult: true,
+    id: 'slots', name: 'Slot machine', short: 'Slots', label: 'Reels', noResult: true, button: false,
     body: `<canvas class="toy" id="slCv"></canvas>
-      <div class="res" id="slRes" aria-live="polite"><span class="muted">Pull to spin</span></div>
-      <button class="btn" id="slGo">Spin</button>`,
-    init(card) {
+      <div class="res" id="slRes" aria-live="polite"><span class="muted">Pull the lever</span></div>`,
+    init() {
       L = K.loop(tick);
       g = K.fit(cv());
       pool = K.options(5);
       if (pool.length < 2) pool = ['Yes', 'No', 'Maybe'];
-      reels = [0, 1, 2].map(i => ({ pos: i % pool.length, vel: 0, target: null, stopAt: 0, settled: true }));
-      card.querySelector('#slGo').onclick = () => { if (!spinning) start(); };
-      cv().addEventListener('pointerdown', () => { if (!spinning) start(); });
+      reels = [0, 1, 2].map(i => ({ pos: i % pool.length, vel: 0, phase: 'done', target: null, stopAt: 0, settled: true, spd: 0 }));
+      const c = cv();
+
+      c.addEventListener('pointerdown', e => {
+        if (e.button) return;
+        try { c.setPointerCapture(e.pointerId); } catch (err) {}
+        const p = at(e);
+        armed = true; pulling = false; startX = p.x; startY = p.y;
+      });
+      c.addEventListener('pointermove', e => {
+        if (!armed) return;
+        const p = at(e);
+        const dy = p.y - startY;
+        if (spinning || dy < 5) return;
+        const onLever = LM ? p.x > LM.leverX - LM.leverW * 1.1 : false;
+        if (onLever || pulling || dy > 16) {
+          pulling = true;
+          pull = Math.min(1, (dy - 5) / PULL_PX);
+        }
+      });
+      const release = () => {
+        if (!armed) return;
+        armed = false;
+        const p = pull; pulling = false;
+        if (spinning) { pull = 0; return; }
+        // a real pull keeps its strength; a tap or a nudge is an average pull
+        start(p > 0.08 ? p : 0.5);
+        if (p > 0.08) { try { tone(180, .06, .05, 'square', 120); } catch (e) {} }
+      };
+      c.addEventListener('pointerup', release);
+      c.addEventListener('pointercancel', () => { armed = false; pulling = false; if (!spinning) pull = 0; });
+
+      // a mount that is already on screen paints at once, even before enter()
+      if (c.clientWidth > 2) { g = K.fit(c); LM = layout(); tick(1, performance.now()); L.start(); }
     },
-    enter() { if (!g || Math.abs(g.w - cv().clientWidth) > 1) g = K.fit(cv()); L.start(); },
-    leave() { L.stop(); },
-    action() { if (!spinning) start(); }
+    enter() {
+      if (!g || Math.abs(g.w - cv().clientWidth) > 1) g = K.fit(cv());
+      L.start();
+    },
+    leave() { armed = false; pulling = false; L.stop(); },
+    action() { if (!spinning) start(0.5); }
   });
 })();

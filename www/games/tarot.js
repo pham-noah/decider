@@ -11,7 +11,7 @@
     ['Strength', 'gentle wins', '✚'], ['Justice', 'fair, not easy', '≡']
   ];
   let L = null, g = null, spots = [], picks = [], stars = [];
-  let state = 'idle', pick = -1, t = 0, hov = -1;
+  let state = 'deck', pick = -1, t = 0, hov = -1, dealT = 0;
   function layout() {
     const c = cv(); if (!c) return;
     g = K.fit(c);
@@ -25,22 +25,34 @@
     const d = DECK.slice();
     for (let i = d.length - 1; i > 0; i--) { const j = (rnd() * (i + 1)) | 0; [d[i], d[j]] = [d[j], d[i]]; }
     picks = d.slice(0, 3);
-    state = 'idle'; pick = -1; t = 0; hov = -1;
-    K.setResult(document.getElementById('trRes'), 'Pick a card');
-    document.getElementById('trGo').textContent = 'Draw';
+    state = 'deck'; pick = -1; t = 0; hov = -1; dealT = 0;
+    K.setResult(document.getElementById('trRes'), 'Tap to deal');
+  }
+  function deal() {
+    if (state === 'deck') {
+      state = 'idle';
+      K.setResult(document.getElementById('trRes'), 'Tap a card');
+      try { tone(430, .1, .04, 'triangle', 620); } catch (e) {}
+    }
   }
   function choose(i) {
-    if (state !== 'idle' || i < 0) return;
+    if (state !== 'idle' || dealT < 0.9 || i < 0) return;
     pick = i; state = 'flip'; t = 0;
     try { tone(560, 0.3, 0.05, 'sine', 880); } catch (e) {}
   }
+  /* one tap does whatever the table is waiting for */
+  function tap(px, py) {
+    if (state === 'deck') { deal(); return; }
+    if (state === 'shown') { reset(); deal(); return; }
+    if (state === 'idle') choose(hit(px, py));
+  }
   function update(dt) {
+    if (state === 'idle' && dealT < 1) dealT = Math.min(1, dealT + dt / 18);
     if (state !== 'flip') return;
     t = Math.min(1, t + dt / 44);
     if (t >= 1) {
       const c = picks[pick];
       state = 'shown'; K.setResult(document.getElementById('trRes'), c[0]);
-      document.getElementById('trGo').textContent = 'Draw again';
       try { tone(660, 0.5, 0.05, 'sine', 990); tone(880, 0.45, 0.04, 'triangle', 1320); } catch (e) {}
       K.decide(c[0], 'Tarot', c[1]);
     }
@@ -104,17 +116,31 @@
     x.globalAlpha = 1;
     x.fillStyle = 'rgba(255,255,255,.55)'; x.font = '600 11px "Bricolage Grotesque",system-ui,sans-serif';
     x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.fillText(state === 'idle' ? 'Tap a card' : state === 'shown' ? 'Ask another' : '', w / 2, h * 0.09);
-    const order = state === 'idle' ? [0, 2, 1] : [0, 2, 1].filter(i => i !== pick).concat(pick);
+    x.fillText(state === 'deck' ? 'Tap the deck to deal' : state === 'idle' ? 'Tap a card' : state === 'shown' ? 'Tap to deal again' : '', w / 2, h * 0.09);
+    // a pulsing halo behind the deck, so the first tap is obvious
+    if (state === 'deck') {
+      const pl = 0.5 + 0.5 * Math.sin(performance.now() / 420);
+      x.save(); x.globalAlpha = 0.16 + 0.2 * pl;
+      const gl = x.createRadialGradient(w / 2, h * 0.55, 6, w / 2, h * 0.55, w * 0.34);
+      gl.addColorStop(0, 'rgba(255,215,106,.9)'); gl.addColorStop(1, 'rgba(255,215,106,0)');
+      x.fillStyle = gl; x.beginPath(); x.arc(w / 2, h * 0.55, w * 0.34, 0, Math.PI * 2); x.fill();
+      x.restore();
+    }
+    const e = dealT < 1 ? 1 - Math.pow(1 - dealT, 3) : 1;
+    const order = state === 'idle' || state === 'deck' ? [0, 2, 1] : [0, 2, 1].filter(i => i !== pick).concat(pick);
     order.forEach(i => {
-      const sp = spots[i], chosen = i === pick && state !== 'idle';
-      let cx = sp.x, cy = sp.y - (hov === i && state === 'idle' ? 5 : 0), rot = sp.rot, sc = 1, sx = 1, alpha = 1;
+      const sp = spots[i], chosen = i === pick && state !== 'idle' && state !== 'deck';
+      // every card starts in a tight stack in the middle of the table and fans out on the deal
+      const bx = w / 2 + (i - 1) * 5, by = h * 0.55 + (i - 1) * 3.5, brot = (i - 1) * 0.05;
+      let cx = bx + (sp.x - bx) * e, cy = by + (sp.y - by) * e, rot = brot + (sp.rot - brot) * e;
+      let sc = 0.94 + 0.06 * e, sx = 1, alpha = 1;
+      if (hov === i && state === 'idle' && e > 0.98) cy -= 5;
       if (chosen) {
         cx = sp.x + (w / 2 - sp.x) * t;
         cy = sp.y + (h * 0.47 - sp.y) * t;
         rot = sp.rot * (1 - t); sc = 1 + t * 0.12;
         sx = Math.abs(Math.cos(Math.PI * t));
-      } else if (state !== 'idle') {
+      } else if (state !== 'idle' && state !== 'deck') {
         alpha = 1 - 0.72 * t;
         cx += (i - 1) * t * 16;
       }
@@ -129,6 +155,7 @@
     });
   }
   function hit(px, py) {
+    if (state !== 'idle' || dealT < 0.9) return -1;
     for (let i = 0; i < spots.length; i++) {
       const sp = spots[i], dx = px - sp.x, dy = py - sp.y;
       const co = Math.cos(sp.rot), si = Math.sin(sp.rot);
@@ -141,26 +168,25 @@
     return [e.clientX - r.left, e.clientY - r.top];
   }
   function act() {
-    if (state === 'idle') choose((rnd() * 3) | 0);
-    else if (state === 'shown') reset();
+    if (state === 'deck') deal();
+    else if (state === 'shown') { reset(); deal(); }
+    else if (state === 'idle') choose((rnd() * 3) | 0);
   }
   K && window.DECIDER_GAMES.push({
-    id: 'tarot', name: 'Tarot', short: 'Tarot', label: 'Deck',
+    id: 'tarot', name: 'Tarot', short: 'Tarot', label: 'Deck', noResult: true, button: false,
     body: `<canvas class="toy" id="trCv" style="max-height:min(62vh,max(140px,calc(100svh - 530px)))"></canvas>
-      <div class="res" id="trRes" aria-live="polite" style="font-size:calc(clamp(22px,5.4vw,30px)*var(--fs,1));min-height:40px"><span class="muted">Tap a card</span></div>
-      <button class="btn" id="trGo">Draw</button>`,
+      <div class="res" id="trRes" aria-live="polite" style="font-size:calc(clamp(22px,5.4vw,30px)*var(--fs,1));min-height:40px"><span class="muted">Tap to deal</span></div>`,
     tune: `<div class="lbl">Twelve cards, twelve messages. Turn one and let it answer.</div>`,
     init() {
       L = K.loop(dt => { update(dt); draw(); });
       const c = cv();
-      c.addEventListener('pointerdown', e => { const p = pos(e); choose(hit(p[0], p[1])); });
+      c.addEventListener('pointerdown', e => { const p = pos(e); tap(p[0], p[1]); });
       c.addEventListener('pointermove', e => {
-        if (state !== 'idle' || !g) return;
+        if (state !== 'idle' || !g || dealT < 0.98) return;
         const p = pos(e); hov = hit(p[0], p[1]);
         c.style.cursor = hov >= 0 ? 'pointer' : 'default';
       });
       c.addEventListener('pointerleave', () => { hov = -1; });
-      document.getElementById('trGo').onclick = act;
       layout(); reset();
     },
     enter() { layout(); L.start(); },

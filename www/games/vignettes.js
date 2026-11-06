@@ -14,9 +14,9 @@
       { x: 0, y: -.28, rx: .1, ry: .3, rot: 0, rad: .3 },
       { x: 0, y: -.6, rx: .13, ry: .08, rot: 0, rad: .4 }] },
     { name: 'Boot', col: '#d08a5a', acc: 'sole', lobes: [
-      { x: -.08, y: -.16, rx: .19, ry: .42, rot: .04, rad: .3 },
-      { x: .16, y: .56, rx: .34, ry: .15, rot: .02, rad: .35 },
-      { x: .02, y: .72, rx: .43, ry: .07, rot: 0, rad: .3 }] },
+      { x: -.06, y: -.2, rx: .2, ry: .46, rot: .04, rad: .3 },
+      { x: .16, y: .4, rx: .36, ry: .17, rot: .02, rad: .35 },
+      { x: .02, y: .57, rx: .44, ry: .08, rot: 0, rad: .3 }] },
     { name: 'Teapot', col: '#ff9fc4', acc: 'handle', lobes: [
       { x: -.06, y: .18, rx: .4, ry: .33, rot: 0, rad: .55 },
       { x: -.43, y: -.02, rx: .17, ry: .08, rot: -.5, rad: .5 },
@@ -36,11 +36,19 @@
 
   const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); } catch (e) {} };
   const hap = (n) => { try { buzz(n); } catch (e) {} };
-  const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const hex = h => {
+    if (typeof h !== 'string') return [255, 255, 255];
+    if (h[0] !== '#') {
+      const m = /rgba?\(([^)]+)\)/.exec(h);
+      return m ? m[1].split(',').map(Number).slice(0, 3) : [255, 255, 255];
+    }
+    const t = h.length === 4 ? h.slice(1).split('').map(c => c + c).join('') : h.slice(1);
+    return [parseInt(t.slice(0, 2), 16), parseInt(t.slice(2, 4), 16), parseInt(t.slice(4, 6), 16)];
+  };
+  const chan = v => ('0' + Math.max(0, Math.min(255, Math.round(v))).toString(16)).slice(-2);
   function mix(a, b, k) {
     const A = hex(a), B = hex(b);
-    return 'rgb(' + Math.round(A[0] + (B[0] - A[0]) * k) + ',' +
-      Math.round(A[1] + (B[1] - A[1]) * k) + ',' + Math.round(A[2] + (B[2] - A[2]) * k) + ')';
+    return '#' + chan(A[0] + (B[0] - A[0]) * k) + chan(A[1] + (B[1] - A[1]) * k) + chan(A[2] + (B[2] - A[2]) * k);
   }
 
   function subRR(x, X, Y, W, H, R) {
@@ -56,8 +64,8 @@
   }
 
   function geometry() {
-    const c = cv(); if (!c) return; g = K.fit(c); g.cx = g.w * .5; g.cy = g.h * .44;
-    g.R = Math.min(g.w * .34, g.h * .30);
+    const c = cv(); if (!c) return; g = K.fit(c); g.cx = g.w * .5; g.cy = g.h * .42;
+    g.R = Math.min(g.w * .40, g.h * .33);
   }
 
   function flip(dir) {
@@ -73,7 +81,7 @@
     else if (kind === 'band') {
       x.globalAlpha = a * .35; x.fillStyle = '#ffffff'; x.beginPath(); subRR(x, -.26, .24, .52, .16, .06); x.fill();
     } else if (kind === 'sole') {
-      x.globalAlpha = a * .45; x.fillStyle = '#2a1c3c'; x.beginPath(); subRR(x, -.44, .64, .88, .09, .045); x.fill();
+      x.globalAlpha = a * .45; x.fillStyle = '#2a1c3c'; x.beginPath(); subRR(x, -.44, .53, .88, .09, .045); x.fill();
     } else if (kind === 'handle') {
       x.globalAlpha = a; x.lineWidth = .055; x.beginPath(); x.arc(.4, .06, .17, -1.3, 1.35); x.stroke();
     } else if (kind === 'eye') {
@@ -85,7 +93,7 @@
     x.restore();
   }
 
-  function frame(dt) {
+  function paint(dt) {
     const gg = K.fit(cv()); if (!g || Math.abs(g.w - gg.w) > .5) geometry(); if (!g) return; t += dt;
 
     if (!dragging) {
@@ -110,20 +118,24 @@
     });
 
     const x = gg.x, w = g.w, h = g.h, cx = g.cx, cy = g.cy, R = g.R; x.clearRect(0, 0, w, h);
-    const floor = x.createRadialGradient(cx, cy + R, 4, cx, cy + R, R * .95);
+    const baseY = lobes.reduce((v, l) => Math.max(v, l.y + l.ry), .2) * R * bounce;
+    const baseW = lobes.reduce((v, l) => Math.max(v, l.rx), .2) * R * bounce;
+    const fy = cy + baseY + 10, fw = Math.min(w * .46, baseW * 1.25);
+    const floor = x.createRadialGradient(cx, fy, 4, cx, fy, Math.max(30, fw * 1.5));
     floor.addColorStop(0, 'rgba(8,4,26,.5)'); floor.addColorStop(1, 'rgba(8,4,26,0)'); x.fillStyle = floor;
-    x.beginPath(); x.ellipse(cx, cy + R * 1.02, R * .85, R * .18, 0, 0, TAU); x.fill();
+    x.beginPath(); x.ellipse(cx, fy, fw, Math.max(7, R * .075), 0, 0, TAU); x.fill();
 
     x.save(); x.translate(cx, cy); x.rotate(ang * .07);
     x.scale(R * bounce * Math.max(.07, Math.cos(ang)), R * bounce);
 
-    const dep = Math.sin(ang) * .34; const dark = mix(A.col, '#150f2e', .62 + .1 * m);
+    const col = mix(A.col, B.col, m), dep = .09 + Math.sin(ang) * .34;
+    const dark = mix(col, '#150f2e', .42 + .1 * m);
     for (let i = 6; i >= 1; i--) {
       x.save(); x.translate(-dep * i / 6, dep * .34 * i / 6);
       path(x, lobes); x.fillStyle = dark; x.fill(); x.restore();
     }
 
-    const col = mix(A.col, B.col, m); path(x, lobes); const grd = x.createLinearGradient(0, -1.1, 0, 1.1);
+    path(x, lobes); const grd = x.createLinearGradient(0, -1.1, 0, 1.1);
     grd.addColorStop(0, mix(col, '#ffffff', .38)); grd.addColorStop(.5, col);
     grd.addColorStop(1, mix(col, '#2a1b46', .45)); x.fillStyle = grd; x.fill();
 
@@ -156,6 +168,13 @@
     x.fillText(found.filter(Boolean).length + ' / ' + N + ' found', w - 14, h - 14); x.restore();
   }
 
+  /* K.loop stops re-arming the moment a frame throws, so a single bad frame
+   * would leave the toy permanently blank. A frame must never escape. */
+  function frame(dt) {
+    try { paint(dt); }
+    catch (e) { if (!frame.warned) { frame.warned = true; console.warn('vignettes: frame', e); } }
+  }
+
   const at = (e) => { const r = cv().getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
 
   K && window.DECIDER_GAMES.push({
@@ -164,6 +183,9 @@
       <div class="res" id="vgRes" aria-live="polite"><span class="muted">Drag left or right — the shape becomes something else</span></div>`,
     init(card) {
       L = K.loop(frame); geometry(); const c = cv();
+      // a mount that is already on screen paints straight away and keeps
+      // animating — the draw path must not depend on enter() being called
+      if (c.clientWidth > 2) { paint(1); L.start(); }
       c.addEventListener('pointerdown', e => {
         try { c.setPointerCapture(e.pointerId); } catch (err) {}
         dragging = true; vAng = 0; lastX = at(e).x;

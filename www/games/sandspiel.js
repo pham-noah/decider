@@ -178,12 +178,11 @@
         const x = Math.round(cx) + dx, y = Math.round(cy) + dy;
         if (x < 0 || x >= cols || y < 0 || y >= rows) continue;
         const i = y * cols + x;
-        if (m === EMPTY) { grid[i] = EMPTY; heat[i] = 0; stamp[i] = tick; continue; }
+        if (m === EMPTY) { grid[i] = EMPTY; heat[i] = 0; continue; }
         if (m === WOOD && grid[i] === STONE) continue;
         grid[i] = m;
         heat[i] = m === FIRE ? 30 : 0;
         shade[i] = (x * 7 + y * 13 + x * y) & 3;
-        stamp[i] = tick;
       }
     }
     dirty = true;
@@ -286,16 +285,6 @@
       <div class="res" id="ssRes" aria-live="polite" style="min-height:26px;font-size:calc(clamp(14px,3.3vw,17px)*var(--fs,1))"><span class="muted">Sand — drag to pour</span></div>`,
     init(card) {
       L = K.loop(frame);
-      window.__ssDbg = () => ({ cols, rows, offX, offY, floating: (() => {
-        let n = 0;
-        for (let y = 0; y < rows - 1; y++) for (let x = 0; x < cols; x++) {
-          const i = y * cols + x;
-          if (grid[i] !== SAND) continue;
-          const b = grid[i + cols];
-          if (b === EMPTY && grid[i + cols - 1] !== SAND && grid[i + cols + 1] !== SAND) n++;
-        }
-        return n;
-      })() });
       const chips = card.querySelector('#ssMat');
       chips.innerHTML = MATS.map(m =>
         `<button class="chip${m.id === sel ? ' on' : ''}" data-m="${m.id}" style="flex:0 0 auto;padding:6px 11px;font-size:calc(12.5px*var(--fs,1))">` +

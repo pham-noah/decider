@@ -58,9 +58,8 @@
       slot.querySelector('.lbl').textContent = labels[i];
     });
     state = 'down'; busy = false;
-    $('hcGo').textContent = 'Flip';
     $('hcDeck').textContent = deck.length + ' cards left in the deck';
-    $('hcRes').innerHTML = '<span class="muted">Higher card decides</span>';
+    $('hcRes').innerHTML = '<span class="muted">Tap the cards to flip</span>';
   }
 
   function flip() {
@@ -93,7 +92,6 @@
     K.setResult($('hcRes'), labels[i]);
     try { tone(660, 0.28, 0.06, 'sine', 880); } catch (e) {}
     K.decide(labels[i], 'High card', `${hand[i].r}${hand[i].s} beats ${hand[j].r}${hand[j].s}`);
-    $('hcGo').textContent = 'Deal again';
   }
 
   function action() {
@@ -102,16 +100,23 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'highcard', name: 'High card', short: 'High card', label: 'Deck', noResult: true,
-    body: `<div class="cards3" id="hcHand" style="gap:20px;perspective:900px;min-height:156px"></div>
-      <div class="lbl" id="hcDeck">52 cards</div>
-      <div class="res" id="hcRes" aria-live="polite" style="font-size:calc(clamp(20px,5.4vw,30px)*var(--fs,1));min-height:48px"><span class="muted">High card wins</span></div>
-      <button class="btn" id="hcGo">Flip</button>`,
+    id: 'highcard', name: 'High card', short: 'High card', label: 'Deck', noResult: true, button: false,
+    body: `<div class="cards3" id="hcHand" style="gap:20px;perspective:900px;min-height:156px;cursor:pointer"></div>
+      <div class="lbl" id="hcDeck" style="cursor:pointer">52 cards</div>
+      <div class="res" id="hcRes" aria-live="polite" style="font-size:calc(clamp(20px,5.4vw,30px)*var(--fs,1));min-height:48px"><span class="muted">Tap the cards to deal, tap again to flip</span></div>`,
     tune: `<div class="lbl">A full deck, shuffled every few deals. One card per option — high card wins.</div>`,
     init() {
       buildSlots();
       fresh();
-      $('hcGo').onclick = action;
+      // the cards are the button: tap them to deal, tap them again to flip
+      const hand = $('hcHand'), deckLbl = $('hcDeck');
+      [hand, deckLbl].forEach(el => {
+        if (!el) return;
+        el.addEventListener('pointerup', action);
+        el.setAttribute('role', 'button');
+        el.setAttribute('tabindex', '0');
+        el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); action(); } });
+      });
       deal();
     },
     enter() {},

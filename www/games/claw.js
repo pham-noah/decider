@@ -144,21 +144,30 @@
     return Math.max(g.w * 0.13, Math.min(g.w * 0.88, e.clientX - r.left));
   }
   K && window.DECIDER_GAMES.push({
-    id: 'claw', name: 'Claw', short: 'Claw', label: 'Prizes', noResult: true,
+    id: 'claw', name: 'Claw', short: 'Claw', label: 'Prizes', noResult: true, button: false,
     body: `<canvas class="toy" id="clCv" style="max-height:min(62vh,max(140px,calc(100svh - 530px)))"></canvas>
-      <div class="res" id="clRes" aria-live="polite" style="min-height:40px;font-size:calc(clamp(22px,5.2vw,30px)*var(--fs,1))"><span class="muted">Drag the claw, then grab a capsule</span></div>
-      <button class="btn" id="clGo">Grab</button>`,
+      <div class="res" id="clRes" aria-live="polite" style="min-height:40px;font-size:calc(clamp(22px,5.2vw,30px)*var(--fs,1))"><span class="muted">Tap a capsule to drop the claw — or drag to aim, then let go</span></div>`,
     tune: `<div class="lbl">Every capsule hides one of your options. Drag, grab, hope.</div>`,
     init() {
       L = K.loop(dt => { step(dt); draw(); });
-      document.getElementById('clGo').onclick = grab;
       const c = cv();
+      let downX = 0, downY = 0, moved = 0;
       c.addEventListener('pointerdown', e => {
         if (state !== 'aim' || !g) return;
-        drag = true; claw.x = at(e); try { c.setPointerCapture(e.pointerId); } catch (err) {}
+        drag = true; moved = 0; downX = e.clientX; downY = e.clientY;
+        claw.x = at(e); try { c.setPointerCapture(e.pointerId); } catch (err) {}
       });
-      c.addEventListener('pointermove', e => { if (drag && g) claw.x = at(e); });
-      c.addEventListener('pointerup', () => { drag = false; });
+      c.addEventListener('pointermove', e => {
+        if (!drag || !g) return;
+        claw.x = at(e);
+        moved = Math.max(moved, Math.hypot(e.clientX - downX, e.clientY - downY));
+      });
+      c.addEventListener('pointerup', e => {
+        if (!drag) return;
+        drag = false;
+        // a tap (no real drag) positions the claw and drops it in one gesture
+        if (moved < 8) { claw.x = at(e); grab(); }
+      });
       c.addEventListener('pointercancel', () => { drag = false; });
       build();
     },

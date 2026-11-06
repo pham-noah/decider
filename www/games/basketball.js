@@ -100,12 +100,26 @@
 
   function drawPower(x, g) {
     if (phase !== 'aim') return;
+    const band = g.h * 0.6 - 4;   // empty court above the flick line, clear of ball and tally
     if (drag) {
       const dy = Math.abs(drag.y - drag.y0);
-      K.meter(x, g.w, g.h, clamp(dy / 150, 0, 1), Math.round(clamp(dy / 150, 0, 1) * 100) + '% flick');
+      K.meter(x, g.w, band, clamp(dy / 150, 0, 1), Math.round(clamp(dy / 150, 0, 1) * 100) + '% flick');
     } else {
-      K.meter(x, g.w, g.h, 0, 'Flick up on the ball — harder goes further');
+      K.meter(x, g.w, band, 0, 'Flick up from the bottom of the court');
     }
+  }
+
+  /* the whole lower part of the court is the flick surface — show where it starts */
+  function drawZone(x, w, h) {
+    if (phase !== 'aim' || drag) return;
+    x.save();
+    x.setLineDash([3, 8]); x.strokeStyle = 'rgba(255,255,255,.4)'; x.lineWidth = 1.4;
+    x.beginPath(); x.moveTo(18, h * 0.6); x.lineTo(w - 18, h * 0.6); x.stroke();
+    x.setLineDash([]);
+    x.fillStyle = 'rgba(36,26,85,.42)'; x.font = '700 9px "Bricolage Grotesque",system-ui,sans-serif';
+    x.textAlign = 'center'; x.textBaseline = 'top';
+    x.fillText('FLICK UP FROM HERE', w / 2, h * 0.6 + 6);
+    x.restore();
   }
 
   function drawTally(x, h) {
@@ -142,6 +156,7 @@
     if (phase === 'pause') { pause -= dt; if (pause <= 0) { if (shots >= 3) finish(); else resetBall(); } }
     drawHoop(x);
     drawTally(x, h);
+    drawZone(x, w, h);
     drawPower(x, { w, h });
     if (phase === 'aim') {
       bob += dt * .08; const lift = Math.sin(bob) * 6; x.save(); x.setLineDash([5, 7]); x.strokeStyle = 'rgba(111,139,255,.8)'; x.lineWidth = 2.5;
@@ -159,22 +174,26 @@
   const at = (e) => { const r = cv().getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
 
   K && window.DECIDER_GAMES.push({
-    id: 'basketball', name: 'Basketball', short: 'Hoops', label: 'Shots', noResult: true,
-    body: `<canvas class="toy" id="bbCv"></canvas><div class="res" id="bbRes" aria-live="polite"><span class="muted">Three shots — flick up to sink one</span></div><button class="btn" id="bbGo">Shoot</button>`,
+    id: 'basketball', name: 'Basketball', short: 'Hoops', label: 'Shots', noResult: true, button: false,
+    body: `<canvas class="toy" id="bbCv"></canvas><div class="res" id="bbRes" aria-live="polite"><span class="muted">Three shots — flick up from the bottom of the court</span></div>`,
     init(card) {
       L = K.loop(frame);
       layout();
-      card.querySelector('#bbGo').onclick = () => shoot(0, -105);
       cv().addEventListener('pointerdown', (e) => {
         if (!geo || phase === 'fly' || phase === 'pause') return;
-        const p = at(e); drag = { x: p.x, y: p.y, x0: p.x, y0: p.y };
+        const p = at(e);
+        // the whole lower 40% of the court is the flick surface, the ball included
+        if (p.y < geo.h * 0.6) return;
+        drag = { x: p.x, y: p.y, x0: p.x, y0: p.y };
         try { cv().setPointerCapture(e.pointerId); } catch (err) {}
       });
       cv().addEventListener('pointermove', (e) => { if (!drag) return; const p = at(e); drag.x = p.x; drag.y = p.y; });
       cv().addEventListener('pointerup', () => {
         if (!drag) return;
         const dx = drag.x - drag.x0, dy = drag.y - drag.y0;
-        drag = null; shoot(dx, dy);
+        drag = null;
+        if (dy > -14) return;      // a tap is not a shot
+        shoot(dx, dy);
       });
       cv().addEventListener('pointercancel', () => { drag = null; });
     },

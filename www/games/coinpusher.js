@@ -4,19 +4,26 @@
   if (!K) return;
   const cv = () => document.getElementById('cpCv'), out = () => document.getElementById('cpRes');
   let L = null, G = null, coins = [], labels = [], phase = 0.6, speed = 0.05;
-  let busy = false, cool = 0, builtW = 0, hit = -1, seeded = false, prevFace = 0;
+  let busy = false, cool = 0, builtW = 0, hit = -1, seeded = false, prevFace = 0, slotPulse = 0;
 
   function geom() {
     const c = cv(); if (!c) return null;
     const f = K.fit(c);
+    const slotH = Math.min(42, Math.max(30, f.h * 0.1));
+    const slotW = Math.min(150, Math.max(96, f.w * 0.52));
+    const slotCy = Math.max(slotH / 2 + 6, (f.h * 0.28 - 40) / 2);
     return { x: f.x, w: f.w, h: f.h, l: 12, r: f.w - 12, back: f.h * 0.28, lip: f.h * 0.80,
-      travel: f.h * 0.17, cr: Math.max(6, f.w * 0.028), face: f.h * 0.28 };
+      travel: f.h * 0.17, cr: Math.max(6, f.w * 0.028), face: f.h * 0.28,
+      slot: { x: f.w / 2, y: slotCy, w: slotW, h: slotH } };
   }
+  const inSlot = (g, px, py) =>
+    !!g && Math.abs(px - g.slot.x) <= g.slot.w / 2 + 12 && Math.abs(py - g.slot.y) <= g.slot.h / 2 + 12;
   const faceOf = g => g.back + (0.5 - 0.5 * Math.cos(phase)) * g.travel;
 
   function add() {
     const g = G || geom(); if (!g) return;
     if (!labels.length) labels = K.options(5);
+    slotPulse = 1;
     const f = faceOf(g), n = coins.length ? 1 : 6;   // an empty shelf gets a fresh handful
     for (let i = 0; i < n && coins.length <= 70; i++) {
       coins.push({ x: g.l + g.cr + Math.random() * (g.r - g.l - g.cr * 2), y: f + g.cr + 2 + i * 0.5,
@@ -36,6 +43,7 @@
 
   function update(dt) {
     const g = G;
+    if (slotPulse > 0) slotPulse = Math.max(0, slotPulse - 0.045 * dt);
     phase = (phase + speed * dt) % (Math.PI * 2);
     const f = (g.face = faceOf(g));
     const df = Math.min(3, Math.max(0, f - prevFace));
@@ -103,6 +111,46 @@
     x.restore();
   }
 
+  /* the coin slot — the only thing on the cabinet you tap */
+  function paintSlot(x, g) {
+    const s = g.slot, top = s.y - s.h / 2, left = s.x - s.w / 2;
+    const breathe = 0.5 + 0.5 * Math.sin(performance.now() / 520);
+    x.save();
+    // halo: breathes when idle, flashes when a coin is fed
+    x.shadowColor = 'rgba(255,215,106,' + (slotPulse > 0 ? 0.85 : 0.28 + 0.24 * breathe) + ')';
+    x.shadowBlur = slotPulse > 0 ? 26 + slotPulse * 18 : 10 + breathe * 8;
+    K.rr(x, left, top, s.w, s.h, s.h / 2);
+    const gg = x.createLinearGradient(0, top, 0, top + s.h);
+    gg.addColorStop(0, slotPulse > 0 ? '#5b47c8' : '#3a2b86');
+    gg.addColorStop(1, '#160d3d');
+    x.fillStyle = gg; x.fill();
+    x.shadowColor = 'transparent';
+    x.strokeStyle = slotPulse > 0 ? 'rgba(255,240,190,.95)' : 'rgba(255,215,106,.8)';
+    x.lineWidth = slotPulse > 0 ? 2.6 : 1.8; x.stroke();
+
+    // coin sitting in the slot mouth
+    const cr = s.h * 0.27, ccx = left + s.h * 0.6;
+    x.beginPath(); x.arc(ccx, s.y, cr, 0, Math.PI * 2);
+    const cg = x.createRadialGradient(ccx - cr * .4, s.y - cr * .4, 1, ccx, s.y, cr);
+    cg.addColorStop(0, '#fff2c0'); cg.addColorStop(1, '#e8a92c');
+    x.fillStyle = cg; x.fill();
+    x.strokeStyle = 'rgba(255,255,255,.8)'; x.lineWidth = 1.2; x.stroke();
+    x.fillStyle = 'rgba(120,70,10,.85)'; x.font = '800 ' + Math.round(cr * 1.15) + 'px system-ui,sans-serif';
+    x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('+', ccx, s.y + 0.5);
+
+    // label
+    x.fillStyle = 'rgba(255,246,214,.95)';
+    x.font = '800 ' + Math.round(Math.min(11, s.h * 0.3)) + 'px "Bricolage Grotesque",system-ui,sans-serif';
+    x.textAlign = 'left'; x.textBaseline = 'middle';
+    x.fillText('FEED COIN', ccx + cr + 8, s.y + 0.5);
+
+    // a little "tap here" pointer under the pill
+    x.strokeStyle = 'rgba(255,215,106,' + (0.5 + 0.4 * breathe) + ')';
+    x.lineWidth = 1.6; x.lineCap = 'round';
+    x.beginPath(); x.moveTo(s.x - 4, top + s.h + 4); x.lineTo(s.x, top + s.h + 8); x.lineTo(s.x + 4, top + s.h + 4); x.stroke();
+    x.restore();
+  }
+
   function paint(g) {
     const x = g.x, trayX = g.l - 9, trayY = g.back - 40, trayW = g.r - g.l + 18, trayH = g.h - trayY - 6;
     const topY = g.back - 30, f = g.face;
@@ -151,6 +199,8 @@
       x.beginPath(); x.arc(g.w / 2, g.lip + (g.h - g.lip) / 2 + 2, 26 + (1 - cool / 62) * 18, 0, Math.PI * 2);
       x.stroke();
     }
+
+    paintSlot(x, g);
   }
 
   function frame(dt) {
@@ -163,16 +213,20 @@
   }
 
   window.DECIDER_GAMES.push({
-    id: 'coinpusher', name: 'Coin Pusher', short: 'Pusher', label: 'Shelf', noResult: true,
+    id: 'coinpusher', name: 'Coin Pusher', short: 'Pusher', label: 'Shelf', noResult: true, button: false,
     body: `<canvas class="toy" id="cpCv"></canvas>
-      <div class="res" id="cpRes" aria-live="polite"><span class="muted">Tap to feed the shelf, the pusher does the rest</span></div>
-      <button class="btn" id="cpGo">Push</button>`,
+      <div class="res" id="cpRes" aria-live="polite"><span class="muted">Tap the coin slot up top — the pusher does the rest</span></div>`,
     tune: `<div class="lbl">Pusher speed</div><div class="chips" id="cpSpeed" style="margin:0"></div>`,
     init(card) {
       L = K.loop(frame);
       labels = K.options(5);
-      card.querySelector('#cpGo').onclick = add;
-      cv().addEventListener('pointerdown', e => { e.preventDefault(); add(); });
+      cv().addEventListener('pointerdown', e => {
+        const g = G || geom(); if (!g) return;
+        const r = cv().getBoundingClientRect();
+        if (!inSlot(g, e.clientX - r.left, e.clientY - r.top)) return;
+        e.preventDefault();
+        add();
+      });
       const chips = card.querySelector('#cpSpeed');
       const opts = [['Slow', 0.035], ['Normal', 0.05], ['Fast', 0.07]];
       const render = () => {
