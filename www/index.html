@@ -837,7 +837,7 @@ let shake=false,lastM=null,lastS=0;
 function onMotion(e){const a=e.accelerationIncludingGravity;if(!a)return;const m=Math.abs(a.x||0)+Math.abs(a.y||0)+Math.abs(a.z||0);if(lastM!==null&&Math.abs(m-lastM)>30&&Date.now()-lastS>1800){lastS=Date.now();const v=$('.view.on').id;const shakeInfo={power:Math.min(1,Math.abs(m-lastM)/90),dir:((a.x||0)>=0?1:-1)};if(v==='wheel')spin();else if(v==='coin')$('#flip').click();else if(v==='dice')$('#roll').click();else if(v==='bottle')spinBottle();else if(v==='oracle')askOracle();else if(window.__gameShake)window.__gameShake(shakeInfo)}lastM=m}
 async function setShake(on){const n=$('#shkn');if(on){if(!('DeviceMotionEvent' in window)){n.textContent='This device has no motion sensor.';return}
  try{if(typeof DeviceMotionEvent.requestPermission==='function'&&await DeviceMotionEvent.requestPermission()!=='granted'){n.textContent='Motion access was declined.';return}}catch(e){n.textContent='Motion access isn’t available here.';return}
- addEventListener('devicemotion',onMotion);n.textContent='Shake works where shaking is the real move: the oracle, the gacha and plinko.'}else{removeEventListener('devicemotion',onMotion);n.textContent=''}
+ addEventListener('devicemotion',onMotion);n.textContent='Shake the wheel, the coin, the dice, the bottle or the oracle — plus the gacha and plinko.'}else{removeEventListener('devicemotion',onMotion);n.textContent=''}
  shake=on;$('#shk').classList.toggle('on',on);store.set('d.shake',on)}
 $('#shk').onclick=()=>setShake(!shake);
 if(store.get('d.shake',false)&&typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission!=='function')setShake(true);
