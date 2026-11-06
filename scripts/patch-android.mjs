@@ -17,6 +17,16 @@ if (existsSync(styles)) {
   writeFileSync(styles, s);
 }
 
+/* ---- 1b. resize the WebView with the keyboard (edge-to-edge hides the bars) ---- */
+const manifest = "android/app/src/main/AndroidManifest.xml";
+if (existsSync(manifest)) {
+  let s = readFileSync(manifest, "utf8");
+  if (!s.includes("windowSoftInputMode")) {
+    s = s.replace(/(<activity\b[^>]*?)(\s*android:name="\.MainActivity")/, '$1\n            android:windowSoftInputMode="adjustResize"$2');
+  }
+  writeFileSync(manifest, s);
+}
+
 /* ---- 2 + 3. build.gradle ---- */
 const gradle = "android/app/build.gradle";
 if (existsSync(gradle)) {

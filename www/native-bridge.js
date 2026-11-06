@@ -132,9 +132,16 @@
 
   /* ---------- Status / navigation bar icon colour ---------- */
   var SB = P.SystemBars;
+  /* the app has its own header, so the Android status bar stays hidden: a real
+   * full screen, and no dark strip over the light theme */
+  var hideStatusBar = function () {
+    if (!SB || !SB.hide) return;
+    try { SB.hide({ bar: "StatusBar" }); } catch (e) {}
+  };
   if (SB && SB.setStyle) {
     var root = document.documentElement, mq = matchMedia("(prefers-color-scheme: dark)");
     var syncBars = function () {
+      hideStatusBar();
       var t = root.getAttribute("data-theme");
       var dark = t === "dark" || (t !== "light" && mq.matches);
       try { SB.setStyle({ style: dark ? "DARK" : "LIGHT" }); } catch (e) {} // DARK = light icons
@@ -143,4 +150,7 @@
     new MutationObserver(syncBars).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
     if (mq.addEventListener) mq.addEventListener("change", syncBars);
   }
+  /* keep it hidden when the app comes back from the background */
+  hideStatusBar();
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) hideStatusBar(); });
 })();

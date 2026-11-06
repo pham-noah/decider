@@ -13,7 +13,7 @@
       "showSpinner": false
     },
     "SystemBars": {
-      "insetsHandling": "native"
+      "insetsHandling": "disable"
     }
   }
 }
