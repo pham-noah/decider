@@ -129,7 +129,14 @@ input[type=text]:focus-visible,button:focus-visible{box-shadow:0 0 0 3px rgba(12
 .tune-btn{display:none}
 @media(max-width:820px){
  .view.on{padding-bottom:84px}
- .view.has-sheet.on{padding-bottom:176px}
+ .view.has-sheet.on{padding-bottom:96px}
+ /* use the whole band: the card fills it instead of floating in the middle */
+ .view.on:not(#hist){display:flex;flex-direction:column;justify-content:stretch}
+ .view.on:not(#hist)> .glass:not(.sheet):not(.tune){flex:1 1 auto;min-height:0;align-content:center}
+ .center{padding:22px 16px}
+ .stage{padding:16px 14px}
+ .panel{padding:18px 16px}
+ main{padding-left:10px;padding-right:10px}
  .tune{position:fixed;left:10px;right:10px;bottom:calc(90px + max(env(safe-area-inset-bottom,0px),22px));z-index:12;max-height:68vh;overflow-y:auto;overscroll-behavior:contain;
   padding:0 20px 20px;border-radius:28px;background:linear-gradient(140deg,rgba(255,255,255,.97),rgba(243,239,255,.95));
   -webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%);border:1px solid var(--edge);box-shadow:inset 0 1.5px 0 var(--edge),0 24px 60px var(--sh);contain:paint;
@@ -221,7 +228,10 @@ body.focus main{padding-top:calc(4px + env(safe-area-inset-top,0px))}
 @media(max-width:820px){
  /* centre single-card tools between header and dock */
  .view.on{min-height:0;align-content:center;align-content:safe center}
- #wheel.on{animation:none;padding-bottom:90px}
+ .view.on:not(#hist){display:flex;flex-direction:column}
+ .view.on:not(#hist)> .glass:not(.sheet):not(.tune){flex:1 1 auto;min-height:0;align-content:center}
+ .view.on:not(#hist)> .glass:not(.sheet):not(.tune){flex:1;min-height:0;height:auto}
+ #wheel.on{animation:none;padding-bottom:96px}
  #wheel .sheet{position:fixed;left:10px;right:10px;width:calc(100% - 20px);will-change:transform;-webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%);contain:paint;bottom:calc(90px + max(env(safe-area-inset-bottom,0px),22px));z-index:6;max-height:68vh;overflow-y:auto;overscroll-behavior:contain;padding:0 20px 20px;border-radius:28px;background:linear-gradient(140deg,rgba(255,255,255,.97),rgba(243,239,255,.95));transform:translateY(calc(100% - 56px));clip-path:inset(0 0 calc(100% - 56px) 0 round 28px);transition:transform .44s cubic-bezier(.32,.72,0,1),clip-path .44s cubic-bezier(.32,.72,0,1)}
  #wheel .sheet.open{transform:none;clip-path:inset(0 0 0 0 round 28px)}
  #wheel .sheet.drag{transition:none;clip-path:inset(0 0 0 0 round 28px)}
