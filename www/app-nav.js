@@ -40,7 +40,7 @@
 
   /* ---- keyboard ---- */
   var ACTION = { wheel: '#spin', coin: '#flip', dice: '#roll', bottle: '#bspin', oracle: '#oask',
-                 rps: '#rpsgo', stakes: '#stgo', deck: '#deckgo', tmer: '#tmergo' };
+                 deck: '#deckgo', tmer: '#tmergo' };
   var isTyping = function (el) {
     if (!el) return false;
     var tag = el.tagName;
