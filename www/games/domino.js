@@ -3,7 +3,7 @@
   const K = window.DKIT;
   const cv = () => document.getElementById('dmCv');
   const TAU = Math.PI * 2;
-  let L = null, g = null, pool = [], tiles = [], state = 'arm', tipT = 0, done = false;
+  let L = null, g = null, pool = [], tiles = [], state = 'arm', tipT = 0, done = false, tipX = -1;
 
   function layout() {
     const n = 16;
@@ -31,10 +31,12 @@
     state = 'fall';
     tipT = performance.now();
     done = false;
+    const fromX = tipX >= 0 ? tipX : 0;
     tiles.forEach((t, i) => {
       t.ang = 0; t.clicked = false;
-      t.jit = Math.random() * 26;
-      t.hold = 60 + Math.random() * 1150;   // some tiles rock before they settle
+      t.jit = (i % 5) * 4;                                  // fixed wobble, not chance
+      // the further a tile is from where you tipped, the later it settles
+      t.hold = 60 + Math.abs(t.x - fromX) * 2.4;
       t.settleAt = 0;
     });
     K.setResult(document.getElementById('dmRes'), '…');
@@ -92,7 +94,7 @@
         tiles.forEach((t, i) => { if (t.settleAt > best) { best = t.settleAt; win = i; } });
         if (!done) {
           done = true;
-          const label = pool[win % pool.length];
+          const label = pool[Math.min(pool.length - 1, Math.floor(win / tiles.length * pool.length))];
           K.setResult(document.getElementById('dmRes'), label);
           K.decide(label, 'Dominoes', 'Tile ' + (win + 1) + ' fell last');
         }
@@ -142,8 +144,13 @@
       L = K.loop(tick);
       g = K.fit(cv());
       layout();
-      card.querySelector('#dmGo').onclick = tip;
-      cv().addEventListener('pointerdown', () => { if (state !== 'fall') tip(); });
+      card.querySelector('#dmGo').onclick = () => { tipX = -1; tip(); };
+      cv().addEventListener('pointerdown', (e) => {
+        if (state === 'fall') return;
+        const r = cv().getBoundingClientRect();
+        tipX = e.clientX - r.left;
+        tip();
+      });
     },
     enter() {
       if (!g || Math.abs(g.w - cv().clientWidth) > 1) { g = K.fit(cv()); layout(); }
