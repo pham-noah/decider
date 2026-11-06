@@ -33,6 +33,8 @@ body{font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-s
 :root[data-perf="low"] .bg i,:root[data-perf="low"] .orb{animation:none}
 :root[data-perf="low"] .glass,:root[data-perf="low"] .dock,:root[data-perf="low"] .tune,:root[data-perf="low"] #wheel .sheet,:root[data-perf="low"] #all{-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 :root[data-perf="low"] .glass{box-shadow:inset 0 1.5px 0 var(--edge),0 10px 26px var(--sh)}
+:root[data-perf="low"] .moment.fx .rays{display:none}
+:root[data-perf="low"] .fstar{text-shadow:none}
 /* nothing animates behind a backgrounded app */
 .idle .bg i,.idle .orb{animation-play-state:paused}
 .glass{position:relative;background:linear-gradient(140deg,var(--g1),var(--g2));-webkit-backdrop-filter:blur(40px) saturate(170%);backdrop-filter:blur(40px) saturate(170%);border:1px solid var(--edge);border-radius:28px;box-shadow:inset 0 1.5px 0 var(--edge),inset 0 -12px 26px rgba(255,255,255,.07),0 24px 60px var(--sh)}
@@ -51,7 +53,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .view.on>.glass{animation:gin .45s ease-out both}
 @keyframes vin{from{opacity:0}}
 @keyframes gin{from{opacity:0}}
-@keyframes enter{from{opacity:0;transform:translateY(18px) scale(.98);filter:blur(10px)}}
+@keyframes enter{from{opacity:0;transform:translateY(18px) scale(.98)}}
 #wheel.on{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);align-items:start}
 .panel{padding:22px;max-width:720px;width:100%;justify-self:center}
 h2{font-size:20px;font-weight:600;margin-bottom:14px;letter-spacing:-.01em}
@@ -67,7 +69,7 @@ h2{font-size:20px;font-weight:600;margin-bottom:14px;letter-spacing:-.01em}
 .btn:disabled{opacity:.55;transform:none;cursor:default}
 .res{min-height:56px;font-size:clamp(26px,5vw,38px);font-weight:800;letter-spacing:-.03em;text-align:center;display:grid;place-items:center}
 .res.pop{animation:pop .7s cubic-bezier(.2,1.8,.4,1)}
-@keyframes pop{from{transform:scale(.4);opacity:0;filter:blur(8px)}}
+@keyframes pop{from{transform:scale(.4);opacity:0}}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
 .chip{border:1px solid var(--edge);background:var(--field);border-radius:999px;padding:7px 14px;font-size:14px;transition:transform .3s cubic-bezier(.3,1.6,.5,1),background .3s}
 .chip:hover{transform:translateY(-2px)}
@@ -197,10 +199,12 @@ body.focus main{padding-top:calc(4px + env(safe-area-inset-top,0px))}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .bst{width:min(100%,440px);aspect-ratio:1;border-radius:50%}
 #bt{position:absolute;left:50%;top:50%;height:56%;aspect-ratio:3/10;transform:translate(-50%,-50%);filter:drop-shadow(0 12px 16px var(--sh));will-change:transform;cursor:pointer;z-index:2}
+#bt.nofx{filter:none}
 #bt svg{width:100%;height:100%;display:block}
 .bd{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#2a1450;border:2px solid rgba(255,255,255,.85);box-shadow:inset 0 2px 0 rgba(255,255,255,.7),0 6px 14px var(--sh);transition:transform .7s cubic-bezier(.3,1.7,.5,1),box-shadow .5s}
 .bd.hit{transform:scale(1.55);box-shadow:0 0 40px #fff,0 0 0 6px rgba(255,255,255,.5);z-index:1}
-.flood{position:fixed;inset:0;z-index:8;pointer-events:none}
+.flood{position:fixed;inset:0;z-index:8;pointer-events:none;overflow:hidden}
+.floodc{position:absolute;border-radius:50%;will-change:transform}
 .flood::after{content:"";position:absolute;inset:0;background:radial-gradient(70% 55% at 28% 12%,rgba(255,255,255,.5),transparent 70%),radial-gradient(60% 50% at 80% 100%,rgba(255,255,255,.25),transparent 70%)}
 .fstar{position:absolute;z-index:1;transform:translate(-50%,-50%);font-size:min(34vmin,220px);line-height:1;color:#fff;text-shadow:0 8px 44px rgba(0,0,0,.25);animation:starpop .9s .45s both cubic-bezier(.2,1.8,.4,1)}
 @keyframes starpop{from{transform:translate(-50%,-50%) scale(.15);opacity:0}}
@@ -296,7 +300,7 @@ h2{font-size:calc(20px*var(--fs,1))}
 </style>
 <style id="juice">
 @keyframes mpop2{0%{opacity:0;scale:.2;rotate:-10deg}55%{opacity:1;scale:1.16;rotate:3deg}75%{scale:.96;rotate:-1deg}100%{opacity:1;scale:1;rotate:0deg}}
-@keyframes ring{from{transform:translate(-50%,-50%) scale(.1);opacity:.85;border-width:36px}to{transform:translate(-50%,-50%) scale(2.6);opacity:0;border-width:2px}}
+@keyframes ring{from{transform:translate(-50%,-50%) scale(.1);opacity:.85}to{transform:translate(-50%,-50%) scale(2.6);opacity:0}}
 @keyframes rays{to{transform:translate(-50%,-50%) rotate(360deg)}}
 @keyframes floaty{50%{translate:0 -8px}}
 .moment.fx::before{content:"";position:absolute;left:50%;top:50%;width:90vmin;height:90vmin;border-radius:50%;border:36px solid rgba(255,255,255,.7);pointer-events:none;animation:ring .9s cubic-bezier(.1,.7,.3,1) both}
@@ -545,7 +549,7 @@ function confetti(){if(calm)return;const W=innerWidth,H=innerHeight,cols=[...PAL
  burst(W*.5,H*.55,90,-Math.PI/2,1.5,17);burst(0,H*.85,55,-Math.PI/3,.9,22);burst(W,H*.85,55,-Math.PI*2/3,.9,22);addP(P)}
 /* juice kit: sparks, shockwave ring, shake, delayed reveal */
 function sparks(px,py,col,n=14,pow=9){if(calm)return;if(document.documentElement.dataset.perf==='low')n=Math.max(4,Math.round(n*.45));const a=[];for(let i=0;i<n;i++){const g=Math.random()*TAU,v=pow*(.3+Math.random()*.9);a.push({x:px,y:py,vx:Math.cos(g)*v,vy:Math.sin(g)*v-1.5,w:4+Math.random()*4,h:2+Math.random()*3,c:i%3?col:'#ffffff',a:0,va:0,ph:0,fl:0,s:i%4===0?2:3,l:1,d:.022+Math.random()*.02,g:.18})}addP(a)}
-function ringAt(px,py,col,size=160){if(calm)return;const e=document.createElement('div');e.className='fxring';e.style.cssText=`left:${px}px;top:${py}px;width:${size}px;height:${size}px;border-color:${col}`;document.body.appendChild(e);e.animate([{transform:'translate(-50%,-50%) scale(.2)',opacity:.95,borderWidth:'8px'},{transform:'translate(-50%,-50%) scale(1.5)',opacity:0,borderWidth:'1px'}],{duration:650,easing:'cubic-bezier(.1,.7,.3,1)'}).onfinish=()=>e.remove()}
+function ringAt(px,py,col,size=160){if(calm)return;const e=document.createElement('div');e.className='fxring';e.style.cssText=`left:${px}px;top:${py}px;width:${size}px;height:${size}px;border-color:${col}`;document.body.appendChild(e);e.animate([{transform:'translate(-50%,-50%) scale(.2)',opacity:.95},{transform:'translate(-50%,-50%) scale(1.5)',opacity:0}],{duration:650,easing:'cubic-bezier(.1,.7,.3,1)'}).onfinish=()=>e.remove()}
 function shakeEl(el,amp=5,dur=380){if(calm||!el)return;el.animate([{translate:'0 0'},{translate:`${amp}px ${-amp*.6}px`},{translate:`${-amp*.8}px ${amp*.5}px`},{translate:`${amp*.5}px 0`},{translate:`${-amp*.25}px 0`},{translate:'0 0'}],{duration:dur,easing:'ease-out'})}
 function later(fn){if(calm){fn();return}const o=$('.view.on');setTimeout(()=>{if($('.view.on')===o)fn()},800)}
 function show(el,text){el.textContent=text;el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop')}
@@ -690,15 +694,20 @@ function fstart(){clearInterval(ft);$('#fcnt').textContent='';$('#fhint').style.
  ft=setInterval(()=>{if(cur!=='fingers'){clearInterval(ft);return}n--;if(n>0)num();else{clearInterval(ft);fresolve()}},1000)}
 function flood(ids){$$('.flood').forEach(e=>e.remove());const r=pad.getBoundingClientRect(),W=innerWidth,H=innerHeight;
  const P=ids.map(id=>{const e=fp.get(id);return{x:r.left+e.offsetLeft,y:r.top+e.offsetTop,c:e.style.getPropertyValue('--c')}}).sort((a,b)=>a.x-b.x);
- const o=document.createElement('div');o.className='flood';o.style.background=P.length>1?`linear-gradient(90deg,${P[0].c} 50%,${P[1].c} 50%)`:P[0].c;
+ const o=document.createElement('div');o.className='flood';
+ const p0=P[0],R=Math.hypot(Math.max(p0.x,W-p0.x),Math.max(p0.y,H-p0.y))+30,bg=P.length>1?`linear-gradient(90deg,${P[0].c} 50%,${P[1].c} 50%)`:P[0].c;
+ /* a growing circle instead of animated clip-path: transform is composited, clip-path repaints */
+ const c=document.createElement('div');c.className='floodc';
+ c.style.cssText=`left:${p0.x-R}px;top:${p0.y-R}px;width:${R*2}px;height:${R*2}px;background:${bg}`;
+ c.animate([{transform:'scale(0)'},{transform:'scale(1)'}],{duration:calm?200:950,easing:'cubic-bezier(.55,0,.15,1)',fill:'forwards'});
+ o.appendChild(c);
  P.forEach(p=>{const s=document.createElement('span');s.className='fstar';s.textContent='★';s.style.left=p.x+'px';s.style.top=p.y+'px';o.appendChild(s)});
- document.body.appendChild(o);const p0=P[0],R=Math.hypot(Math.max(p0.x,W-p0.x),Math.max(p0.y,H-p0.y))+30;
- o.animate([{clipPath:`circle(0px at ${p0.x}px ${p0.y}px)`},{clipPath:`circle(${R}px at ${p0.x}px ${p0.y}px)`}],{duration:calm?200:950,easing:'cubic-bezier(.55,0,.15,1)',fill:'forwards'})}
+ document.body.appendChild(o)}
 function popRing(id,i,set){const go=()=>{const e=fp.get(id);if(!e)return;set(e);if(calm)return;e.animate([{scale:'1.7'},{scale:'1'}],{duration:420,easing:'cubic-bezier(.2,1.8,.4,1)'});const r=e.getBoundingClientRect();sparks(r.left+r.width/2,r.top+r.height/2,e.style.getPropertyValue('--c'),8,6);tone(480+i*80,.1,.08,'triangle');buzz(8)};calm?go():setTimeout(go,i*220)}
 function winFx(ids){if(calm)return;ids.forEach(id=>{const e=fp.get(id);if(!e)return;const r=e.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,c=e.style.getPropertyValue('--c');ringAt(cx,cy,c,260);sparks(cx,cy,'#ffffff',26,13);sparks(cx,cy,c,18,9)});shakeEl($('#fingers .panel'),7,450);tone(160,.3,.2,'sine',60)}
 function fresolve(){const ids=[...fp.keys()];for(let i=ids.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]]}
  fdone=true;$('#fcnt').textContent='';let msg='';
- if(fmode==='win'||fmode==='two'){const k=fmode==='two'?Math.min(2,ids.length-1):1;ids.forEach((id,i)=>{const e=fp.get(id);e.classList.add(i<k?'win':'lose');if(i<k)e.firstChild.textContent='★'});msg=k+(k>1?' winners':' winner')+' of '+ids.length;flood(ids.slice(0,k));winFx(ids.slice(0,k));confetti()}
+ if(fmode==='win'||fmode==='two'){const k=fmode==='two'?Math.min(2,ids.length-1):1;ids.forEach((id,i)=>{const e=fp.get(id);e.classList.add(i<k?'win':'lose');if(i<k)e.firstChild.textContent='★'});msg=k+(k>1?' winners':' winner')+' of '+ids.length;flood(ids.slice(0,k));winFx(ids.slice(0,k));if(document.documentElement.dataset.perf!=='low')confetti()}
  else if(fmode==='ord'){ids.forEach((id,i)=>popRing(id,i,e=>{e.firstChild.textContent=i+1}));msg='Order for '+ids.length}
  else{ids.forEach((id,i)=>popRing(id,i,e=>{e.style.setProperty('--c',i%2?'#69a7ff':'#ff6fae');e.firstChild.textContent=i%2?'B':'A'}));msg='Two teams of '+ids.length}
  chime();buzz([30,40,30]);log('Fingers',msg)}
@@ -736,7 +745,7 @@ function renderBottle(){const S=$('#bst');S.querySelectorAll('.bd').forEach(e=>e
   else if(b.id==='brnd'){brnd=!brnd;store.set('d.brnd',brnd)}
   else bn=parseInt(b.textContent);
   renderBottle()})}
-function spinBottle(pw=.6,dir=1){if(bSpin)return;const windup=!calm&&arguments.length===0;bSpin=true;$('#bspin').disabled=true;$$('.bd').forEach(e=>e.classList.remove('hit','dim'));$('#bres').innerHTML='<span class="muted">…</span>';
+function spinBottle(pw=.6,dir=1){if(bSpin)return;$('#bt').classList.add('nofx');const windup=!calm&&arguments.length===0;bSpin=true;$('#bspin').disabled=true;$$('.bd').forEach(e=>e.classList.remove('hit','dim'));$('#bres').innerHTML='<span class="muted">…</span>';
  const w=Math.floor(rnd()*bn),sec=360/bn,tgt=brnd?rnd()*360:(w*sec+(rnd()-.5)*sec*.6),st=bAng,tn=Math.round(3+pw*6)+Math.floor(rnd()*2),delta=dir>0?(((tgt-st)%360)+360)%360+360*tn:-((((st-tgt)%360)+360)%360+360*tn),dur=calm?1500:3200+pw*3200,t0=performance.now(),bt=$('#bt'),WU=windup?320:0,off=windup?-dir*26:0,T=st+delta;let last=-1,launched=false;
  const setR=a=>{bAng=a;bt.style.transform=`translate(-50%,-50%) rotate(${a}deg)`};
  if(windup){tone(300,.3,.04,'triangle',170);buzz(10)}
@@ -753,7 +762,7 @@ function spinBottle(pw=.6,dir=1){if(bSpin)return;const windup=!calm&&arguments.l
   if(pl)bottleFx(pl);else{const r=$('#bst').getBoundingClientRect();sparks(r.left+r.width/2,r.top+r.height/2,PAL[0],18,10)}
   later(()=>moment(m,'Bottle',null,party&&!brnd?w*360/bn+180:null));
   const SET=calm?0:450,t1=performance.now();
-  (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;setR(T+dir*3.2*Math.exp(-5*u)*Math.sin(u*Math.PI*3));if(u>=1)setR(T);if(u<1)requestAnimationFrame(settle);else{bSpin=false;$('#bspin').disabled=false}})(t1)})(t0)}
+  (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;setR(T+dir*3.2*Math.exp(-5*u)*Math.sin(u*Math.PI*3));if(u>=1)setR(T);if(u<1)requestAnimationFrame(settle);else{bSpin=false;$('#bt').classList.remove('nofx');$('#bspin').disabled=false}})(t1)})(t0)}
 function bottleFx(pl){if(calm)return;const r=pl.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,c=getComputedStyle(pl).backgroundColor;
  ringAt(cx,cy,'#ffffff',200);setTimeout(()=>ringAt(cx,cy,c,320),120);sparks(cx,cy,c,24,11);sparks(cx,cy,'#ffffff',14,8);tone(110,.2,.2,'sine',55);shakeEl($('#bottle .center'),5,380)}
 $('#bspin').onclick=()=>spinBottle();
