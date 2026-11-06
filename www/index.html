@@ -31,6 +31,8 @@ body{font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-s
 .glass{position:relative;background:linear-gradient(140deg,var(--g1),var(--g2));-webkit-backdrop-filter:blur(40px) saturate(170%);backdrop-filter:blur(40px) saturate(170%);border:1px solid var(--edge);border-radius:28px;box-shadow:inset 0 1.5px 0 var(--edge),inset 0 -12px 26px rgba(255,255,255,.07),0 24px 60px var(--sh)}
 .glass::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(260px circle at calc(var(--mx,25%) + var(--tx,0)*50px) calc(var(--my,0%) + var(--ty,0)*50px),rgba(255,255,255,.3),transparent 62%);opacity:.8}
 main{max-width:1040px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top,0px)) 16px 130px}
+/* with the status bar back on, keep the header clear of it even where env() reports 0 */
+html.sbar main{padding-top:calc(18px + max(env(safe-area-inset-top,0px),26px))}
 header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex:none}
 .brand{display:flex;align-items:center;gap:12px;font-size:30px;font-weight:800;letter-spacing:-.03em}
 .orb{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#fff,rgba(255,255,255,.2) 38%,transparent 40%),conic-gradient(from 0deg,#ff5fa2,#ffb347,#2fe0c4,#6f8bff,#ff5fa2);box-shadow:0 6px 18px var(--sh),inset 0 0 0 1px rgba(255,255,255,.7);animation:spin 9s linear infinite}
@@ -333,7 +335,7 @@ h2{font-size:calc(20px*var(--fs,1))}
  <div class="glass center">
   <div class="cwrap"><div class="arc" id="arc"><div class="coin" id="cn"><div class="face"><span id="sA">Heads</span></div><div class="face b"><span id="sB">Tails</span></div></div></div><div class="cshadow" id="csh"></div></div>
   <div class="res" id="cres" aria-live="polite"><span class="muted">Tap Flip, or swipe up on the coin</span></div>
-  <button class="chip tune-btn" data-tune="tunecoin">Sides &amp; hope</button>
+  <button class="chip tune-btn" data-tune="tunecoin">Coin sides</button>
   <div class="tune" id="tunecoin">
    <div class="pair"><div style="flex:1"><div class="lbl">Side one</div><input type="text" id="iA" value="Heads" maxlength="14"></div><div style="flex:1"><div class="lbl">Side two</div><input type="text" id="iB" value="Tails" maxlength="14"></div></div>
    <div class="lbl">Which side are you hoping for?</div>
@@ -347,7 +349,7 @@ h2{font-size:calc(20px*var(--fs,1))}
  <div class="glass center">
   <div class="tiles" id="tiles"></div>
   <div class="res" id="dres" aria-live="polite"><span class="muted">Roll the dice</span></div>
-  <button class="chip tune-btn" data-tune="tunedice">Dice setup</button>
+  <button class="chip tune-btn" data-tune="tunedice">Dice</button>
   <div class="tune" id="tunedice">
    <div class="chips" id="dsides" style="justify-content:center;margin:0"></div>
    <div class="chips" id="dcnt" style="justify-content:center;margin:0"></div>
@@ -359,7 +361,7 @@ h2{font-size:calc(20px*var(--fs,1))}
 <section class="view" id="fingers">
  <div class="glass panel" style="display:grid;gap:14px">
   <h2 style="margin:0">Finger chooser</h2>
-  <button class="chip tune-btn" data-tune="tunefingers">Mode</button>
+  <button class="chip tune-btn" data-tune="tunefingers">Fingers</button>
   <div class="tune" id="tunefingers"><div class="chips" id="fmode" style="margin:0"></div></div>
   <div class="glass pad" id="pad"><div id="fhint" class="muted">Everyone put one finger on the glass. On a computer, click to add points.</div><div id="fcnt"></div></div>
  </div>
@@ -397,7 +399,7 @@ h2{font-size:calc(20px*var(--fs,1))}
  <div class="glass center">
   <div class="rpsrow"><span class="rpshand" id="rpsA">✊</span><span class="rpsvs">vs</span><span class="rpshand" id="rpsB">✊</span></div>
   <div class="res" id="rpsres" aria-live="polite"><span class="muted">Pick your move, then play</span></div>
-  <button class="chip tune-btn" data-tune="tunerps">Your move</button>
+  <button class="chip tune-btn" data-tune="tunerps">Move</button>
   <div class="tune" id="tunerps"><div class="chips" id="rpsopt" style="justify-content:center"></div></div>
   <button class="btn" id="rpsgo">Play</button>
  </div>
@@ -406,7 +408,7 @@ h2{font-size:calc(20px*var(--fs,1))}
 <section class="view" id="stakes">
  <div class="glass center">
   <div class="res" id="stres" aria-live="polite" style="font-size:clamp(20px,4.6vw,28px);min-height:84px"><span class="muted">Say what happens if the answer is yes, and how sure you want it</span></div>
-  <button class="chip tune-btn" data-tune="tunestakes">The stake</button>
+  <button class="chip tune-btn" data-tune="tunestakes">Stake</button>
   <div class="tune" id="tunestakes">
    <input type="text" id="styes" maxlength="40" placeholder="If yes…" aria-label="If yes">
    <input type="text" id="stno" maxlength="40" placeholder="If no…" aria-label="If no">
@@ -429,7 +431,7 @@ h2{font-size:calc(20px*var(--fs,1))}
  <div class="glass center">
   <div class="tmerwrap"><span class="tmerq" id="tmerq">?</span><div class="tmerbar"><i id="tmerfill"></i></div></div>
   <div class="res" id="tmerres" aria-live="polite"><span class="muted">Tap to stop the clock — or let it decide for you</span></div>
-  <button class="chip tune-btn" data-tune="tunetmer">The options</button>
+  <button class="chip tune-btn" data-tune="tunetmer">Options</button>
   <div class="tune" id="tunetmer"><input type="text" id="tmerlist" maxlength="120" placeholder="Go, Stay, Later (comma separated)" aria-label="Options"></div>
   <button class="btn" id="tmergo">Start the clock</button>
  </div>
@@ -445,6 +447,7 @@ h2{font-size:calc(20px*var(--fs,1))}
   <div class="sw" style="margin-top:14px"><span>Tilt the glass with your phone</span><button class="tg" id="tlt" aria-label="Tilt effects"></button></div>
   <div class="sw" style="margin-top:14px"><span>Full-screen results</span><button class="tg" id="fsr" aria-label="Full-screen results"></button></div>
   <div class="sw" style="margin-top:14px"><span>Keep the screen awake</span><button class="tg" id="wke" aria-label="Keep screen awake"></button></div>
+  <div class="sw" style="margin-top:14px"><span>Show the status bar</span><button class="tg" id="sbar" aria-label="Show the status bar"></button></div>
   <div class="sw" style="margin-top:14px"><span>Party mode: results face the player</span><button class="tg" id="prt" aria-label="Party mode"></button></div>
   <div class="addrow"><input type="text" id="pnames" maxlength="80" placeholder="Player names, comma separated" aria-label="Player names"><button class="chip" id="pset">Set</button></div>
   <h2 style="margin:24px 0 12px">Accessibility</h2>
@@ -781,6 +784,11 @@ document.addEventListener('pointerdown',getWake);document.addEventListener('visi
 bindTg('#fsr',()=>fsr,v=>{fsr=v;store.set('d.fsr',v)});
 bindTg('#wke',()=>wake,v=>{wake=v;store.set('d.wake',v);if(v)getWake();else if(wl){wl.release();wl=null}});
 bindTg('#prt',()=>party,v=>{party=v;store.set('d.party',v)});
+/* the status bar is hidden for the full-screen layout; this gives it back */
+let sbar=store.get('d.sbar',false);
+function applyStatusBar(){document.documentElement.classList.toggle('sbar',sbar);if(window.deciderStatusBar)window.deciderStatusBar(sbar)}
+bindTg('#sbar',()=>sbar,v=>{sbar=v;store.set('d.sbar',v);applyStatusBar()});
+applyStatusBar();
 $('#pnames').value=pnm.join(', ');
 $('#pset').onclick=()=>{pnm=$('#pnames').value.split(',').map(s=>s.trim().slice(0,14)).filter(Boolean).slice(0,10);store.set('d.names',pnm);if(pnm.length>=2)bn=pnm.length;renderBottle();toast(pnm.length>=2?'Players set':'Using numbers')};
 /* tilt */

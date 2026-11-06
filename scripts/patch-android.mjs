@@ -17,10 +17,13 @@ if (existsSync(styles)) {
   writeFileSync(styles, s);
 }
 
-/* ---- 1b. resize the WebView with the keyboard (edge-to-edge hides the bars) ---- */
+/* ---- 1b. portrait only, and resize the WebView with the keyboard ---- */
 const manifest = "android/app/src/main/AndroidManifest.xml";
 if (existsSync(manifest)) {
   let s = readFileSync(manifest, "utf8");
+  if (!s.includes("screenOrientation")) {
+    s = s.replace(/(<activity\b[^>]*?)(\s*android:name="\.MainActivity")/, '$1\n            android:screenOrientation="portrait"$2');
+  }
   if (!s.includes("windowSoftInputMode")) {
     s = s.replace(/(<activity\b[^>]*?)(\s*android:name="\.MainActivity")/, '$1\n            android:windowSoftInputMode="adjustResize"$2');
   }

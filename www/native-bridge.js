@@ -132,16 +132,22 @@
 
   /* ---------- Status / navigation bar icon colour ---------- */
   var SB = P.SystemBars;
-  /* the app has its own header, so the Android status bar stays hidden: a real
-   * full screen, and no dark strip over the light theme */
-  var hideStatusBar = function () {
-    if (!SB || !SB.hide) return;
-    try { SB.hide({ bar: "StatusBar" }); } catch (e) {}
+  /* the app has its own header, so the Android status bar is hidden by default:
+   * a real full screen, and no dark strip over the light theme. Settings can ask
+   * for it back, which is remembered in localStorage (d.sbar). */
+  var wantStatusBar = function () {
+    try { return JSON.parse(localStorage.getItem("d.sbar")) === true; } catch (e) { return false; }
   };
+  var applyStatusBar = function (show) {
+    if (!SB) return;
+    if (typeof show !== "boolean") show = wantStatusBar();
+    try { show ? SB.show({ bar: "StatusBar" }) : SB.hide({ bar: "StatusBar" }); } catch (e) {}
+  };
+  window.deciderStatusBar = function (show) { applyStatusBar(!!show); };
   if (SB && SB.setStyle) {
     var root = document.documentElement, mq = matchMedia("(prefers-color-scheme: dark)");
     var syncBars = function () {
-      hideStatusBar();
+      applyStatusBar();
       var t = root.getAttribute("data-theme");
       var dark = t === "dark" || (t !== "light" && mq.matches);
       try { SB.setStyle({ style: dark ? "DARK" : "LIGHT" }); } catch (e) {} // DARK = light icons
@@ -150,7 +156,7 @@
     new MutationObserver(syncBars).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
     if (mq.addEventListener) mq.addEventListener("change", syncBars);
   }
-  /* keep it hidden when the app comes back from the background */
-  hideStatusBar();
-  document.addEventListener("visibilitychange", function () { if (!document.hidden) hideStatusBar(); });
+  /* re-apply when the app comes back from the background */
+  applyStatusBar();
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) applyStatusBar(); });
 })();
