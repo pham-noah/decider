@@ -167,7 +167,7 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'spincoin', name: 'Spin the coin', short: 'Spin coin', label: 'Coins',
+    id: 'spincoin', name: 'Spin the coin', short: 'Spin coin', label: 'Coins', button: false,
     body: `<canvas class="toy" id="snCv"></canvas>
       <div class="res" id="snRes" aria-live="polite"><span class="muted">Flick the coin</span></div>
       <button class="btn" id="snGo">Flick</button>`,

@@ -147,7 +147,7 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'plinko', name: 'Plinko', short: 'Plinko', label: 'Pegs',
+    id: 'plinko', name: 'Plinko', short: 'Plinko', label: 'Pegs', button: false,
     body: `<canvas class="toy" id="pkCv"></canvas>
       <div class="res" id="pkRes" aria-live="polite"><span class="muted">Drop a ball and let the pegs decide</span></div>
       <button class="btn" id="pkGo">Drop</button>`,
@@ -175,6 +175,15 @@
     },
     enter() { layout(); L.start(); },
     leave() { L.stop(); },
-    action() { drop(); }
+    action() { drop(); },
+    shake(info) {
+      const d = info.dir || 1, p = Math.max(.25, Math.min(1, info.power || .5));
+      try { tone(150, .12, .05, 'triangle', 90); } catch (e) {}
+      if (!balls.length) {   // nothing falling: rattle the whole board
+        try { shakeEl(document.querySelector('#plinko .glass'), 6, 260); } catch (e) {}
+        return;
+      }
+      balls.forEach(b => { b.vx += d * (1.6 + p * 5); b.vy += .5 * p; });
+    }
   });
 })();

@@ -166,7 +166,7 @@
   }
 
   window.DECIDER_GAMES.push({
-    id: 'pachinko', name: 'Pachinko', short: 'Pachinko', label: 'Power',
+    id: 'pachinko', name: 'Pachinko', short: 'Pachinko', label: 'Power', button: false,
     body: `<canvas class="toy" id="paCv"></canvas>
       <div class="res" id="paRes" aria-live="polite"><span class="muted">Hold to charge, release to fire</span></div>
       <button class="btn" id="paGo">Hold to fire</button>`,

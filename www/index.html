@@ -834,10 +834,10 @@ $('#bspin').onclick=()=>spinBottle();
 
 /* shake */
 let shake=false,lastM=null,lastS=0;
-function onMotion(e){const a=e.accelerationIncludingGravity;if(!a)return;const m=Math.abs(a.x||0)+Math.abs(a.y||0)+Math.abs(a.z||0);if(lastM!==null&&Math.abs(m-lastM)>30&&Date.now()-lastS>1800){lastS=Date.now();const v=$('.view.on').id;if(v==='wheel')spin();else if(v==='coin')$('#flip').click();else if(v==='dice')$('#roll').click();else if(v==='bottle')spinBottle();else if(v==='oracle')askOracle();else if(window.__gameAction)window.__gameAction()}lastM=m}
+function onMotion(e){const a=e.accelerationIncludingGravity;if(!a)return;const m=Math.abs(a.x||0)+Math.abs(a.y||0)+Math.abs(a.z||0);if(lastM!==null&&Math.abs(m-lastM)>30&&Date.now()-lastS>1800){lastS=Date.now();const v=$('.view.on').id;const shakeInfo={power:Math.min(1,Math.abs(m-lastM)/90),dir:((a.x||0)>=0?1:-1)};if(v==='wheel')spin();else if(v==='coin')$('#flip').click();else if(v==='dice')$('#roll').click();else if(v==='bottle')spinBottle();else if(v==='oracle')askOracle();else if(window.__gameShake)window.__gameShake(shakeInfo)}lastM=m}
 async function setShake(on){const n=$('#shkn');if(on){if(!('DeviceMotionEvent' in window)){n.textContent='This device has no motion sensor.';return}
  try{if(typeof DeviceMotionEvent.requestPermission==='function'&&await DeviceMotionEvent.requestPermission()!=='granted'){n.textContent='Motion access was declined.';return}}catch(e){n.textContent='Motion access isn’t available here.';return}
- addEventListener('devicemotion',onMotion);n.textContent='Shake on any screen — it does whatever that game’s button does.'}else{removeEventListener('devicemotion',onMotion);n.textContent=''}
+ addEventListener('devicemotion',onMotion);n.textContent='Shake works where shaking is the real move: the oracle, the gacha and plinko.'}else{removeEventListener('devicemotion',onMotion);n.textContent=''}
  shake=on;$('#shk').classList.toggle('on',on);store.set('d.shake',on)}
 $('#shk').onclick=()=>setShake(!shake);
 if(store.get('d.shake',false)&&typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission!=='function')setShake(true);
@@ -1117,12 +1117,18 @@ const GAMES=[{v:'wheel',n:'Wheel'},{v:'coin',n:'Coin'},{v:'dice',n:'Dice'},{v:'f
   host.appendChild(sec);
   GAMES.push({v:g.id,n:g.name,s:g.short||g.name});
   try{ g.init&&g.init(sec.querySelector('.glass.center')) }catch(e){ console.warn('game '+g.id,e) }
+  // toys that are driven by touching the thing itself drop the helper button
+  if(g.button===false){const b=sec.querySelector('.glass .btn');if(b)b.remove()}
+  // a couple of toys had no tap target of their own: any tap on the screen plays them
+  if(g.tap){const cv=sec.querySelector('canvas');if(cv){let y0=null;cv.addEventListener('pointerdown',e=>{y0=e.clientY});cv.addEventListener('pointerup',e=>{if(y0!==null&&Math.abs(e.clientY-y0)<12)g.action&&g.action();y0=null})}}
  });
  const by={};mods.forEach(g=>by[g.id]=g);
  window.__viewHook=function(v){
   mods.forEach(g=>{ if(g.id===v){ try{g.enter&&g.enter()}catch(e){} } else if(g.leave){ try{g.leave()}catch(e){} } });
  };
  window.__gameAction=function(){const g=by[cur];if(g&&g.action){g.action();return true}return false};
+ window.__gameShake=function(info){const g=by[cur];if(g&&g.shake){g.shake(info||{});return true}return false};
+ window.__shakeReady=function(){const g=by[cur];return !!(g&&g.shake)};
 })();
 const MAXPIN=4;
 let pin=store.get('d.pin',['wheel','coin','dice','bottle']).filter(v=>GAMES.some(g=>g.v===v)).slice(0,MAXPIN);

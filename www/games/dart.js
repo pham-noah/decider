@@ -134,7 +134,7 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'dart', name: 'Dart', short: 'Dart', label: 'Board',
+    id: 'dart', name: 'Dart', short: 'Dart', label: 'Board', button: false,
     body: `<canvas class="toy" id="dtCv"></canvas><div class="res" id="dtRes" aria-live="polite"><span class="muted">Drag to aim, let go to throw</span></div><button class="btn" id="dtGo">Throw</button>`,
     init(card) {
       labels = pick(6);

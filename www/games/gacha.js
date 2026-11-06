@@ -176,7 +176,7 @@
   }
 
   window.DECIDER_GAMES.push({
-    id: 'gacha', name: 'Gacha', short: 'Gacha', label: 'Capsules',
+    id: 'gacha', name: 'Gacha', short: 'Gacha', label: 'Capsules', button: false,
     body: `<canvas class="toy" id="gaCv"></canvas>
       <div class="res" id="gaRes" aria-live="polite"><span class="muted">Turn the knob for a capsule</span></div>
       <button class="btn" id="gaGo">Turn</button>`,
@@ -218,6 +218,16 @@
     },
     enter() { labels = K.options(5); if (G) pack(G); L.start(); },
     leave() { L.stop(); drag = null; },
-    action() { spinNow(0.6); }
+    action() { spinNow(0.6); },
+    shake(info) {
+      if (st !== 'idle') return;
+      const p = Math.max(.35, Math.min(1, info.power || .6));
+      // the dome takes a beating; the harder the shake, the further the drum turns
+      caps.forEach(c => { c.x += (Math.random() - .5) * 9; c.y -= Math.random() * 5; });
+      pending = p; one = null; st = 'spin'; spin = 0;
+      spinGoal = Math.PI * 2 * (0.8 + p * 2.6);
+      try { tone(120, .18, .06, 'square', 70); } catch (e) {}
+      try { buzz([18, 26, 18]); } catch (e) {}
+    }
   });
 })();
