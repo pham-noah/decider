@@ -22,7 +22,7 @@
   function resetTurn() {
     ringsLeft = 3; winner = null; state = 'ready'; settle = 0; lastX = geo.cx;
     pegs.forEach((p) => { p.hit = false; });
-    ring = { x: geo.cx + (Math.random() - .5) * 90, y: geo.h - 54, vx: 0, vy: 0, rot: 0, on: null };
+    ring = { x: geo.cx, y: geo.h - 54, vx: 0, vy: 0, rot: 0, on: null };
   }
 
   function throwRing(dx, dy) {
@@ -114,7 +114,7 @@
       if (winner) decide(winner);
       else if (ringsLeft > 0) {
         state = 'ready';
-        ring = { x: geo.cx + (Math.random() - .5) * 90, y: h - 54, vx: 0, vy: 0, rot: 0, on: null };
+        ring = { x: geo.cx, y: h - 54, vx: 0, vy: 0, rot: 0, on: null };
         K.setResult(res(), 'Ring ' + (3 - ringsLeft + 1) + ' of 3');
       } else decide(nearest());
     }
@@ -142,8 +142,8 @@
       card.querySelector('#rtGo').onclick = () => {
         if (state === 'fly' || state === 'settle' || !geo) return;
         if (state === 'done') resetTurn();
-        const p = pegs[Math.floor(Math.random() * pegs.length)];
-        throwRing((p.x - ring.x) / 2 + (Math.random() - .5) * 44, -138);
+        const p = pegs[Math.floor(pegs.length / 2)];
+        throwRing((p.x - ring.x) / 2, -138);
       };
       cv().addEventListener('pointerdown', (e) => {
         if (state === 'fly' || state === 'settle' || !geo) return;
@@ -163,8 +163,8 @@
     action() {
       if (state === 'fly' || state === 'settle' || !geo) return;
       if (state === 'done') resetTurn();
-      const p = pegs[Math.floor(Math.random() * pegs.length)];
-      throwRing((p.x - ring.x) / 2 + (Math.random() - .5) * 44, -138);
+      const p = pegs[Math.floor(pegs.length / 2)];
+      throwRing((p.x - ring.x) / 2, -138);
     }
   });
 })();

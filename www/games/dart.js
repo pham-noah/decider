@@ -3,7 +3,7 @@
   const K = window.DKIT, TAU = Math.PI * 2;
   const cv = () => document.getElementById('dtCv');
   const res = () => document.getElementById('dtRes');
-  let L = null, labels = [], geo = null, aim = null, aiming = false;
+  let L = null, labels = [], geo = null, aim = null, aiming = false, drag0 = { x: 0, y: 0 };
   let tAim = 0, wob = { x: 0, y: 0 }, dart = null, stuck = null, hit = -1, busy = false;
 
   const pick = (n) => { const b = K.options(n); return Array.from({ length: n }, (_, i) => b[i % b.length]); };
@@ -65,12 +65,14 @@
     x.beginPath(); x.moveTo(-17, 0); x.lineTo(-23, 7); x.lineTo(-10, 3); x.closePath(); x.fill(); x.restore();
   }
 
-  function fire() {
+  function fire(power) {
     if (busy || !geo) return;
     const R = geo.R;
-    if (!aim) aim = { x: geo.cx + (Math.random() - .5) * R * 1.4, y: geo.cy + (Math.random() - .5) * R * 1.4 };
-    let tx = aim.x + wob.x * 1.6 + (Math.random() - .5) * R * .05;
-    let ty = aim.y + wob.y * 1.6 + (Math.random() - .5) * R * .05;
+    if (!aim) aim = { x: geo.cx, y: geo.cy };
+    // a hard throw flies straight; a soft one wanders with the hand's tremor
+    const slop = 1 - Math.min(1, Math.max(0, power == null ? .55 : power)) * .85;
+    let tx = aim.x + wob.x * 1.6 * slop + (wob.x * R * .06) * slop;
+    let ty = aim.y + wob.y * 1.6 * slop + (wob.y * R * .06) * slop;
     const dx = tx - geo.cx, dy = ty - geo.cy, d = Math.hypot(dx, dy) || 1;
     if (d > R * .92) { tx = geo.cx + dx / d * R * .92; ty = geo.cy + dy / d * R * .92; }
     stuck = null; hit = -1; busy = true;
@@ -138,20 +140,25 @@
       labels = pick(6);
       L = K.loop(frame);
       layout();
-      card.querySelector('#dtGo').onclick = fire;
+      card.querySelector('#dtGo').onclick = () => fire(0.55);
       cv().addEventListener('pointerdown', (e) => {
         if (busy || !geo) return;
-        aiming = true; setAim(at(e));
+        aiming = true; drag0 = at(e); setAim(drag0);
         try { cv().setPointerCapture(e.pointerId); } catch (err) {}
       });
       cv().addEventListener('pointermove', (e) => { if (aiming && geo) setAim(at(e)); });
-      cv().addEventListener('pointerup', () => { if (aiming) { aiming = false; fire(); } });
+      cv().addEventListener('pointerup', (e) => {
+        if (!aiming) return;
+        aiming = false;
+        const p = at(e), run = Math.hypot(p.x - drag0.x, p.y - drag0.y);
+        fire(Math.max(0, Math.min(1, run / (geo ? geo.w * 0.55 : 200))));
+      });
       cv().addEventListener('pointercancel', () => { aiming = false; });
     },
     enter() { layout(); L.start(); },
     leave() { aiming = false; L.stop(); },
     action() {
-      if (!aim && geo) aim = { x: geo.cx + (Math.random() - .5) * geo.R * 1.2, y: geo.cy + (Math.random() - .5) * geo.R * 1.2 };
+      if (!aim && geo) aim = { x: geo.cx, y: geo.cy };
       fire();
     }
   });

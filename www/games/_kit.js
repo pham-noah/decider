@@ -121,6 +121,77 @@
     try { show(el, text); } catch (e) { el.textContent = text; }
   };
 
+  /* Gesture tracking: drag/flick on a canvas. onEnd gets the release vector,
+   * normalised so power is 0..1 whatever the screen size. */
+  kit.gesture = function (cv, opts) {
+    opts = opts || {};
+    let on = false, sx = 0, sy = 0, x = 0, y = 0, samples = [];
+    const point = (e) => {
+      const r = cv.getBoundingClientRect();
+      return { x: e.clientX - r.left, y: e.clientY - r.top, t: performance.now() };
+    };
+    cv.addEventListener('pointerdown', (e) => {
+      if (e.button) return;
+      try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+      const p = point(e);
+      on = true; sx = x = p.x; sy = y = p.y; samples = [p];
+      opts.onStart && opts.onStart(p);
+    });
+    cv.addEventListener('pointermove', (e) => {
+      if (!on) return;
+      const p = point(e);
+      x = p.x; y = p.y;
+      samples.push(p);
+      if (samples.length > 8) samples.shift();
+      opts.onMove && opts.onMove(p, { sx, sy, dx: x - sx, dy: y - sy });
+    });
+    const finish = (e) => {
+      if (!on) return;
+      on = false;
+      const p = point(e);
+      x = p.x; y = p.y;
+      const now = p.t;
+      // velocity over the last ~120ms of travel
+      let ref = samples[0];
+      for (let i = samples.length - 1; i >= 0; i--) { ref = samples[i]; if (now - samples[i].t > 120) break; }
+      const span = Math.max(1, now - ref.t);
+      const vx = (x - ref.x) / span, vy = (y - ref.y) / span;   // px per ms
+      const speed = Math.hypot(vx, vy);
+      const res = {
+        sx, sy, x, y, dx: x - sx, dy: y - sy, vx, vy,
+        speed,
+        power: Math.max(0, Math.min(1, speed / 2.2)),
+        distance: Math.hypot(x - sx, y - sy)
+      };
+      samples = [];
+      opts.onEnd && opts.onEnd(res);
+    };
+    cv.addEventListener('pointerup', finish);
+    cv.addEventListener('pointercancel', finish);
+  };
+
+  /* a small power/aim readout drawn on the toy screen */
+  kit.meter = function (ctx, w, h, power, text) {
+    const bw = Math.min(180, w * 0.5), bh = 7;
+    const bx = (w - bw) / 2, by = h - 26;
+    ctx.save();
+    kit.rr(ctx, bx, by, bw, bh, bh / 2);
+    ctx.fillStyle = 'rgba(255,255,255,.18)';
+    ctx.fill();
+    if (power > 0) {
+      kit.rr(ctx, bx, by, Math.max(bh, bw * power), bh, bh / 2);
+      const g = ctx.createLinearGradient(bx, 0, bx + bw, 0);
+      g.addColorStop(0, '#8f7dff'); g.addColorStop(.55, '#ffd76a'); g.addColorStop(1, '#ff6a3d');
+      ctx.fillStyle = g;
+      ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(255,255,255,.82)';
+    ctx.font = '700 10px "Bricolage Grotesque",system-ui,sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.fillText(text || (Math.round(power * 100) + '%'), w / 2, by - 4);
+    ctx.restore();
+  };
+
   window.DKIT = kit;
   window.DECIDER_GAMES = window.DECIDER_GAMES || [];
 })();

@@ -6,7 +6,7 @@
   const res = () => document.getElementById('bbRes');
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   let L = null, geo = null, ball = null, drag = null, trail = [];
-  let shots = 0, makes = 0, tally = [], phase = 'aim', pause = 0, netT = 0, bob = 0, air = 0;
+  let shots = 0, makes = 0, tally = [], phase = 'aim', pause = 0, netT = 0, bob = 0, air = 0, power = 0;
 
   function layout() {
     const c = cv(); if (!c) return; const g = K.fit(c); const rimW = Math.min(g.w * .17, 64), rimY = g.h * .32;
@@ -15,7 +15,7 @@
   }
 
   function resetBall() {
-    ball = { x: geo.cx + (Math.random() - .5) * 112, y: geo.h - 46, vx: 0, vy: 0,
+    ball = { x: geo.cx, y: geo.h - 46, vx: 0, vy: 0,
       py: geo.h - 46, scored: false, r: geo.r };
     trail = []; phase = 'aim';
   }
@@ -30,7 +30,10 @@
     if (!geo) return;
     if (phase === 'done') startRound();
     if (phase !== 'aim') return;
-    const up = dy < -30; const vy = up ? clamp(dy * .11, -16.4, -15.2) : -15.6; const vx = clamp(dx * .05, -7, 7) + (Math.random() - .5) * .5;
+    // dy is how far you dragged up (negative), dx how far across: that is the throw
+    const vy = clamp(dy * .16, -23, -5.5);            // weak flicks fall short, hard ones overshoot
+    const vx = clamp(dx * .055, -9.5, 9.5);           // aim, no jitter
+    power = clamp(Math.abs(dy) / 150, 0, 1);
     ball.vx = vx; ball.vy = vy; ball.py = ball.y; ball.scored = false;
     phase = 'fly'; trail = []; air = 0;
     K.setResult(res(), 'Shot ' + (shots + 1) + ' of 3');
@@ -95,6 +98,16 @@
     x.beginPath(); x.ellipse(cx, rimY, rimW, 8, 0, Math.PI, TAU); x.strokeStyle = 'rgba(255,255,255,.65)'; x.lineWidth = 1.6; x.stroke();
   }
 
+  function drawPower(x, g) {
+    if (phase !== 'aim') return;
+    if (drag) {
+      const dy = Math.abs(drag.y - drag.y0);
+      K.meter(x, g.w, g.h, clamp(dy / 150, 0, 1), Math.round(clamp(dy / 150, 0, 1) * 100) + '% flick');
+    } else {
+      K.meter(x, g.w, g.h, 0, 'Flick up on the ball — harder goes further');
+    }
+  }
+
   function drawTally(x, h) {
     for (let i = 0; i < 3; i++) {
       const px = 18 + i * 17, py = h - 22; x.beginPath(); x.arc(px, py, 5.5, 0, TAU);
@@ -129,6 +142,7 @@
     if (phase === 'pause') { pause -= dt; if (pause <= 0) { if (shots >= 3) finish(); else resetBall(); } }
     drawHoop(x);
     drawTally(x, h);
+    drawPower(x, { w, h });
     if (phase === 'aim') {
       bob += dt * .08; const lift = Math.sin(bob) * 6; x.save(); x.setLineDash([5, 7]); x.strokeStyle = 'rgba(111,139,255,.8)'; x.lineWidth = 2.5;
       x.beginPath(); x.moveTo(ball.x, ball.y - ball.r - 10); x.lineTo(ball.x, ball.y - ball.r - 34 - lift); x.stroke(); x.setLineDash([]); x.beginPath();
@@ -150,7 +164,7 @@
     init(card) {
       L = K.loop(frame);
       layout();
-      card.querySelector('#bbGo').onclick = () => shoot((Math.random() - .5) * 50, -150);
+      card.querySelector('#bbGo').onclick = () => shoot(0, -105);
       cv().addEventListener('pointerdown', (e) => {
         if (!geo || phase === 'fly' || phase === 'pause') return;
         const p = at(e); drag = { x: p.x, y: p.y, x0: p.x, y0: p.y };
@@ -166,6 +180,6 @@
     },
     enter() { layout(); if (phase === 'done') startRound(); L.start(); },
     leave() { drag = null; L.stop(); },
-    action() { shoot((Math.random() - .5) * 56, -150); }
+    action() { shoot(0, -105); }
   });
 })();

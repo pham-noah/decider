@@ -5,7 +5,7 @@
   const cv = () => document.getElementById('gaCv'), out = () => document.getElementById('gaRes');
   let L = null, G = null, caps = [], labels = [], n = 26, lastR = 0;
   let knob = { x: 0, y: 0, r: 22 }, angle = 0, st = 'idle', spin = 0, spinGoal = 0;
-  let settleT = 0, drag = null, one = null, prize = 0;
+  let settleT = 0, drag = null, one = null, prize = 0, pending = 0.6, domeTurn = 0;
 
   function geom() {
     const c = cv(); if (!c) return null;
@@ -34,15 +34,18 @@
     }
   }
 
-  function spinNow() {
+  function spinNow(power) {
     if (st !== 'idle') return;
-    one = null; st = 'spin'; spin = 0; spinGoal = Math.PI * 2 * 1.2;
+    pending = Math.max(0, Math.min(1, typeof power === 'number' ? power : 0.6));
+    one = null; st = 'spin'; spin = 0; spinGoal = Math.PI * 2 * (0.6 + pending * 2.4);
     try { tone(300, .06, .04, 'triangle'); } catch (e) {}
   }
 
   function release() {
     const g = G || geom(); if (!g) return;
-    prize = Math.floor(Math.random() * labels.length);
+    // the drum turns with the knob: a hard turn carries the next capsules past the flap
+    domeTurn = (domeTurn + 1 + Math.round(pending * 5)) % Math.max(1, caps.length);
+    prize = caps.length ? caps[domeTurn].ci : 0;
     one = { x: g.flap.x, y: g.flap.y, r: Math.max(8, g.domeR * 0.13), ci: prize, vy: 1.1, bounces: 0, rot: 0, settled: false };
     st = 'drop';
     try { tone(170, .1, .05, 'square'); } catch (e) {}
@@ -182,14 +185,14 @@
       L = K.loop(frame);
       labels = K.options(5);
       const c = cv();
-      card.querySelector('#gaGo').onclick = spinNow;
+      card.querySelector('#gaGo').onclick = () => spinNow(0.6);
       c.addEventListener('pointerdown', e => {
         const r = c.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
         if (st === 'idle' && Math.hypot(px - knob.x, py - knob.y) < knob.r * 1.9) {
           drag = { a: Math.atan2(py - knob.y, px - knob.x), turned: 0 };
           try { c.setPointerCapture(e.pointerId); } catch (err) {}
           e.preventDefault();
-        } else spinNow();
+        } else spinNow(0.6);
       });
       c.addEventListener('pointermove', e => {
         if (!drag) return;
@@ -199,7 +202,10 @@
         if (d > Math.PI) d -= Math.PI * 2;
         if (d < -Math.PI) d += Math.PI * 2;
         drag.a = a; drag.turned += Math.abs(d); angle += d;
-        if (drag.turned > 1.1) { drag = null; one = null; st = 'spin'; spin = 0; spinGoal = 0.9; }
+        if (drag.turned > 1.1) {
+          pending = Math.min(1, drag.turned / (Math.PI * 2));   // how far you actually turned
+          drag = null; one = null; st = 'spin'; spin = 0; spinGoal = Math.PI * 2 * (0.6 + pending * 2.4);
+        }
       });
       c.addEventListener('pointerup', () => { drag = null; });
       c.addEventListener('pointercancel', () => { drag = null; });
@@ -212,6 +218,6 @@
     },
     enter() { labels = K.options(5); if (G) pack(G); L.start(); },
     leave() { L.stop(); drag = null; },
-    action() { spinNow(); }
+    action() { spinNow(0.6); }
   });
 })();

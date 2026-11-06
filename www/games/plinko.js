@@ -1,8 +1,11 @@
-/* Plinko — drop a ball through the pegs; whatever slot it lands in decides. */
+/* Plinko — drop a ball through the pegs; whatever slot it lands in decides.
+ * Your input decides: drag sideways to place the ball, flick to give it speed.
+ * Nothing is randomised except the pegs' tiny asymmetry. */
 (function () {
   const K = window.DKIT;
   const cv = () => document.getElementById('pkCv');
   let L = null, rows = 7, pegs = [], slots = [], balls = [], busy = false, landed = null;
+  let aim = 0.5, aimVx = 0, power = 0;
 
   function layout() {
     const c = cv();
@@ -23,13 +26,21 @@
     return g;
   }
 
-  function drop() {
+  function drop(forced) {
     if (busy) return;
     busy = true; landed = null;
     const c = cv();
-    const res = document.getElementById('pkRes');
-    K.setResult(res, '…');
-    balls.push({ x: c.clientWidth / 2 + (Math.random() - 0.5) * c.clientWidth * 0.1, y: 8, vx: (Math.random() - 0.5) * 1.2, vy: 0, r: Math.max(5, c.clientWidth * 0.018) });
+    const w = c.clientWidth;
+    K.setResult(document.getElementById('pkRes'), '…');
+    if (typeof forced === 'number') power = forced;
+    // where you let go is where it starts; how fast you flicked is how far it travels
+    const x = Math.max(w * 0.10, Math.min(w * 0.90, aim * w));
+    balls.push({
+      x, y: 8,
+      vx: aimVx * 4 + (aim - 0.5) * power * 1.8,
+      vy: 0,
+      r: Math.max(5, w * 0.018)
+    });
   }
 
   function step(g) {
@@ -70,8 +81,24 @@
       x.stroke();
     });
 
+    // aim guide — where the ball will start
+    if (!busy) {
+      const ax = aim * g.w;
+      x.save();
+      x.setLineDash([5, 7]);
+      x.strokeStyle = 'rgba(255,255,255,.5)';
+      x.lineWidth = 1.5;
+      x.beginPath(); x.moveTo(ax, 16); x.lineTo(ax, slotY - 8); x.stroke();
+      x.restore();
+      x.beginPath(); x.arc(ax, 15, 7, 0, Math.PI * 2);
+      x.fillStyle = '#fff'; x.fill();
+      x.beginPath(); x.arc(ax, 15, 3.4, 0, Math.PI * 2);
+      x.fillStyle = '#7b6cff'; x.fill();
+    }
+
     // balls
     balls.forEach(b => {
+      b.age = (b.age || 0) + 1;
       b.vy += 0.34 * 1;
       b.x += b.vx; b.y += b.vy;
       pegs.forEach(p => {
@@ -83,13 +110,18 @@
           const overlap = min - d;
           b.x += nx * overlap; b.y += ny * overlap;
           const vn = b.vx * nx + b.vy * ny;
-          b.vx = (b.vx - 2 * vn * nx) * 0.62 + nx * 0.6;
-          b.vy = (b.vy - 2 * vn * ny) * 0.62;
-          b.vx += (Math.random() - 0.5) * 0.5;
+          b.vx = (b.vx - 2 * vn * nx) * 0.66 + nx * 0.4;
+          b.vy = (b.vy - 2 * vn * ny) * 0.66;
+          // a hair of asymmetry so a dead-centre hit still rolls off a peg
+          b.vx += Math.abs(ny) < 0.08 ? Math.sign(dx || 1) * 0.12 : 0;
         }
       });
       if (b.x < b.r + 2) { b.x = b.r + 2; b.vx = Math.abs(b.vx) * 0.6; }
       if (b.x > g.w - b.r - 2) { b.x = g.w - b.r - 2; b.vx = -Math.abs(b.vx) * 0.6; }
+      // never let a ball stall on a peg or against a wall — nudge it, then drop it
+      if (!b.bestY || b.y > b.bestY + 1) { b.bestY = b.y; b.stale = 0; } else b.stale = (b.stale || 0) + 1;
+      if (b.stale > 90) { b.stale = 0; b.vx *= 0.3; b.vy = 2.2; b.x += (b.x < g.w / 2 ? 1.5 : -1.5); }
+      if (b.age > 520) { b.vx *= 0.2; b.vy = Math.max(b.vy, 3); }
 
       x.beginPath();
       x.arc(b.x, b.y, b.r, 0, Math.PI * 2);
@@ -105,10 +137,13 @@
         busy = false;
         const label = slots[i].l;
         K.setResult(document.getElementById('pkRes'), label);
-        K.decide(label, 'Plinko', 'Plinko');
+        K.decide(label, 'Plinko', 'Aim ' + Math.round(aim * 100) + '% · ' + Math.round(power * 100) + '% flick');
       }
     });
     balls = balls.filter(b => !b.done);
+
+    K.meter(x, g.w, g.h, busy ? power : 0,
+      busy ? '' : 'Aim ' + Math.round(aim * 100) + '% — drag to move, flick to drop');
   }
 
   K && window.DECIDER_GAMES.push({
@@ -125,8 +160,17 @@
         chips.querySelectorAll('.chip').forEach(b => b.onclick = () => { rows = +b.dataset.n; layout(); render(); });
       };
       render();
-      card.querySelector('#pkGo').onclick = drop;
-      cv().addEventListener('pointerdown', drop);
+      card.querySelector('#pkGo').onclick = () => drop(0.6);
+      K.gesture(cv(), {
+        onStart(p) { if (!busy) aim = Math.max(0, Math.min(1, p.x / cv().clientWidth)); },
+        onMove(p) { if (!busy) aim = Math.max(0, Math.min(1, p.x / cv().clientWidth)); },
+        onEnd(r) {
+          if (busy) return;
+          aim = Math.max(0, Math.min(1, r.x / cv().clientWidth));
+          aimVx = r.vx;
+          drop(r.power);
+        }
+      });
       layout();
     },
     enter() { layout(); L.start(); },
