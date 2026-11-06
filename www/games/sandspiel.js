@@ -281,7 +281,7 @@
 
   window.DECIDER_GAMES.push({
     id: 'sandspiel', name: 'Sandspiel', short: 'Sand', label: 'Materials', button: false,
-    body: `<div class="chips" id="ssMat" style="margin:0 0 10px;gap:6px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch"></div>
+    body: `<div class="chips" id="ssMat" style="margin:0 0 10px;gap:6px"></div>
       <canvas class="toy" id="ssCv"></canvas>
       <div class="res" id="ssRes" aria-live="polite" style="min-height:26px;font-size:calc(clamp(14px,3.3vw,17px)*var(--fs,1))"><span class="muted">Sand — drag to pour</span></div>`,
     init(card) {
@@ -303,8 +303,7 @@
       chips.querySelectorAll('.chip').forEach(b => { b.onclick = () => pick(+b.dataset.m); });
       const clr = document.createElement('button');
       clr.className = 'chip'; clr.id = 'ssClear'; clr.textContent = 'Clear';
-      clr.style.cssText = 'flex:0 0 auto;padding:6px 10px;font-size:calc(12.5px*var(--fs,1));' +
-        'position:sticky;right:0;background:#241a55;box-shadow:-16px 0 14px -6px rgba(14,9,34,.95)';
+      clr.style.cssText = 'flex:0 0 auto;padding:6px 10px;font-size:calc(12.5px*var(--fs,1))';
       clr.onclick = clearAll;
       chips.appendChild(clr);
 
