@@ -38,9 +38,9 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .icon{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--ink);font:inherit;font-size:18px}
 button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .view{display:none}
-.view.on{display:grid;gap:18px;animation:vin .5s cubic-bezier(.2,.9,.2,1)}
+.view.on{display:grid;gap:18px;animation:vin .3s ease-out}
 .view.on>.glass{animation:gin .45s ease-out both}
-@keyframes vin{from{transform:translateY(16px) scale(.985)}}
+@keyframes vin{from{opacity:0}}
 @keyframes gin{from{opacity:0}}
 @keyframes enter{from{opacity:0;transform:translateY(18px) scale(.98);filter:blur(10px)}}
 #wheel.on{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);align-items:start}
@@ -121,15 +121,15 @@ input[type=text]:focus-visible,button:focus-visible{box-shadow:0 0 0 3px rgba(12
  .view.has-sheet.on{padding-bottom:176px}
  .tune{position:fixed;left:10px;right:10px;bottom:calc(90px + max(env(safe-area-inset-bottom,0px),22px));z-index:12;max-height:68vh;overflow-y:auto;overscroll-behavior:contain;
   padding:0 20px 20px;border-radius:28px;background:linear-gradient(140deg,rgba(255,255,255,.97),rgba(243,239,255,.95));
-  -webkit-backdrop-filter:blur(40px) saturate(170%);backdrop-filter:blur(40px) saturate(170%);border:1px solid var(--edge);box-shadow:inset 0 1.5px 0 var(--edge),0 24px 60px var(--sh);
-  transform:translateY(calc(100% - 56px));clip-path:inset(0 0 calc(100% - 56px) 0 round 28px);
-  transition:transform .55s cubic-bezier(.3,1.2,.4,1),clip-path .4s ease}
+  -webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%);border:1px solid var(--edge);box-shadow:inset 0 1.5px 0 var(--edge),0 24px 60px var(--sh);contain:paint;
+  transform:translateY(calc(100% - 56px));will-change:transform;clip-path:inset(0 0 calc(100% - 56px) 0 round 28px);
+  transition:transform .34s cubic-bezier(.32,.72,0,1),clip-path .34s cubic-bezier(.32,.72,0,1)}
  .tune.open{transform:none;clip-path:inset(0 0 0 0 round 28px)}
  .tune.drag{transition:none;clip-path:inset(0 0 0 0 round 28px)}
  .tune h2{display:none}
 }
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .tune{background:linear-gradient(140deg,rgba(40,32,88,.98),rgba(20,15,52,.98))}}
-:root[data-theme="dark"] .tune{background:linear-gradient(140deg,rgba(40,32,88,.98),rgba(20,15,52,.98))}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .tune,:root:not([data-theme="light"]) #wheel .sheet{background:linear-gradient(140deg,rgba(40,32,88,.98),rgba(20,15,52,.98))}}
+:root[data-theme="dark"] .tune,:root[data-theme="dark"] #wheel .sheet{background:linear-gradient(140deg,rgba(40,32,88,.98),rgba(20,15,52,.98))}
 @media(min-width:821px){.tune .grab{display:none}.tune h2{display:block}}
 /* the app owns the viewport: no page scrolling, no rubber-banding */
 html,body{height:100%;overflow:hidden;overscroll-behavior:none}
@@ -209,7 +209,7 @@ body.focus main{padding-top:calc(4px + env(safe-area-inset-top,0px))}
  /* centre single-card tools between header and dock */
  .view.on{min-height:0;align-content:center;align-content:safe center}
  #wheel.on{animation:none;padding-bottom:90px}
- #wheel .sheet{position:fixed;left:10px;right:10px;bottom:calc(90px + max(env(safe-area-inset-bottom,0px),22px));z-index:6;max-height:68vh;overflow-y:auto;overscroll-behavior:contain;padding-top:0;transform:translateY(calc(100% - 56px));clip-path:inset(0 0 calc(100% - 56px) 0 round 28px);transition:transform .55s cubic-bezier(.3,1.2,.4,1),clip-path .4s ease}
+ #wheel .sheet{position:fixed;left:10px;right:10px;width:calc(100% - 20px);will-change:transform;-webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%);contain:paint;bottom:calc(90px + max(env(safe-area-inset-bottom,0px),22px));z-index:6;max-height:68vh;overflow-y:auto;overscroll-behavior:contain;padding:0 20px 20px;border-radius:28px;background:linear-gradient(140deg,rgba(255,255,255,.97),rgba(243,239,255,.95));transform:translateY(calc(100% - 56px));clip-path:inset(0 0 calc(100% - 56px) 0 round 28px);transition:transform .44s cubic-bezier(.32,.72,0,1),clip-path .44s cubic-bezier(.32,.72,0,1)}
  #wheel .sheet.open{transform:none;clip-path:inset(0 0 0 0 round 28px)}
  #wheel .sheet.drag{transition:none;clip-path:inset(0 0 0 0 round 28px)}
  #wheel .sheet h2{display:none}
