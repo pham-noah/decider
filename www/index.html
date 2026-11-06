@@ -28,6 +28,13 @@ body{font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-s
 .bg i:nth-child(3){background:radial-gradient(closest-side,var(--b3) 45%,transparent 100%);left:10vmax;bottom:-18vmax;animation-delay:-11s}
 .bg i:nth-child(4){background:radial-gradient(closest-side,var(--b4) 45%,transparent 100%);right:-6vmax;bottom:-12vmax;width:34vmax;height:34vmax;animation-delay:-3s;animation-duration:30s}
 @keyframes drift{to{transform:translate(9vmax,-7vmax) scale(1.25) rotate(40deg)}}
+/* light effects: same look, no per-frame blur or drifting background — for older phones.
+   the drifting orbs cost more than everything else on a weak GPU, the glass blur second. */
+:root[data-perf="low"] .bg i,:root[data-perf="low"] .orb{animation:none}
+:root[data-perf="low"] .glass,:root[data-perf="low"] .dock,:root[data-perf="low"] .tune,:root[data-perf="low"] #wheel .sheet,:root[data-perf="low"] #all{-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+:root[data-perf="low"] .glass{box-shadow:inset 0 1.5px 0 var(--edge),0 10px 26px var(--sh)}
+/* nothing animates behind a backgrounded app */
+.idle .bg i,.idle .orb{animation-play-state:paused}
 .glass{position:relative;background:linear-gradient(140deg,var(--g1),var(--g2));-webkit-backdrop-filter:blur(40px) saturate(170%);backdrop-filter:blur(40px) saturate(170%);border:1px solid var(--edge);border-radius:28px;box-shadow:inset 0 1.5px 0 var(--edge),inset 0 -12px 26px rgba(255,255,255,.07),0 24px 60px var(--sh)}
 .glass::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(260px circle at calc(var(--mx,25%) + var(--tx,0)*50px) calc(var(--my,0%) + var(--ty,0)*50px),rgba(255,255,255,.3),transparent 62%);opacity:.8}
 main{max-width:1040px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top,0px)) 16px 130px}
@@ -453,6 +460,8 @@ h2{font-size:calc(20px*var(--fs,1))}
   <h2 style="margin:24px 0 12px">Accessibility</h2>
   <div class="sw"><span>High contrast</span><button class="tg" id="hc" aria-label="High contrast"></button></div>
   <div class="sw" style="margin-top:14px"><span>Reduce motion</span><button class="tg" id="rmo" aria-label="Reduce motion"></button></div>
+  <div class="sw" style="margin-top:14px"><span>Light effects</span><button class="tg" id="lite" aria-label="Light effects"></button></div>
+  <p class="muted" id="liten" style="margin-top:10px"></p>
   <div class="lbl" style="margin:16px 0 8px;text-align:left">Text size</div>
   <div class="chips" id="fsz"></div>
   <button class="chip" id="tipsb">Replay tips</button>
@@ -519,7 +528,7 @@ $('#clr').onclick=()=>{hist=[];store.set('d.hist',hist);renderHist()};
 function star(x,r){x.beginPath();for(let i=0;i<8;i++){const a=i*Math.PI/4,rr=i%2?r*.45:r;x.lineTo(Math.cos(a)*rr,Math.sin(a)*rr)}x.closePath();x.fill()}
 const PART=[];let partOn=false;
 function addP(a){for(const p of a)PART.push(p);if(!partOn)runParts()}
-function runParts(){partOn=true;const c=$('#cf'),dp=Math.min(2,devicePixelRatio||1),W=innerWidth,H=innerHeight;c.width=W*dp;c.height=H*dp;const x=c.getContext('2d');x.setTransform(dp,0,0,dp,0,0);let last=performance.now();
+function runParts(){partOn=true;const c=$('#cf'),dp=Math.min(document.documentElement.dataset.perf==='low'?1.25:2,devicePixelRatio||1),W=innerWidth,H=innerHeight;c.width=W*dp;c.height=H*dp;const x=c.getContext('2d');x.setTransform(dp,0,0,dp,0,0);let last=performance.now();
  (function f(now){const dt=Math.min(2,(now-last)/16.67||1);last=now;x.clearRect(0,0,W,H);
   for(let i=PART.length-1;i>=0;i--){const p=PART[i];p.vy+=(p.g??.36)*dt;p.vx*=Math.pow(.985,dt);p.vy*=Math.pow(.992,dt);p.x+=p.vx*dt;p.y+=p.vy*dt;p.a+=p.va*dt;p.ph+=p.fl*dt;p.l-=p.d*dt;
    if(p.l<=0||p.y>H+30){PART.splice(i,1);continue}
@@ -532,7 +541,7 @@ function confetti(){if(calm)return;const W=innerWidth,H=innerHeight,cols=[...PAL
  const burst=(ox,oy,n,ang,spread,pow)=>{for(let i=0;i<n;i++){const a=ang+(Math.random()-.5)*spread,v=pow*(.45+Math.random()*.75),r=Math.random();P.push({x:ox,y:oy,vx:Math.cos(a)*v,vy:Math.sin(a)*v,w:5+Math.random()*7,h:3+Math.random()*5,c:cols[Math.random()*cols.length|0],a:Math.random()*6,va:(Math.random()-.5)*.5,ph:Math.random()*6,fl:.12+Math.random()*.18,s:r<.2?1:r<.32?2:0,l:1,d:.0045+Math.random()*.004})}};
  burst(W*.5,H*.55,90,-Math.PI/2,1.5,17);burst(0,H*.85,55,-Math.PI/3,.9,22);burst(W,H*.85,55,-Math.PI*2/3,.9,22);addP(P)}
 /* juice kit: sparks, shockwave ring, shake, delayed reveal */
-function sparks(px,py,col,n=14,pow=9){if(calm)return;const a=[];for(let i=0;i<n;i++){const g=Math.random()*TAU,v=pow*(.3+Math.random()*.9);a.push({x:px,y:py,vx:Math.cos(g)*v,vy:Math.sin(g)*v-1.5,w:4+Math.random()*4,h:2+Math.random()*3,c:i%3?col:'#ffffff',a:0,va:0,ph:0,fl:0,s:i%4===0?2:3,l:1,d:.022+Math.random()*.02,g:.18})}addP(a)}
+function sparks(px,py,col,n=14,pow=9){if(calm)return;if(document.documentElement.dataset.perf==='low')n=Math.max(4,Math.round(n*.45));const a=[];for(let i=0;i<n;i++){const g=Math.random()*TAU,v=pow*(.3+Math.random()*.9);a.push({x:px,y:py,vx:Math.cos(g)*v,vy:Math.sin(g)*v-1.5,w:4+Math.random()*4,h:2+Math.random()*3,c:i%3?col:'#ffffff',a:0,va:0,ph:0,fl:0,s:i%4===0?2:3,l:1,d:.022+Math.random()*.02,g:.18})}addP(a)}
 function ringAt(px,py,col,size=160){if(calm)return;const e=document.createElement('div');e.className='fxring';e.style.cssText=`left:${px}px;top:${py}px;width:${size}px;height:${size}px;border-color:${col}`;document.body.appendChild(e);e.animate([{transform:'translate(-50%,-50%) scale(.2)',opacity:.95,borderWidth:'8px'},{transform:'translate(-50%,-50%) scale(1.5)',opacity:0,borderWidth:'1px'}],{duration:650,easing:'cubic-bezier(.1,.7,.3,1)'}).onfinish=()=>e.remove()}
 function shakeEl(el,amp=5,dur=380){if(calm||!el)return;el.animate([{translate:'0 0'},{translate:`${amp}px ${-amp*.6}px`},{translate:`${-amp*.8}px ${amp*.5}px`},{translate:`${amp*.5}px 0`},{translate:`${-amp*.25}px 0`},{translate:'0 0'}],{duration:dur,easing:'ease-out'})}
 function later(fn){if(calm){fn();return}const o=$('.view.on');setTimeout(()=>{if($('.view.on')===o)fn()},800)}
@@ -543,11 +552,14 @@ const PRE={Dinner:['Pizza','Sushi','Tacos','Ramen','Burgers'],'Yes or no':['Yes'
 let opts=store.get('d.opts',PRE.Dinner.map(l=>({l,w:1}))),rot=0,spinning=false,rmAfter=store.get('d.rm',false);
 const cv=$('#cv');
 let flash=null;const LBL=new Map();document.fonts&&document.fonts.ready.then(()=>LBL.clear());
-function draw(){const S=Math.round(cv.clientWidth*devicePixelRatio);if(!S)return;if(cv.width!==S){cv.width=S;cv.height=S}
- const x=cv.getContext('2d'),R=S/2,d=devicePixelRatio,tot=opts.reduce((a,o)=>a+o.w,0);x.clearRect(0,0,S,S);x.save();x.translate(R,R);x.rotate(rot);
+const GRAD={R:0,list:[]}; /* radial gradients depend only on the radius: build them once */
+function draw(){const dprCap=document.documentElement.dataset.perf==='low'?1.5:2,dpr=Math.min(dprCap,devicePixelRatio||1);const S=Math.round(cv.clientWidth*dpr);if(!S)return;if(cv.width!==S){cv.width=S;cv.height=S}
+ const x=cv.getContext('2d'),R=S/2,d=dpr,tot=opts.reduce((a,o)=>a+o.w,0);x.clearRect(0,0,S,S);x.save();x.translate(R,R);x.rotate(rot);
  let a0=-Math.PI/2;
  opts.forEach((o,i)=>{const a1=a0+o.w/tot*TAU;x.beginPath();x.moveTo(0,0);x.arc(0,0,R*.94,a0,a1);x.closePath();
-  const g=x.createRadialGradient(0,0,R*.05,0,0,R*.94);g.addColorStop(0,'rgba(255,255,255,.75)');g.addColorStop(.35,PAL[i%8]);g.addColorStop(1,PAL[i%8]);x.fillStyle=g;x.fill();x.strokeStyle='rgba(255,255,255,.7)';x.lineWidth=2*d;x.stroke();
+  if(GRAD.R!==R){GRAD.R=R;GRAD.list=[]}let g=GRAD.list[i];
+  if(!g){g=x.createRadialGradient(0,0,R*.05,0,0,R*.94);g.addColorStop(0,'rgba(255,255,255,.75)');g.addColorStop(.35,PAL[i%8]);g.addColorStop(1,PAL[i%8]);GRAD.list[i]=g}
+ x.fillStyle=g;x.fill();x.strokeStyle='rgba(255,255,255,.7)';x.lineWidth=2*d;x.stroke();
   /* labels on the left half are drawn rotated 180° so they read upright */
   const mid=(a0+a1)/2,wa=Math.atan2(Math.sin(mid+rot),Math.cos(mid+rot)),flip=wa>Math.PI/2||wa<-Math.PI/2;
   x.save();x.rotate(mid+(flip?Math.PI:0));x.textAlign=flip?'left':'right';x.textBaseline='middle';x.fillStyle='#2a1450';
@@ -923,6 +935,14 @@ bindTg('#rmo',()=>calm,v=>{store.set('d.rm2',v);calm=v||mqRM.matches;applyA11y()
 if(mqRM.addEventListener)mqRM.addEventListener('change',()=>{calm=mqRM.matches||store.get('d.rm2',false);$('#rmo').classList.toggle('on',calm);applyA11y()});
 const FS=[['Small',.9],['Default',1],['Large',1.15],['Extra large',1.3]];
 function renderFS(){const c=store.get('d.fs',1);$('#fsz').innerHTML=FS.map(([n,v])=>`<button class="chip${v===c?' on':''}" data-v="${v}">${n}</button>`).join('');$$('#fsz .chip').forEach(b=>b.onclick=()=>{store.set('d.fs',+b.dataset.v);applyA11y();renderFS()})}
+/* light effects: no drifting background, a cheaper blur and a smaller wheel canvas.
+   the drift loop costs more than everything else on a weak GPU; on capable phones it is free. */
+function autoLite(){try{return (navigator.deviceMemory&&navigator.deviceMemory<=4)||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4)}catch(e){return false}}
+let lite=store.get('d.lite',autoLite());
+function applyPerf(){document.documentElement.dataset.perf=lite?'low':'full';const n=$('#liten');if(n)n.textContent=lite?'No drifting background and a lighter blur. Saved for next launch.':'Drifting background and full glass. Turn on if the app stutters.';draw()}
+bindTg('#lite',()=>lite,v=>{lite=v;store.set('d.lite',v);applyPerf()});
+applyPerf();
+document.addEventListener('visibilitychange',()=>document.documentElement.classList.toggle('idle',document.hidden));
 applyA11y();renderFS();
 
 /* about + updates (the app's only network request) */
