@@ -153,7 +153,7 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'fidget', name: 'Fidget spinner', short: 'Fidget', label: 'Arms', button: false,
+    id: 'fidget', name: 'Fidget spinner', short: 'Fidget', label: 'Arms', noResult: true, button: false,
     body: `<canvas class="toy" id="fgCv"></canvas>
       <div class="res" id="fgRes" aria-live="polite"><span class="muted">Flick it</span></div>
       <button class="btn" id="fgGo">Flick</button>`,

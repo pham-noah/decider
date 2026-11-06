@@ -18,6 +18,8 @@
     x.closePath();
   }
 
+  let spinT = 0, best = 0;
+
   function pickFaces() {
     const list = (typeof opts !== 'undefined' ? opts : []).filter(o => o && o.l);
     return list.length >= 2 ? [list[0].l, list[1].l] : ['Heads', 'Tails'];
@@ -26,9 +28,11 @@
   function flick(power) {
     if (state === 'spin' || state === 'die') return;
     faces = pickFaces();
-    face = Math.random() < 0.5 ? 0 : 1;
-    vel = 2.5 + Math.random() * 1.7 + (power || 0) * 1.7;
+    face = 0;
+    // your flick is the whole engine: a stronger flick starts faster and lasts longer
+    vel = 1.2 + (power || 0) * 9.5;
     startVel = vel; th = 0; prec = Math.random() * 6; wob = 0; flat = 0;
+    spinT = 0; best = store.get('d.coinspinBest', 0);
     state = 'spin'; done = false; taps = 0; dieT = 0;
     K.setResult(document.getElementById('snRes'), '');
     try { tone(760, .08, .05, 'triangle', 420); } catch (e) {}
@@ -123,6 +127,17 @@
     x.fillStyle = 'rgba(255,255,255,.92)';
     x.font = '800 30px "Bricolage Grotesque",system-ui,sans-serif';
     x.fillText(state === 'rest' || state === 'die' ? '0' : String(rpm), cx, h - 30);
+    if (state === 'spin' || state === 'die') {
+      x.save();
+      x.font = '800 22px "Bricolage Grotesque",system-ui,sans-serif';
+      x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.fillStyle = 'rgba(255,255,255,.92)';
+      x.fillText(spinT.toFixed(1) + 's', cx, h * 0.14);
+      x.font = '700 10px "Bricolage Grotesque",system-ui,sans-serif';
+      x.fillStyle = 'rgba(255,255,255,.55)';
+      x.fillText(best > 0 ? 'best ' + best.toFixed(1) + 's' : 'flick it hard', cx, h * 0.14 - 22);
+      x.restore();
+    }
     x.font = '700 11px "Bricolage Grotesque",system-ui,sans-serif';
     x.fillStyle = 'rgba(255,255,255,.5)';
     x.fillText('RPM', cx, h - 14);
@@ -136,6 +151,7 @@
   function tick(dt, now) {
     if (!g) return;
     if (state === 'spin') {
+      spinT += dt / 60;
       th += vel * dt;
       prec += (0.02 + vel * 0.01) * dt;
       wob = Math.max(0, (1 - vel / startVel) * 0.55);
@@ -147,6 +163,7 @@
       if (vel < 0.24) { state = 'die'; dieT = 0; }
     } else if (state === 'die') {
       dieT += dt;
+      spinT += dt / 60;
       flat = Math.min(1, flat + dt * 0.022);
       wob *= Math.pow(0.93, dt);
       if (dieT > 16 && taps < 4) {
@@ -155,8 +172,10 @@
       }
       if (taps >= 4 && Math.abs(wob) < 0.03) {
         state = 'rest'; flat = 1; wob = 0;
-        K.setResult(document.getElementById('snRes'), faces[face]);
-        if (!done) { done = true; K.decide(faces[face], 'Spin coin', 'The coin landed'); }
+        const secs = Math.round(spinT * 10) / 10;
+        if (secs > best) { best = secs; store.set('d.coinspinBest', best); try { chime(); confetti(); } catch (e) {} }
+        else try { tone(320, .12, .05, 'sine', 240); } catch (e) {}
+        K.setResult(document.getElementById('snRes'), secs.toFixed(1) + 's' + (secs >= best ? ' — best!' : ' · best ' + best.toFixed(1) + 's'));
       }
     } else {
       flat = 1;
@@ -167,7 +186,7 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'spincoin', name: 'Spin the coin', short: 'Spin coin', label: 'Coins', button: false,
+    id: 'spincoin', name: 'Spin the coin', short: 'Spin coin', label: 'Coins', noResult: true, button: false,
     body: `<canvas class="toy" id="snCv"></canvas>
       <div class="res" id="snRes" aria-live="polite"><span class="muted">Flick the coin</span></div>
       <button class="btn" id="snGo">Flick</button>`,

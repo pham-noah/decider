@@ -133,7 +133,7 @@
   const at = (e) => { const r = cv().getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
 
   K && window.DECIDER_GAMES.push({
-    id: 'ringtoss', name: 'Ring Toss', short: 'Rings', label: 'Pegs', button: false,
+    id: 'ringtoss', name: 'Ring Toss', short: 'Rings', label: 'Pegs', noResult: true, button: false,
     body: `<canvas class="toy" id="rtCv"></canvas><div class="res" id="rtRes" aria-live="polite"><span class="muted">Flick a ring at a peg — three rings</span></div><button class="btn" id="rtGo">Toss</button>`,
     init(card) {
       labels = pick(5);

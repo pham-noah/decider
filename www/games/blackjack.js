@@ -110,7 +110,7 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'blackjack', name: 'Blackjack', short: '21', label: 'Rules',
+    id: 'blackjack', name: 'Blackjack', short: '21', label: 'Rules', noResult: true,
     body: `<div class="lbl" id="bjDl">Dealer</div>
       <div class="cards3" id="bjDC" style="gap:6px;min-height:86px"></div>
       <div class="lbl" id="bjPl">You</div>

@@ -179,7 +179,7 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'slots', name: 'Slot machine', short: 'Slots', label: 'Reels',
+    id: 'slots', name: 'Slot machine', short: 'Slots', label: 'Reels', noResult: true,
     body: `<canvas class="toy" id="slCv"></canvas>
       <div class="res" id="slRes" aria-live="polite"><span class="muted">Pull to spin</span></div>
       <button class="btn" id="slGo">Spin</button>`,

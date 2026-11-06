@@ -159,7 +159,7 @@
   const at = (e) => { const r = cv().getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
 
   K && window.DECIDER_GAMES.push({
-    id: 'basketball', name: 'Basketball', short: 'Hoops', label: 'Shots',
+    id: 'basketball', name: 'Basketball', short: 'Hoops', label: 'Shots', noResult: true,
     body: `<canvas class="toy" id="bbCv"></canvas><div class="res" id="bbRes" aria-live="polite"><span class="muted">Three shots — flick up to sink one</span></div><button class="btn" id="bbGo">Shoot</button>`,
     init(card) {
       L = K.loop(frame);

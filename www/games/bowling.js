@@ -141,7 +141,7 @@
   const at = (e) => { const r = cv().getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
 
   K && window.DECIDER_GAMES.push({
-    id: 'bowling', name: 'Bowling', short: 'Bowling', label: 'Lane', button: false,
+    id: 'bowling', name: 'Bowling', short: 'Bowling', label: 'Lane', noResult: true, button: false,
     body: `<canvas class="toy" id="bwCv"></canvas><div class="res" id="bwRes" aria-live="polite"><span class="muted">Swipe up the lane to roll</span></div><button class="btn" id="bwGo">Roll</button>`,
     init(card) {
       labels = pick(5);

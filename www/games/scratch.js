@@ -203,8 +203,10 @@
   }
 
   function newCard() {
-    pool = K.options(5);
-    label = pool[Math.floor(Math.random() * pool.length)] || 'Yes';
+    // a scratch card reveals a trinket, not a decision
+    pool = ['a tiny star', 'a lucky coin', 'a paper crown', 'a fish', 'a rocket', 'a cherry',
+            'a key', 'a shell', 'a moon', 'a dinosaur', 'a bell', 'a feather'];
+    label = pool[Math.floor(Math.random() * pool.length)];
     revealed = false; done = false; frac = 0; fading = 0; autoY = -1;
     down = false; seen = null; checkAt = 0; sheen = Math.random() * 6;
     if (!cv() || !cv().clientWidth) { return; }
@@ -214,7 +216,7 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'scratch', name: 'Scratch card', short: 'Scratch', label: 'Cards',
+    id: 'scratch', name: 'Scratch card', short: 'Scratch', label: 'Cards', noResult: true,
     body: `<canvas class="toy" id="scCv"></canvas>
       <div class="res" id="scRes" aria-live="polite"><span class="muted">Rub the foil to reveal</span></div>
       <button class="btn" id="scGo">Scratch it</button>

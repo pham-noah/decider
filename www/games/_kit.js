@@ -110,6 +110,8 @@
 
   /* finish a game: inline result, sound, log, confetti, full-screen card */
   kit.decide = function (label, game, sub) {
+    // a toy can opt out of the whole decision ritual: no card, no history, no fanfare
+    if (kit.silent) return;
     try { chime(); } catch (e) {}
     try { buzz([20, 30, 20]); } catch (e) {}
     try { confetti(); } catch (e) {}

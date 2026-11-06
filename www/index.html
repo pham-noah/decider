@@ -15,9 +15,11 @@
 <link rel="stylesheet" href="fonts.css">
 <!-- games:start -->
 <script src="games/_kit.js"></script>
+<script src="games/antistress.js"></script>
 <script src="games/balloons.js"></script>
 <script src="games/basketball.js"></script>
 <script src="games/blackjack.js"></script>
+<script src="games/blek.js"></script>
 <script src="games/bowling.js"></script>
 <script src="games/claw.js"></script>
 <script src="games/coinpusher.js"></script>
@@ -26,13 +28,18 @@
 <script src="games/fidget.js"></script>
 <script src="games/gacha.js"></script>
 <script src="games/highcard.js"></script>
+<script src="games/infinitecraft.js"></script>
+<script src="games/linerider.js"></script>
 <script src="games/pachinko.js"></script>
 <script src="games/plinko.js"></script>
 <script src="games/ringtoss.js"></script>
+<script src="games/sandspiel.js"></script>
 <script src="games/scratch.js"></script>
 <script src="games/slots.js"></script>
 <script src="games/spincoin.js"></script>
 <script src="games/tarot.js"></script>
+<script src="games/vignettes.js"></script>
+<script src="games/windowsill.js"></script>
 <!-- games:end -->
 <script src="native-bridge.js"></script>
 <style>
@@ -1064,9 +1071,9 @@ const GAMES=[{v:'wheel',n:'Wheel'},{v:'coin',n:'Coin'},{v:'dice',n:'Dice'},{v:'f
  });
  const by={};mods.forEach(g=>by[g.id]=g);
  window.__viewHook=function(v){
-  mods.forEach(g=>{ if(g.id===v){ try{g.enter&&g.enter()}catch(e){} } else if(g.leave){ try{g.leave()}catch(e){} } });
+  mods.forEach(g=>{ if(g.id===v){ DKIT.silent=!!g.noResult; try{g.enter&&g.enter()}catch(e){} } else if(g.leave){ try{g.leave()}catch(e){} } });
  };
- window.__gameAction=function(){const g=by[cur];if(g&&g.action){g.action();return true}return false};
+ window.__gameAction=function(){ DKIT.silent=!!(by[cur]&&by[cur].noResult);const g=by[cur];if(g&&g.action){g.action();return true}return false};
  window.__gameShake=function(info){const g=by[cur];if(g&&g.shake){g.shake(info||{});return true}return false};
  window.__shakeReady=function(){const g=by[cur];return !!(g&&g.shake)};
 })();

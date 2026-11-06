@@ -102,7 +102,7 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'highcard', name: 'High card', short: 'High card', label: 'Deck',
+    id: 'highcard', name: 'High card', short: 'High card', label: 'Deck', noResult: true,
     body: `<div class="cards3" id="hcHand" style="gap:20px;perspective:900px;min-height:156px"></div>
       <div class="lbl" id="hcDeck">52 cards</div>
       <div class="res" id="hcRes" aria-live="polite" style="font-size:calc(clamp(20px,5.4vw,30px)*var(--fs,1));min-height:48px"><span class="muted">High card wins</span></div>

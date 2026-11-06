@@ -176,7 +176,7 @@
   }
 
   window.DECIDER_GAMES.push({
-    id: 'gacha', name: 'Gacha', short: 'Gacha', label: 'Capsules', button: false,
+    id: 'gacha', name: 'Gacha', short: 'Gacha', label: 'Capsules', noResult: true, button: false,
     body: `<canvas class="toy" id="gaCv"></canvas>
       <div class="res" id="gaRes" aria-live="polite"><span class="muted">Turn the knob for a capsule</span></div>
       <button class="btn" id="gaGo">Turn</button>`,

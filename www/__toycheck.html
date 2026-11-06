@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>toy check</title>
+<style>
+  body{margin:0;background:#0d0a1c;font-family:system-ui,sans-serif;color:#fff;width:412px}
+  .glass{padding:14px;margin:10px;background:linear-gradient(140deg,#241a55,#150f33);border-radius:28px}
+  .toy{width:100%;aspect-ratio:1/1.12;display:block;border-radius:20px;touch-action:none;background:#000}
+  .res{min-height:26px;display:grid;place-items:center;color:#fff}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+  .chip{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;border-radius:999px;padding:7px 14px;font-size:14px}
+  .chip.on{background:linear-gradient(135deg,#8f7dff,#ff7a3d);border-color:#fff}
+  .muted{color:#bdb6d8;font-size:14px}
+</style>
+<div id="host"></div>
+<script>
+  window.__errors = [];
+  window.addEventListener('error', e => window.__errors.push('err: ' + e.message));
+  window.addEventListener('unhandledrejection', e => window.__errors.push('rej: ' + e.reason));
+  const ce = console.error; console.error = function(){ window.__errors.push('console: ' + [].join.call(arguments,' ')); ce.apply(console, arguments); };
+  window.PAL = ['#8f7dff', '#ffd76a', '#ff7a3d', '#4ad6ff', '#8dffb0', '#ff8ad1'];
+  window.opts = [{l:'Yes'},{l:'No'},{l:'Maybe'},{l:'Later'},{l:'Nope'},{l:'Sure'}];
+  window.rnd = Math.random;
+  window.tone = function(){}; window.buzz = function(){}; window.confetti = function(){}; window.chime = function(){};
+  window.show = function(el, t){ el.textContent = t; };
+  window.moment = function(){}; window.log = function(){}; window.shakeEl = function(){};
+  window.later = function(fn){ setTimeout(fn, 0); };
+</script>
+<script src="games/_kit.js"></script>
+<script src="games/sandspiel.js"></script>
+<script src="games/linerider.js"></script>
+<script src="games/blek.js"></script>
+<script>
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const host = document.getElementById('host');
+
+  function pd(cv, x, y, type) {
+    const r = cv.getBoundingClientRect();
+    cv.dispatchEvent(new PointerEvent(type, {
+      clientX: r.left + x, clientY: r.top + y, pointerId: 7, pointerType: 'touch',
+      isPrimary: true, button: 0, buttons: type === 'pointerup' ? 0 : 1, bubbles: true, cancelable: true
+    }));
+  }
+  function stroke(cv, pts) {
+    pd(cv, pts[0][0], pts[0][1], 'pointerdown');
+    for (let i = 1; i < pts.length; i++) pd(cv, pts[i][0], pts[i][1], 'pointermove');
+    pd(cv, pts[pts.length - 1][0], pts[pts.length - 1][1], 'pointerup');
+  }
+  function sig(cv) {
+    const g = cv.getContext('2d');
+    const d = g.getImageData(0, 0, cv.width, cv.height).data;
+    let h = 0, colors = 0, last = 0;
+    for (let i = 0; i < d.length; i += 4 * 97) {
+      const v = (d[i] << 16) | (d[i + 1] << 8) | d[i + 2];
+      if (d[i + 3] > 8) colors++;
+      if (v !== last) { h = (h * 31 + v) | 0; last = v; }
+    }
+    return { hash: h, colors };
+  }
+
+  window.__h = { stroke, sig, pd, wait, host };
+  window.__build = function () {
+    const out = [];
+    for (const g of window.DECIDER_GAMES) {
+      const sec = document.createElement('section');
+      sec.id = g.id;
+      sec.innerHTML = '<div class="glass">' + g.body + '</div>';
+      host.appendChild(sec);
+      const card = sec.querySelector('.glass');
+      const info = { id: g.id, button: g.button };
+      try { g.init(card); g.enter(); } catch (e) { info.initErr = String(e); }
+      info.ids = [...card.querySelectorAll('[id]')].map(e => e.id);
+      info.chips = card.querySelectorAll('.chip').length;
+      info.buttons = card.querySelectorAll('button.btn').length;
+      out.push(info);
+    }
+    return out;
+  };
+
+  window.__only = function (id) {
+    document.querySelectorAll('section').forEach(s => { s.style.display = s.id === id ? '' : 'none'; });
+    const el = document.querySelector('#' + id + ' .glass');
+    el.scrollIntoView({ block: 'start' });
+    const r = el.getBoundingClientRect();
+    return { x: r.x, y: r.y + window.scrollY, width: r.width, height: r.height };
+  };
+
+  window.__tests = async function () {
+    const out = { errors: window.__errors, games: [] };
+    out.games = window.__build();
+    await wait(600);
+
+    /* --- sandspiel --- */
+    const ss = document.querySelector('#sandspiel');
+    const ssc = ss.querySelector('#ssCv');
+    const r1 = sig(ssc);
+    stroke(ssc, [[60, 40], [110, 45], [160, 50], [200, 60], [240, 70]]);
+    await wait(120);
+    const r2 = sig(ssc);
+    await wait(700);
+    const r3 = sig(ssc);
+    const sand = {
+      changedWhilePainting: r1.hash !== r2.hash,
+      stillSimulating: r2.hash !== r3.hash,
+      colors: r3.colors,
+      res: ss.querySelector('#ssRes').textContent,
+      chipCount: ss.querySelectorAll('#ssMat .chip').length,
+      onChip: ss.querySelector('#ssMat .chip.on') ? ss.querySelector('#ssMat .chip.on').textContent.trim() : null
+    };
+    const fireChip = [...ss.querySelectorAll('#ssMat .chip')].find(b => b.textContent.includes('Fire'));
+    if (fireChip) fireChip.click();
+    await wait(40);
+    sand.afterFireClick = ss.querySelector('#ssMat .chip.on').textContent.trim();
+    sand.resAfterChip = ss.querySelector('#ssRes').textContent;
+    /* paint fire, clear, and shake action */
+    stroke(ssc, [[180, 300], [200, 300], [220, 300]]);
+    await wait(200);
+    sand.action = (() => { try { window.DECIDER_GAMES.find(g => g.id === 'sandspiel').action(); return 'ok'; } catch (e) { return String(e); } })();
+    await wait(100);
+    out.sand = sand;
+
+    /* --- linerider --- */
+    const lr = document.querySelector('#linerider');
+    const lrc = lr.querySelector('#lrCv');
+    const W = lrc.clientWidth, H = lrc.clientHeight;
+    const pts = [];
+    for (let i = 0; i <= 24; i++) {
+      const t = i / 24;
+      pts.push([20 + t * (W - 40), H * 0.18 + t * H * 0.62 - Math.sin(t * Math.PI * 1.6) * H * 0.10]);
+    }
+    stroke(lrc, pts);
+    await wait(80);
+    const beforeGo = lr.querySelector('#lrRes').textContent;
+    lr.querySelector('#lrGo').click();
+    await wait(300);
+    const midLabel = lr.querySelector('#lrGo').textContent;
+    const mid = lr.querySelector('#lrRes').textContent;
+    await wait(1200);
+    const after = lr.querySelector('#lrRes').textContent;
+    const afterLabel = lr.querySelector('#lrGo').textContent;
+    out.lr = { beforeGo, midLabel, mid, after, afterLabel, w: W, h: H };
+    const g2 = window.DECIDER_GAMES.find(g => g.id === 'linerider');
+    out.lr.action = (() => { try { g2.action(); return 'ok'; } catch (e) { return String(e); } })();
+    out.lr.clear = (() => { try { lr.querySelector('#lrClear').click(); return lr.querySelector('#lrRes').textContent; } catch (e) { return String(e); } })();
+
+    /* --- blek --- */
+    const bk = document.querySelector('#blek');
+    const bkc = bk.querySelector('#bkCv');
+    const bw = bkc.clientWidth, bh = bkc.clientHeight;
+    const yTarget = bh * 0.18;
+    stroke(bkc, [[14, yTarget], [bw * 0.25, yTarget], [bw * 0.5, yTarget], [bw * 0.75, yTarget], [bw - 14, yTarget]]);
+    await wait(300);
+    const b1 = bk.querySelector('#bkRes').textContent;
+    await wait(900);
+    const b2 = bk.querySelector('#bkRes').textContent;
+    const g3 = window.DECIDER_GAMES.find(g => g.id === 'blek');
+    out.bk = { first: b1, later: b2, w: bw, h: bh };
+    out.bk.action = (() => { try { g3.action(); return 'ok'; } catch (e) { return String(e); } })();
+    out.bk.reset = (() => { try { bk.querySelector('#bkReset').click(); return bk.querySelector('#bkRes').textContent; } catch (e) { return String(e); } })();
+    await wait(300);
+
+    out.errors = window.__errors;
+    out.finalRes = [...document.querySelectorAll('.res')].map(e => e.textContent);
+    return out;
+  };
+</script>
+</html>

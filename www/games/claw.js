@@ -144,7 +144,7 @@
     return Math.max(g.w * 0.13, Math.min(g.w * 0.88, e.clientX - r.left));
   }
   K && window.DECIDER_GAMES.push({
-    id: 'claw', name: 'Claw', short: 'Claw', label: 'Prizes',
+    id: 'claw', name: 'Claw', short: 'Claw', label: 'Prizes', noResult: true,
     body: `<canvas class="toy" id="clCv" style="max-height:min(62vh,max(140px,calc(100svh - 530px)))"></canvas>
       <div class="res" id="clRes" aria-live="polite" style="min-height:40px;font-size:calc(clamp(22px,5.2vw,30px)*var(--fs,1))"><span class="muted">Drag the claw, then grab a capsule</span></div>
       <button class="btn" id="clGo">Grab</button>`,

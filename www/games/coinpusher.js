@@ -163,7 +163,7 @@
   }
 
   window.DECIDER_GAMES.push({
-    id: 'coinpusher', name: 'Coin Pusher', short: 'Pusher', label: 'Shelf',
+    id: 'coinpusher', name: 'Coin Pusher', short: 'Pusher', label: 'Shelf', noResult: true,
     body: `<canvas class="toy" id="cpCv"></canvas>
       <div class="res" id="cpRes" aria-live="polite"><span class="muted">Tap to feed the shelf, the pusher does the rest</span></div>
       <button class="btn" id="cpGo">Push</button>`,
