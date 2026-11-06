@@ -839,7 +839,11 @@ bindTg('#wke',()=>wake,v=>{wake=v;store.set('d.wake',v);if(v)getWake();else if(w
 bindTg('#prt',()=>party,v=>{party=v;store.set('d.party',v)});
 /* the status bar is hidden for the full-screen layout; this gives it back */
 let sbar=store.get('d.sbar',false);
-function applyStatusBar(){document.documentElement.classList.toggle('sbar',sbar);if(window.deciderStatusBar)window.deciderStatusBar(sbar)}
+function applyStatusBar(){document.documentElement.classList.toggle('sbar',sbar);
+ /* Chrome keeps reporting the old env(safe-area-inset-top) after the bar is hidden again,
+    which left a 49px empty band; the hidden state uses a fixed top margin instead */
+ const m=document.querySelector('main');if(m)m.style.paddingTop=sbar?'':'18px';
+ if(window.deciderStatusBar)window.deciderStatusBar(sbar)}
 bindTg('#sbar',()=>sbar,v=>{sbar=v;store.set('d.sbar',v);applyStatusBar()});
 applyStatusBar();
 $('#pnames').value=pnm.join(', ');
@@ -987,7 +991,7 @@ document.addEventListener('visibilitychange',()=>document.documentElement.classL
 applyA11y();renderFS();
 
 /* about + updates (the app's only network request) */
-const APP_VERSION='1.0.6',REPO='pham-noah/decider',REPO_URL='https://github.com/'+REPO;
+const APP_VERSION='1.0.7',REPO='pham-noah/decider',REPO_URL='https://github.com/'+REPO;
 $('#ver').textContent='v'+APP_VERSION;
 function openExt(url){
  if(window.__TAURI_INTERNALS__&&window.__TAURI_INTERNALS__.invoke){

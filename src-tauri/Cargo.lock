@@ -654,7 +654,7 @@ dependencies = [
 
 [[package]]
 name = "decider"
-version = "1.0.6"
+version = "1.0.7"
 dependencies = [
  "tauri",
  "tauri-build",
