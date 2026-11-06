@@ -112,20 +112,48 @@ input[type=text]:focus-visible,button:focus-visible{box-shadow:0 0 0 3px rgba(12
 @keyframes fpin{from{transform:scale(.2);opacity:0}}
 @media(max-width:820px){#wheel.on{grid-template-columns:1fr}.dock button{padding:12px 9px;font-size:13px}.cwrap{height:206px}}
 .svc{display:inline-flex;align-items:center;border:1px solid var(--edge);background:var(--field);border-radius:999px}.svc .chip{border:0;background:none}.svc .x{width:26px;height:26px;margin-right:4px}
-/* per-game settings: hidden on phones until the chip is tapped, always shown on wide screens */
+/* per-game settings: a sheet on phones, inline on wide screens */
 .tune{display:grid;gap:14px}
+.tune-btn{justify-self:center}
 @media(max-width:820px){
- .tune-btn{justify-self:center;font-size:13.5px}
- .tune:not(.open){display:none}
- .tune.open{animation:enter .35s both}
+ .tune{position:fixed;left:10px;right:10px;bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:14;max-height:min(64vh,460px);overflow-y:auto;overscroll-behavior:contain;padding:22px 20px 20px;border-radius:28px;
+  background:linear-gradient(140deg,rgba(255,255,255,.96),rgba(243,239,255,.94));-webkit-backdrop-filter:blur(30px) saturate(160%);backdrop-filter:blur(30px) saturate(160%);
+  border:1px solid var(--edge);box-shadow:0 24px 60px var(--sh);transform:translateY(calc(100% + 110px));opacity:0;pointer-events:none;
+  transition:transform .42s cubic-bezier(.3,1.15,.4,1),opacity .25s}
+ .tune.open{transform:none;opacity:1;pointer-events:auto}
+ .tune-done{align-self:center;margin-top:4px;font-weight:700}
 }
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .tune{background:linear-gradient(140deg,rgba(38,30,84,.97),rgba(20,15,52,.97))}}
+:root[data-theme="dark"] .tune{background:linear-gradient(140deg,rgba(38,30,84,.97),rgba(20,15,52,.97))}
 @media(min-width:821px){.tune-btn{display:none}}
+/* the app owns the viewport: no page scrolling, no rubber-banding */
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{position:fixed;inset:0}
+main{height:100%;overflow:hidden;padding-bottom:118px}
+.view.on{height:100%;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+.view.on::-webkit-scrollbar{display:none}
+
+/* new games */
+.c3row{display:flex;gap:16px;justify-content:center}
+.c3c{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:24px;color:#3a2200;
+ background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.95),rgba(255,255,255,0) 32%),conic-gradient(from 30deg,#ffd76a,#ff9fc4,#ffe9a8,#9ee8ff,#ffd76a);
+ border:3px solid rgba(255,255,255,.85);box-shadow:inset 0 -10px 22px rgba(255,150,60,.3),0 10px 22px var(--sh)}
+.rpsrow{display:flex;align-items:center;gap:18px;justify-content:center}
+.rpshand{width:96px;height:96px;border-radius:26px;display:grid;place-items:center;font-size:46px;background:var(--field);border:1px solid var(--edge)}
+.rpsvs{font-weight:700;opacity:.55}
+.deckcard{display:grid;gap:10px;place-items:center;text-align:center;padding:26px 20px;min-height:170px;width:min(100%,420px)}
+.decktag{font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+.decktext{font-size:clamp(17px,4.2vw,22px);font-weight:700;line-height:1.3}
+.tmerwrap{display:grid;gap:14px;justify-items:center;width:min(100%,420px)}
+.tmerq{font-size:clamp(34px,10vw,58px);font-weight:800;letter-spacing:-.02em;min-height:1.1em}
+.tmerbar{width:100%;height:14px;border-radius:999px;background:var(--field);overflow:hidden;border:1px solid var(--edge)}
+.tmerbar i{display:block;height:100%;width:100%;border-radius:999px;background:linear-gradient(90deg,var(--a1),var(--a2));transform-origin:left}
 /* all-games picker */
 #all{position:fixed;z-index:25;background:linear-gradient(140deg,rgba(255,255,255,.95),rgba(243,239,255,.92));left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));width:min(100% - 20px,540px);max-height:min(72vh,560px);overflow:auto;padding:18px 18px 14px;transform:translate(-50%,24px);opacity:0;pointer-events:none;transition:opacity .22s,transform .38s cubic-bezier(.3,1.3,.4,1)}
 #all.open{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .allhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .allgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px;margin-top:14px}
-.gtile{position:relative;display:grid;place-items:center;gap:6px;padding:18px 10px 14px;border-radius:20px;border:1px solid var(--edge);background:var(--field);font-weight:700;font-size:15px;color:inherit}
+.gtile{position:relative;display:grid;place-items:center;gap:6px;padding:18px 26px 14px 12px;border-radius:20px;border:1px solid var(--edge);background:var(--field);font-weight:700;font-size:clamp(12.5px,3.3vw,15px);line-height:1.2;color:inherit;text-align:center;overflow-wrap:anywhere}
 .gtile.on{background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;border-color:rgba(255,255,255,.6);text-shadow:0 1px 2px rgba(0,0,0,.25)}
 .gtile .pin{position:absolute;top:5px;right:5px;width:28px;height:28px;border:0;border-radius:50%;background:none;font-size:15px;line-height:1;opacity:.45}
 .gtile .pin:hover,.gtile .pin[aria-pressed="true"]{opacity:1}
@@ -204,7 +232,12 @@ h2{font-size:calc(20px*var(--fs,1))}
 .btn{font-size:calc(17px*var(--fs,1))}
 .dock button{font-size:calc(15px*var(--fs,1))}
 .res{font-size:calc(clamp(26px,5vw,38px)*var(--fs,1))}
-@media(max-width:820px){.dock{padding:4px;max-width:calc(100% - 12px)}.dock button{padding:12px 4px;font-size:clamp(9px,calc(2.7vw*var(--fs,1)),14px)}}
+@media(max-width:820px){
+ .dock{padding:7px;max-width:calc(100% - 10px);bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+ .dock button{padding:15px 7px;min-height:54px;display:inline-flex;align-items:center;justify-content:center;font-size:clamp(11px,calc(3.05vw*var(--fs,1)),15px)}
+ .dock button:not([data-v]){padding-left:11px;padding-right:11px}
+ #gear svg,#allbtn svg{width:22px;height:22px}
+}
 /* short screens: keep the primary action above the dock */
 @media(max-height:720px){
  .center{gap:12px;padding:16px 16px}
@@ -324,6 +357,57 @@ h2{font-size:calc(20px*var(--fs,1))}
   <button class="chip tune-btn" data-tune="tunebottle">Players</button>
   <div class="tune" id="tunebottle"><div class="chips" id="bpl" style="justify-content:center;margin:0"></div></div>
   <button class="btn" id="bspin">Spin</button>
+ </div>
+</section>
+
+
+<section class="view" id="c3">
+ <div class="glass center">
+  <div class="c3row" id="c3row"><span class="c3c">?</span><span class="c3c">?</span><span class="c3c">?</span></div>
+  <div class="res" id="c3res" aria-live="polite"><span class="muted">Flip three coins — best of three</span></div>
+  <button class="btn" id="c3go">Flip</button>
+ </div>
+</section>
+
+<section class="view" id="rps">
+ <div class="glass center">
+  <div class="rpsrow"><span class="rpshand" id="rpsA">✊</span><span class="rpsvs">vs</span><span class="rpshand" id="rpsB">✊</span></div>
+  <div class="res" id="rpsres" aria-live="polite"><span class="muted">Pick your move, then play</span></div>
+  <button class="chip tune-btn" data-tune="tunerps">Your move</button>
+  <div class="tune" id="tunerps"><div class="chips" id="rpsopt" style="justify-content:center"></div></div>
+  <button class="btn" id="rpsgo">Play</button>
+ </div>
+</section>
+
+<section class="view" id="stakes">
+ <div class="glass center">
+  <div class="res" id="stres" aria-live="polite" style="font-size:clamp(20px,4.6vw,28px);min-height:84px"><span class="muted">Say what happens if the answer is yes, and how sure you want it</span></div>
+  <button class="chip tune-btn" data-tune="tunestakes">The stake</button>
+  <div class="tune" id="tunestakes">
+   <input type="text" id="styes" maxlength="40" placeholder="If yes…" aria-label="If yes">
+   <input type="text" id="stno" maxlength="40" placeholder="If no…" aria-label="If no">
+   <div class="lbl" style="text-align:left;margin-top:6px">How sure?</div>
+   <div class="chips" id="stconf" style="margin:0"></div>
+  </div>
+  <button class="btn" id="stgo">Ask the stakes</button>
+ </div>
+</section>
+
+<section class="view" id="deck">
+ <div class="glass center">
+  <div class="deckcard glass" id="deckcard"><span class="decktag" id="decktag">Truth or dare</span><span class="decktext" id="decktext">Draw a card and take it</span></div>
+  <div class="chips" id="deckmode" style="justify-content:center;margin:0"></div>
+  <button class="btn" id="deckgo">Draw a card</button>
+ </div>
+</section>
+
+<section class="view" id="tmer">
+ <div class="glass center">
+  <div class="tmerwrap"><span class="tmerq" id="tmerq">?</span><div class="tmerbar"><i id="tmerfill"></i></div></div>
+  <div class="res" id="tmerres" aria-live="polite"><span class="muted">Tap to stop the clock — or let it decide for you</span></div>
+  <button class="chip tune-btn" data-tune="tunetmer">The options</button>
+  <div class="tune" id="tunetmer"><input type="text" id="tmerlist" maxlength="120" placeholder="Go, Stay, Later (comma separated)" aria-label="Options"></div>
+  <button class="btn" id="tmergo">Start the clock</button>
  </div>
 </section>
 
@@ -578,25 +662,34 @@ $('#sh').onclick=async()=>{const c=enc();$('#code').value=c;try{if(navigator.sha
 $('#im').onclick=()=>{const d=dec($('#code').value);if(!d){toast('That code isn’t valid');return}useWheel(d.n,d.o);$('#code').value='';toast('Imported '+d.n)};
 
 /* bottle */
-let bn=5,bAng=0,bSpin=false,tod=false,party=store.get('d.party',false),pnm=store.get('d.names',[]),bmoved=false;
+let bn=5,bAng=0,bSpin=false,tod=false,party=store.get('d.party',false),pnm=store.get('d.names',[]),bmoved=false,brnd=store.get('d.brnd',false);
 function pn(i,s){const n=pnm.length>=2&&pnm[i];return n?(s?n[0].toUpperCase():n):(s?i+1:'Player '+(i+1))}
 function renderBottle(){const S=$('#bst');S.querySelectorAll('.bd').forEach(e=>e.remove());
- for(let i=0;i<bn;i++){const a=i*TAU/bn,d=document.createElement('div');d.className='bd';d.style.left=(50+42*Math.sin(a))+'%';d.style.top=(50-42*Math.cos(a))+'%';d.style.background=PAL[i%8];d.textContent=pn(i,true);S.appendChild(d)}
- $('#bpl').innerHTML=[2,3,4,5,6,8,10].map(n=>`<button class="chip${n===bn?' on':''}">${n} players</button>`).join('')+`<button class="chip${tod?' on':''}" id="btd">Truth or dare</button>`;
- $$('#bpl .chip').forEach(b=>b.onclick=()=>{if(bSpin)return;if(b.id==='btd')tod=!tod;else bn=parseInt(b.textContent);renderBottle()})}
+ if(!brnd)for(let i=0;i<bn;i++){const a=i*TAU/bn,d=document.createElement('div');d.className='bd';d.style.left=(50+42*Math.sin(a))+'%';d.style.top=(50-42*Math.cos(a))+'%';d.style.background=PAL[i%8];d.textContent=pn(i,true);S.appendChild(d)}
+ $('#bpl').innerHTML=[2,3,4,5,6,8,10].map(n=>`<button class="chip${!brnd&&n===bn?' on':''}"${brnd?' disabled style="opacity:.45"':''}>${n} players</button>`).join('')
+  +`<button class="chip${tod?' on':''}" id="btd">Truth or dare</button>`
+  +`<button class="chip${brnd?' on':''}" id="brnd" aria-pressed="${brnd}">No players — random spot</button>`;
+ $$('#bpl .chip').forEach(b=>b.onclick=()=>{if(bSpin)return;
+  if(b.id==='btd')tod=!tod;
+  else if(b.id==='brnd'){brnd=!brnd;store.set('d.brnd',brnd)}
+  else bn=parseInt(b.textContent);
+  renderBottle()})}
 function spinBottle(pw=.6,dir=1){if(bSpin)return;const windup=!calm&&arguments.length===0;bSpin=true;$('#bspin').disabled=true;$$('.bd').forEach(e=>e.classList.remove('hit','dim'));$('#bres').innerHTML='<span class="muted">…</span>';
- const w=Math.floor(rnd()*bn),sec=360/bn,tgt=w*sec+(rnd()-.5)*sec*.6,st=bAng,tn=Math.round(3+pw*6)+Math.floor(rnd()*2),delta=dir>0?(((tgt-st)%360)+360)%360+360*tn:-((((st-tgt)%360)+360)%360+360*tn),dur=calm?1500:3200+pw*3200,t0=performance.now(),bt=$('#bt'),WU=windup?320:0,off=windup?-dir*26:0,T=st+delta;let last=-1,launched=false;
+ const w=Math.floor(rnd()*bn),sec=360/bn,tgt=brnd?rnd()*360:(w*sec+(rnd()-.5)*sec*.6),st=bAng,tn=Math.round(3+pw*6)+Math.floor(rnd()*2),delta=dir>0?(((tgt-st)%360)+360)%360+360*tn:-((((st-tgt)%360)+360)%360+360*tn),dur=calm?1500:3200+pw*3200,t0=performance.now(),bt=$('#bt'),WU=windup?320:0,off=windup?-dir*26:0,T=st+delta;let last=-1,launched=false;
  const setR=a=>{bAng=a;bt.style.transform=`translate(-50%,-50%) rotate(${a}deg)`};
  if(windup){tone(300,.3,.04,'triangle',170);buzz(10)}
  (function s(now){const el=now-t0;
   if(el<WU){setR(st+off*(1-Math.pow(1-el/WU,3)));requestAnimationFrame(s);return}
   if(!launched){launched=true;last=-1;if(windup){tone(180,.6,.05,'sawtooth',900);buzz(18)}}
   const p=Math.min(1,(el-WU)/dur);setR(st+delta*(1-Math.pow(1-p,4.5))+off*(1-Math.min(1,p*7)));
-  const i=Math.round((((bAng%360)+360)%360)/sec)%bn;if(i!==last){if(last>=0){tick();buzz(4)}last=i}
+  const i=Math.round((((bAng%360)+360)%360)/(brnd?15:sec))%(brnd?24:bn);if(i!==last){if(last>=0){tick();buzz(4)}last=i}
   if(p<1){requestAnimationFrame(s);return}
-  setR(T);const pl=$$('.bd')[w];pl.classList.add('hit');$$('.bd').forEach((e,k)=>{if(k!==w)e.classList.add('dim')});
-  let m=pn(w);if(tod)m+=' — '+(rnd()<.5?'Truth':'Dare');show($('#bres'),m);chime();buzz([30,40,30]);confetti();log('Bottle',m);bottleFx(pl);
-  later(()=>moment(m,'Bottle',null,party?w*360/bn+180:null));
+  setR(T);const pl=brnd?null:$$('.bd')[w];
+  if(pl){pl.classList.add('hit');$$('.bd').forEach((e,k)=>{if(k!==w)e.classList.add('dim')})}
+  let m=brnd?'Random spot':pn(w);if(tod)m+=' — '+(rnd()<.5?'Truth':'Dare');
+  show($('#bres'),m);chime();buzz([30,40,30]);confetti();log('Bottle',m);
+  if(pl)bottleFx(pl);else{const r=$('#bst').getBoundingClientRect();sparks(r.left+r.width/2,r.top+r.height/2,PAL[0],18,10)}
+  later(()=>moment(m,'Bottle',null,party&&!brnd?w*360/bn+180:null));
   const SET=calm?0:450,t1=performance.now();
   (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;setR(T+dir*3.2*Math.exp(-5*u)*Math.sin(u*Math.PI*3));if(u>=1)setR(T);if(u<1)requestAnimationFrame(settle);else{bSpin=false;$('#bspin').disabled=false}})(t1)})(t0)}
 function bottleFx(pl){if(calm)return;const r=pl.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,c=getComputedStyle(pl).backgroundColor;
@@ -703,6 +796,92 @@ function oracleFx(o,k){if(calm)return;const r=o.getBoundingClientRect(),cx=r.lef
  if(k==='y')confetti();else if(k==='n')tone(200,.4,.1,'sine',90);else shakeEl(o,7,500)}
 $('#oask').onclick=askOracle;$('#o8').onclick=askOracle;
 
+
+/* three coins: best of three */
+const C3=()=>$$('#c3row .c3c');
+$('#c3go').onclick=()=>{if(c3busy)return;c3busy=true;$('#c3go').disabled=true;$('#c3res').innerHTML='<span class="muted">…</span>';
+ const coins=C3(),res=[],dur=calm?500:1200;
+ coins.forEach((c,i)=>setTimeout(()=>{
+  const heads=rnd()<.5;res[i]=heads;c.textContent='?';c.animate([{transform:'rotateY(0) '},{transform:'rotateY(900deg)'}],{duration:dur,easing:'cubic-bezier(.3,.7,.3,1)',fill:'both'});
+  setTimeout(()=>{c.textContent=heads?'H':'T';c.animate([{transform:'scale(1.25,.8)'},{transform:'scale(1)'}],{duration:320,easing:'cubic-bezier(.2,1.6,.4,1)'});
+   tone(heads?720:420,.12,.08,'triangle');buzz(10)},dur-40)
+ },i*(calm?120:420)));
+ const total=(calm?600:1500)+ (calm?0:420);
+ setTimeout(()=>{
+  const h=res.filter(Boolean).length,t=3-h,label=h+' heads, '+t+(t===1?' tail':' tails');
+  show($('#c3res'),label);log('Coins',label);chime();buzz([25,35,25]);confetti();
+  later(()=>moment(h>t?'Heads':h<t?'Tails':'All three?', 'Three coins'));
+  c3busy=false;$('#c3go').disabled=false;
+ },total+ (calm?200:900));
+};
+let c3busy=false;
+
+/* rock paper scissors */
+const RPSM=[{k:'rock',e:'✊',b:['scissors']},{k:'paper',e:'✋',b:['rock']},{k:'scissors',e:'✌️',b:['paper']}];
+let rpsPick=0,rpsBusy=false;
+function renderRps(){$('#rpsopt').innerHTML=RPSM.map((m,i)=>`<button class="chip${i===rpsPick?' on':''}" data-i="${i}">${m.e} ${m.k[0].toUpperCase()+m.k.slice(1)}</button>`).join('');
+ $$('#rpsopt .chip').forEach(b=>b.onclick=()=>{rpsPick=+b.dataset.i;renderRps();tone(600,.08,.05,'sine',800)})}
+renderRps();
+$('#rpsgo').onclick=()=>{if(rpsBusy)return;rpsBusy=true;$('#rpsgo').disabled=true;
+ const me=RPSM[rpsPick],foe=RPSM[Math.floor(rnd()*3)],A=$('#rpsA'),B=$('#rpsB');
+ [A,B].forEach(h=>h.animate([{transform:'rotate(-18deg)'},{transform:'rotate(18deg)'},{transform:'rotate(0)'}],{duration:calm?200:520,easing:'ease-in-out'}));
+ tone(300,.2,.06,'triangle',520);buzz(8);
+ setTimeout(()=>{
+  A.textContent=me.e;B.textContent=foe.e;
+  const win=me.b.includes(foe.k)?'win':foe.b.includes(me.k)?'lose':'draw';
+  const label=win==='win'?'You win — '+me.k+' beats '+foe.k:win==='lose'?'You lose — '+foe.k+' beats '+me.k:'Draw — both picked '+me.k;
+  show($('#rpsres'),label);log('RPS',me.k+' vs '+foe.k+(win==='draw'?' (draw)':' ('+win+')'));
+  if(win==='win'){chime();confetti();sparks(...centerOf(B),'#ffffff',16,9)}else if(win==='lose'){tone(200,.4,.1,'sine',90)}else tone(520,.2,.08,'sine',420);
+  buzz([20,30,20]);later(()=>moment(win==='win'?'You win':win==='lose'?'You lose':'Draw',me.k+' vs '+foe.k));
+  rpsBusy=false;$('#rpsgo').disabled=false;
+ },calm?250:640)};
+function centerOf(el){const r=el.getBoundingClientRect();return[r.left+r.width/2,r.top+r.height/2]}
+
+/* stakes: yes/no with a certainty */
+const CONF=[60,80,100];let stConf=1,stBusy=false;
+function renderStakes(){$('#stconf').innerHTML=CONF.map((c,i)=>`<button class="chip${i===stConf?' on':''}" data-i="${i}">${c}% sure</button>`).join('');
+ $$('#stconf .chip').forEach(b=>b.onclick=()=>{stConf=+b.dataset.i;renderStakes()})}
+renderStakes();
+$('#stgo').onclick=()=>{if(stBusy)return;stBusy=true;$('#stgo').disabled=true;
+ const yes=rnd()*100<CONF[stConf],a=$('#styes').value.trim()||'something good',b=$('#stno').value.trim()||'nothing',label=yes?'Yes — '+a:'No — '+b;
+ $('#stres').textContent='…';tone(240,.5,.06,'sine',600);buzz(14);
+ setTimeout(()=>{$('#stres').textContent=label;show($('#stres'),label);log('Stakes',label);
+  if(yes){chime();confetti()}else tone(190,.45,.1,'sine',80);
+  buzz([25,35,25]);later(()=>moment(yes?'Yes':'No',CONF[stConf]+'% sure — '+(yes?a:b)));stBusy=false;$('#stgo').disabled=false},calm?400:900)};
+
+/* truth or dare deck */
+const CARDS={truth:['What is the last thing you searched for?','Who in this room would you swap lives with?','What is your most useless talent?','What is the biggest lie you told this year?','Which of your messages would you delete if you could?','What is the weirdest thing you own?','Have you ever pretended to like a gift?','What is your worst habit?','Who here do you text most?','What is a compliment you never believed?'],
+ dare:['Talk in an accent until your next turn','Let someone post a single word on your story','Do your best impression of the person to your left','Show the last photo in your camera roll','Say the alphabet backwards in 20 seconds','Let someone else pick your next song','Text a friend a single emoji and nothing else','Dance for 15 seconds with no music','Speak only in questions for two rounds','Trade one item of clothing with someone']};
+let deckMode='any';
+function renderDeck(){$('#deckmode').innerHTML=[['any','Any'],['truth','Truths'],['dare','Dares']].map(([k,n])=>`<button class="chip${deckMode===k?' on':''}" data-k="${k}">${n}</button>`).join('');
+ $$('#deckmode .chip').forEach(b=>b.onclick=()=>{deckMode=b.dataset.k;renderDeck()})}
+renderDeck();
+$('#deckgo').onclick=()=>{
+ const kinds=deckMode==='any'?['truth','dare']:[deckMode],kind=kinds[Math.floor(rnd()*kinds.length)];
+ const pack=CARDS[kind],text=pack[Math.floor(rnd()*pack.length)];
+ const c=$('#deckcard');c.animate([{transform:'rotateY(0) scale(1)'},{transform:'rotateY(180deg) scale(.96)'},{transform:'rotateY(360deg) scale(1)'}],{duration:calm?150:560,easing:'cubic-bezier(.3,.8,.3,1)'});
+ setTimeout(()=>{$('#decktag').textContent=kind;$('#decktext').textContent=text;show($('#decktext'),text);
+  tone(kind==='truth'?660:420,.16,.08,'triangle');buzz(12);log('Deck',kind+': '+text.slice(0,32))},calm?60:270)};
+
+/* timed call */
+let tmerBusy=false,tmerRaf=0;
+$('#tmergo').onclick=()=>{
+ const opts=($('#tmerlist').value||'Go, Stay, Later').split(',').map(x=>x.trim()).filter(Boolean).slice(0,8);
+ if(tmerBusy)return;tmerBusy=true;$('#tmergo').disabled=true;
+ const q=$('#tmerq'),fill=$('#tmerfill'),resEl=$('#tmerres'),dur=calm?2600:4200,t0=performance.now();
+ resEl.innerHTML='<span class="muted">Decide before the bar runs out…</span>';
+ let last=0;
+ (function step(now){
+  const p=Math.min(1,(now-t0)/dur);fill.style.transform='scaleX('+(1-p)+')';
+  const i=Math.floor(p*opts.length*3)%opts.length;
+  if(i!==last){last=i;q.textContent=opts[i];tone(520+i*40,.05,.04,'square')}
+  if(p<1){tmerRaf=requestAnimationFrame(step);return}
+  const pick=opts[Math.floor(rnd()*opts.length)];
+  q.textContent=pick;show(resEl,'Time — '+pick);log('Timer',pick);
+  chime();buzz([30,40,30]);confetti();later(()=>moment(pick,'The clock decided'));
+  tmerBusy=false;$('#tmergo').disabled=false;fill.style.transform='scaleX(1)';
+ })(t0)};
+
 /* accessibility */
 function applyA11y(){const r=document.documentElement;r.dataset.contrast=store.get('d.hc',false)?'high':'normal';r.dataset.motion=calm?'reduce':'full';R.setProperty('--fs',store.get('d.fs',1))}
 bindTg('#hc',()=>store.get('d.hc',false),v=>{store.set('d.hc',v);applyA11y()});
@@ -713,7 +892,7 @@ function renderFS(){const c=store.get('d.fs',1);$('#fsz').innerHTML=FS.map(([n,v
 applyA11y();renderFS();
 
 /* about + updates (the app's only network request) */
-const APP_VERSION='1.0.1',REPO='pham-noah/decider',REPO_URL='https://github.com/'+REPO;
+const APP_VERSION='1.0.2',REPO='pham-noah/decider',REPO_URL='https://github.com/'+REPO;
 $('#ver').textContent='v'+APP_VERSION;
 function openExt(url){
  if(window.__TAURI_INTERNALS__&&window.__TAURI_INTERNALS__.invoke){
@@ -779,7 +958,8 @@ setTimeout(()=>tip('wheel'),900);
 /* nav */
 function pill(){const b=$('.dock button.on'),p=$('#pill');if(matchMedia('(min-width:1000px)').matches){p.style.width=b.offsetWidth+'px';p.style.height=b.offsetHeight+'px';p.style.transform=`translateY(${b.offsetTop}px)`}else{p.style.height='';p.style.width=b.offsetWidth+'px';p.style.transform=`translateX(${b.offsetLeft}px)`}}
 /* the bar holds four pinned games plus two fixed buttons, so adding a game never widens it */
-const GAMES=[{v:'wheel',n:'Wheel'},{v:'coin',n:'Coin'},{v:'dice',n:'Dice'},{v:'fingers',n:'Fingers'},{v:'bottle',n:'Bottle'},{v:'oracle',n:'Oracle'}];
+const GAMES=[{v:'wheel',n:'Wheel'},{v:'coin',n:'Coin'},{v:'dice',n:'Dice'},{v:'fingers',n:'Fingers'},{v:'bottle',n:'Bottle'},{v:'oracle',n:'Oracle'},
+ {v:'c3',n:'Three coins'},{v:'rps',n:'Rock paper scissors'},{v:'stakes',n:'Stakes'},{v:'deck',n:'Truth or dare'},{v:'tmer',n:'Timed call'}];
 const MAXPIN=4;
 let pin=store.get('d.pin',['wheel','coin','dice','bottle']).filter(v=>GAMES.some(g=>g.v===v)).slice(0,MAXPIN);
 if(!pin.length)pin=['wheel'];
@@ -790,6 +970,7 @@ function goTo(v){
  if(!document.getElementById(v))return;
  cur=v;
  freset();$$('.moment').forEach(e=>e.remove());closePop();closeAll();
+ $$('.tune.open').forEach(x=>x.classList.remove('open'));$$('.tune-btn').forEach(x=>x.classList.remove('on'));
  $$('.view').forEach(x=>x.classList.toggle('on',x.id===v));
  $$('.dock button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
  $('#allbtn').classList.toggle('on',v!=='hist'&&!pin.includes(v));
@@ -831,7 +1012,24 @@ function togglePin(v){
  store.set('d.pin',pin);renderDock();renderAll();goTo(cur);
 }
 $('#allclose').onclick=closeAll;
-$$('.tune-btn').forEach(b=>b.onclick=()=>{const t=document.getElementById(b.dataset.tune);b.classList.toggle('on',t.classList.toggle('open'))});
+$$('.tune-btn').forEach(b=>b.onclick=()=>{
+ const t=document.getElementById(b.dataset.tune),open=!t.classList.contains('open');
+ $$('.tune.open').forEach(x=>x.classList.remove('open'));
+ $$('.tune-btn').forEach(x=>x.classList.remove('on'));
+ if(open){
+  if(!t.querySelector('.tune-done')&&matchMedia('(max-width:820px)').matches){
+   const done=document.createElement('button');done.className='chip tune-done';done.textContent='Done';
+   done.onclick=()=>{t.classList.remove('open');b.classList.remove('on')};
+   t.appendChild(done);
+  }
+  t.classList.add('open');b.classList.add('on');tone(560,.08,.05,'sine',760);
+ }
+});
+document.addEventListener('pointerdown',e=>{
+ if(!e.target.closest||e.target.closest('.tune')||e.target.closest('.tune-btn'))return;
+ $$('.tune.open').forEach(x=>x.classList.remove('open'));
+ $$('.tune-btn').forEach(x=>x.classList.remove('on'));
+},true);
 /* no pinch or double-tap zoom, on any platform */
 ['gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));
 document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
