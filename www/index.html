@@ -157,7 +157,9 @@ main{height:100%;overflow:hidden;display:flex;flex-direction:column}
 .view.on::-webkit-scrollbar{display:none}
 
 /* new games */
-.c3row{display:flex;gap:16px;justify-content:center}
+.c3row{display:flex;gap:clamp(8px,2.4vw,16px);justify-content:center;flex-wrap:wrap;max-width:100%}
+.c3row .c3c{width:clamp(44px,13vw,76px);height:clamp(44px,13vw,76px);font-size:clamp(15px,4vw,24px)}
+.c3c.heads{box-shadow:inset 0 0 0 3px rgba(255,255,255,.7),0 6px 18px var(--sh)}
 .c3c{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:24px;color:#3a2200;
  background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.95),rgba(255,255,255,0) 32%),conic-gradient(from 30deg,#ffd76a,#ff9fc4,#ffe9a8,#9ee8ff,#ffd76a);
  border:3px solid rgba(255,255,255,.85);box-shadow:inset 0 -10px 22px rgba(255,150,60,.3),0 10px 22px var(--sh)}
@@ -355,10 +357,13 @@ h2{font-size:calc(20px*var(--fs,1))}
 <section class="view" id="coin">
  <div class="glass center">
   <div class="cwrap"><div class="arc" id="arc"><div class="coin" id="cn"><div class="face"><span id="sA">Heads</span></div><div class="face b"><span id="sB">Tails</span></div></div></div><div class="cshadow" id="csh"></div></div>
+  <div class="c3row" id="c3row" hidden></div>
   <div class="res" id="cres" aria-live="polite"><span class="muted">Tap Flip, or swipe up on the coin</span></div>
   <button class="chip tune-btn" data-tune="tunecoin">Coin sides</button>
   <div class="tune" id="tunecoin">
    <div class="pair"><div style="flex:1"><div class="lbl">Side one</div><input type="text" id="iA" value="Heads" maxlength="14"></div><div style="flex:1"><div class="lbl">Side two</div><input type="text" id="iB" value="Tails" maxlength="14"></div></div>
+   <div class="lbl">Coins</div>
+   <div class="chips" id="ccoins" style="margin:0"></div>
    <div class="lbl">Which side are you hoping for?</div>
    <div class="chips" id="hope" style="margin:0"></div>
   </div>
@@ -408,13 +413,6 @@ h2{font-size:calc(20px*var(--fs,1))}
 </section>
 
 
-<section class="view" id="c3">
- <div class="glass center">
-  <div class="c3row" id="c3row"><span class="c3c">?</span><span class="c3c">?</span><span class="c3c">?</span></div>
-  <div class="res" id="c3res" aria-live="polite"><span class="muted">Flip three coins — best of three</span></div>
-  <button class="btn" id="c3go">Flip</button>
- </div>
-</section>
 
 <section class="view" id="rps">
  <div class="glass center">
@@ -654,7 +652,34 @@ function renderHope(){const n=names();$('#sA').textContent=n[0];$('#sB').textCon
  $('#hope').innerHTML=['I hope for '+n[0],'I hope for '+n[1]].map((t,i)=>`<button class="chip${hope===i?' on':''}">${esc(t)}</button>`).join('');
  $$('#hope .chip').forEach((b,i)=>b.onclick=()=>{hope=hope===i?-1:i;renderHope()})}
 $('#iA').oninput=$('#iB').oninput=renderHope;renderHope();
-$('#flip').onclick=()=>{if(flipping)return;flipping=true;$('#flip').disabled=true;
+/* how many coins: one for a clean heads/tails, more for a count (the old Three coins) */
+let ccoins=store.get('d.ccoins',1),cbusy=false;
+const coinsHint=()=>ccoins>1?ccoins+' coins — the majority decides':'Tap Flip, or swipe up on the coin';
+function renderCoins(){
+ const row=$('#c3row'),cw=document.querySelector('#coin .cwrap');
+ row.style.display=ccoins<2?'none':'flex';cw.style.display=ccoins>1?'none':'';
+ if(ccoins>1)row.innerHTML=Array.from({length:ccoins},()=>'<span class="c3c">?</span>').join('');
+ $('#ccoins').innerHTML=[1,3,5,7].map(k=>`<button class="chip${k===ccoins?' on':''}" data-n="${k}">${k}</button>`).join('');
+ $$('#ccoins .chip').forEach(b=>b.onclick=()=>{ccoins=+b.dataset.n;store.set('d.ccoins',ccoins);renderCoins();$('#cres').innerHTML='<span class="muted">'+coinsHint()+'</span>'});
+}
+function flipMany(){
+ if(cbusy)return;cbusy=true;$('#flip').disabled=true;$('#cres').innerHTML='<span class="muted">…</span>';
+ const coins=$$('#c3row .c3c'),res=[],dur=calm?450:1000,step=calm?90:240;
+ coins.forEach((c,i)=>setTimeout(()=>{
+  const heads=rnd()<.5;res[i]=heads;c.textContent='?';c.classList.remove('heads');
+  c.animate([{transform:'rotateY(0)'},{transform:'rotateY(900deg)'}],{duration:dur,easing:'cubic-bezier(.3,.7,.3,1)',fill:'both'});
+  setTimeout(()=>{c.textContent=heads?'H':'T';c.classList.toggle('heads',heads);c.animate([{transform:'scale(1.25,.8)'},{transform:'scale(1)'}],{duration:300,easing:'cubic-bezier(.2,1.6,.4,1)'});tone(heads?720:420,.12,.06,'triangle');buzz(8)},dur-40)
+ },i*step));
+ setTimeout(()=>{
+  const h=res.filter(Boolean).length,t=coins.length-h,[A,B]=names();
+  const label=h+' '+A+' · '+t+' '+B;
+  show($('#cres'),label);log('Coin',label);chime();buzz([25,35,25]);if(h!==t)confetti();
+  later(()=>moment(h>t?A:h<t?B:'Even',coins.length+' coins'));
+  cbusy=false;$('#flip').disabled=false;
+ },(coins.length-1)*step+dur+180);
+}
+renderCoins();
+$('#flip').onclick=()=>{if(ccoins>1){flipMany();return}if(flipping)return;flipping=true;$('#flip').disabled=true;
  const res=rnd()<.5?0:1,cur=(ang/180)%2,to=ang+360*(5+Math.floor(rnd()*3))+((res-cur+2)%2)*180,dur=calm?700:2100,WU=calm?0:150;
  $('#cres').innerHTML='<span class="muted">…</span>';
  if(WU){$('.cwrap').animate([{transform:'scale(1,1)'},{transform:'scale(1.12,.8)',offset:.7},{transform:'scale(.94,1.1)'}],{duration:WU,easing:'ease-out'});tone(220,.15,.06,'triangle',140);buzz(8)}
@@ -887,24 +912,6 @@ function oracleFx(o,k){if(calm)return;const r=o.getBoundingClientRect(),cx=r.lef
 $('#oask').onclick=askOracle;$('#o8').onclick=askOracle;
 
 
-/* three coins: best of three */
-const C3=()=>$$('#c3row .c3c');
-$('#c3go').onclick=()=>{if(c3busy)return;c3busy=true;$('#c3go').disabled=true;$('#c3res').innerHTML='<span class="muted">…</span>';
- const coins=C3(),res=[],dur=calm?500:1200;
- coins.forEach((c,i)=>setTimeout(()=>{
-  const heads=rnd()<.5;res[i]=heads;c.textContent='?';c.animate([{transform:'rotateY(0) '},{transform:'rotateY(900deg)'}],{duration:dur,easing:'cubic-bezier(.3,.7,.3,1)',fill:'both'});
-  setTimeout(()=>{c.textContent=heads?'H':'T';c.animate([{transform:'scale(1.25,.8)'},{transform:'scale(1)'}],{duration:320,easing:'cubic-bezier(.2,1.6,.4,1)'});
-   tone(heads?720:420,.12,.08,'triangle');buzz(10)},dur-40)
- },i*(calm?120:420)));
- const total=(calm?600:1500)+ (calm?0:420);
- setTimeout(()=>{
-  const h=res.filter(Boolean).length,t=3-h,label=h+' heads, '+t+(t===1?' tail':' tails');
-  show($('#c3res'),label);log('Coins',label);chime();buzz([25,35,25]);confetti();
-  later(()=>moment(h>t?'Heads':h<t?'Tails':'All three?', 'Three coins'));
-  c3busy=false;$('#c3go').disabled=false;
- },total+ (calm?200:900));
-};
-let c3busy=false;
 
 /* rock paper scissors */
 const RPSM=[{k:'rock',e:'✊',b:['scissors']},{k:'paper',e:'✋',b:['rock']},{k:'scissors',e:'✌️',b:['paper']}];
@@ -1067,7 +1074,7 @@ function pill(){const b=$('.dock button.on'),p=$('#pill');if(!b||!p)return;if(ma
 let cur='wheel';
 /* the bar holds four pinned games plus two fixed buttons, so adding a game never widens it */
 const GAMES=[{v:'wheel',n:'Wheel'},{v:'coin',n:'Coin'},{v:'dice',n:'Dice'},{v:'fingers',n:'Fingers'},{v:'bottle',n:'Bottle'},{v:'oracle',n:'Oracle'},
- {v:'c3',n:'Three coins',s:'3 coins'},{v:'rps',n:'Rock paper scissors',s:'RPS'},{v:'stakes',n:'Stakes'},{v:'deck',n:'Truth or dare',s:'Truth / dare'},{v:'tmer',n:'Timed call',s:'Timer'}];
+ {v:'rps',n:'Rock paper scissors',s:'RPS'},{v:'stakes',n:'Stakes'},{v:'deck',n:'Truth or dare',s:'Truth / dare'},{v:'tmer',n:'Timed call',s:'Timer'}];
 const MAXPIN=4;
 let pin=store.get('d.pin',['wheel','coin','dice','bottle']).filter(v=>GAMES.some(g=>g.v===v)).slice(0,MAXPIN);
 if(!pin.length)pin=['wheel'];
