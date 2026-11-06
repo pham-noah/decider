@@ -21,6 +21,8 @@
     if (pop) { pop.remove(); return true; }
     var tip = $('#tips');          // first-visit tip
     if (tip) { tip.remove(); return true; }
+    var all = $('#all');           // all-games picker
+    if (all && all.classList.contains('open')) { all.classList.remove('open'); return true; }
     var sheet = $('#sheet');       // wheel options sheet
     if (sheet && sheet.classList.contains('open')) { sheet.classList.remove('open'); return true; }
     if ($('.flood:not(.out)') && typeof window.freset === 'function') { window.freset(); return true; } // fingers result
