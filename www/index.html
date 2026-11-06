@@ -509,7 +509,10 @@ let sound=store.get('d.snd',true),AC;
 function tone(f,d,v,type,slide){if(!sound)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(AC.destination);o.start();o.stop(t+d)}catch(e){}}
 let tickF=1300;const tick=()=>{tone(tickF+Math.random()*120,.05,.07,'triangle',tickF/2);tone(160,.03,.05,'square')};
 const chime=()=>{tone(130,.4,.16,'sine',55);[660,880,1320].forEach((f,i)=>setTimeout(()=>tone(f,.55,.1),i*95))};
-const buzz=n=>{try{navigator.vibrate&&navigator.vibrate(n)}catch(e){}};
+let buzzT=0;
+/* the spin buzzes on every wedge it passes; on a phone that is 30-60 vibrator calls a
+   second through the binder and it shows up as stutter, so short taps are throttled */
+const buzz=n=>{try{if(!navigator.vibrate)return;const now=performance.now();if(typeof n==='number'&&now-buzzT<70)return;buzzT=now;navigator.vibrate(n)}catch(e){}};
 $('#snd').style.opacity=sound?1:.45;
 $('#snd').onclick=()=>{sound=!sound;store.set('d.snd',sound);$('#snd').style.opacity=sound?1:.45;if(sound)chime()};
 
@@ -552,8 +555,13 @@ const PRE={Dinner:['Pizza','Sushi','Tacos','Ramen','Burgers'],'Yes or no':['Yes'
 let opts=store.get('d.opts',PRE.Dinner.map(l=>({l,w:1}))),rot=0,spinning=false,rmAfter=store.get('d.rm',false);
 const cv=$('#cv');
 let flash=null;const LBL=new Map();document.fonts&&document.fonts.ready.then(()=>LBL.clear());
-const GRAD={R:0,list:[]}; /* radial gradients depend only on the radius: build them once */
-function draw(){const dprCap=document.documentElement.dataset.perf==='low'?1.5:2,dpr=Math.min(dprCap,devicePixelRatio||1);const S=Math.round(cv.clientWidth*dpr);if(!S)return;if(cv.width!==S){cv.width=S;cv.height=S}
+const LBLIMG=new Map(),GRAD={R:0,list:[]}; /* radial gradients depend only on the radius: build them once */
+/* while a game animates, the glass cards would re-blur their backdrop on every frame.
+   dropping the blur for those seconds is invisible (the surfaces are ~95% opaque) and
+   takes the per-frame backdrop pass out of the way. */
+let spinLowRes=false;
+
+function draw(){const dprCap=spinLowRes?1.1:(document.documentElement.dataset.perf==='low'?1.5:2),dpr=Math.min(dprCap,devicePixelRatio||1);const S=Math.round(cv.clientWidth*dpr);if(!S)return;if(cv.width!==S){cv.width=S;cv.height=S}
  const x=cv.getContext('2d'),R=S/2,d=dpr,tot=opts.reduce((a,o)=>a+o.w,0);x.clearRect(0,0,S,S);x.save();x.translate(R,R);x.rotate(rot);
  let a0=-Math.PI/2;
  opts.forEach((o,i)=>{const a1=a0+o.w/tot*TAU;x.beginPath();x.moveTo(0,0);x.arc(0,0,R*.94,a0,a1);x.closePath();
@@ -562,9 +570,17 @@ function draw(){const dprCap=document.documentElement.dataset.perf==='low'?1.5:2
  x.fillStyle=g;x.fill();x.strokeStyle='rgba(255,255,255,.7)';x.lineWidth=2*d;x.stroke();
   /* labels on the left half are drawn rotated 180° so they read upright */
   const mid=(a0+a1)/2,wa=Math.atan2(Math.sin(mid+rot),Math.cos(mid+rot)),flip=wa>Math.PI/2||wa<-Math.PI/2;
-  x.save();x.rotate(mid+(flip?Math.PI:0));x.textAlign=flip?'left':'right';x.textBaseline='middle';x.fillStyle='#2a1450';
-  const fs=Math.max(11,Math.min(26,R*.1,(a1-a0)*R*.3))*1;x.font=`800 ${fs}px "Bricolage Grotesque",system-ui,sans-serif`;
-  const lk=fs+'|'+Math.round(R)+'|'+o.l;let t=LBL.get(lk);if(t===undefined){t=o.l;while(t.length>1&&x.measureText(t).width>R*.58)t=t.slice(0,-1);t=t===o.l?t:t+'…';if(LBL.size>300)LBL.clear();LBL.set(lk,t)}x.fillText(t,flip?-R*.86:R*.86,0);x.restore();a0=a1});
+  const fs=Math.max(11,Math.min(26,R*.1,(a1-a0)*R*.3))*1,font=`800 ${fs}px "Bricolage Grotesque",system-ui,sans-serif`;
+  const lk=fs+'|'+Math.round(R)+'|'+o.l;let t=LBL.get(lk);
+  if(t===undefined){x.font=font;t=o.l;while(t.length>1&&x.measureText(t).width>R*.58)t=t.slice(0,-1);t=t===o.l?t:t+'…';if(LBL.size>300)LBL.clear();LBL.set(lk,t)}
+  /* the label is drawn once into its own bitmap: fillText was 0.84ms of a 0.98ms frame */
+  const imKey=lk+'|'+t;let im=LBLIMG.get(imKey);
+  if(!im){x.font=font;const w=Math.ceil(x.measureText(t).width)+4,h=Math.ceil(fs*1.5),c=document.createElement('canvas');
+   c.width=Math.ceil(w*2);c.height=Math.ceil(h*2);const cx=c.getContext('2d');cx.scale(2,2);cx.font=font;cx.textBaseline='middle';cx.fillStyle='#2a1450';cx.fillText(t,2,h/2);
+   im={c,w,h};if(LBLIMG.size>160)LBLIMG.clear();LBLIMG.set(imKey,im)}
+  x.save();x.rotate(mid+(flip?Math.PI:0));
+  if(flip)x.drawImage(im.c,-R*.86,-im.h/2,im.w,im.h);else x.drawImage(im.c,R*.86-im.w,-im.h/2,im.w,im.h);
+  x.restore();a0=a1});
  if(flash){const k=(performance.now()-flash.t0)/1100;if(k>=0&&k<1&&flash.i<opts.length){let s0=0;for(let j=0;j<flash.i;j++)s0+=opts[j].w;const a0f=-Math.PI/2+s0/tot*TAU,a1f=a0f+opts[flash.i].w/tot*TAU,dim=k<.7?1:1-(k-.7)/.3;
   x.beginPath();x.moveTo(0,0);x.arc(0,0,R*.94,a1f,a0f+TAU);x.closePath();x.fillStyle=`rgba(24,10,58,${.42*dim})`;x.fill();
   x.beginPath();x.moveTo(0,0);x.arc(0,0,R*.94,a0f,a1f);x.closePath();x.fillStyle=`rgba(255,255,255,${.5*Math.max(0,Math.cos(k*Math.PI*4))*(1-k)})`;x.fill();
@@ -580,7 +596,7 @@ function flick(){const n=performance.now(),gap=n-lastFlick;lastFlick=n;const amp
 function landFx(wi){if(calm)return;flash={i:wi,t0:performance.now()};(function fl(){draw();if(flash&&performance.now()-flash.t0<1100)requestAnimationFrame(fl);else{flash=null;draw()}})();
  $('.wwrap').animate([{transform:'scale(1)'},{transform:'scale(1.06)',offset:.25},{transform:'scale(.985)',offset:.55},{transform:'scale(1)'}],{duration:620,easing:'ease-out'});
  $('#ptr').animate([{transform:'translateX(-50%) rotate(-32deg)'},{transform:'translateX(-50%) rotate(0)'}],{duration:520,easing:'cubic-bezier(.2,1.7,.4,1)'});tone(90,.22,.22,'sine',45)}
-function spin(pw=.6,dir=1){if(spinning||opts.length<2)return;const windup=!calm&&arguments.length===0;spinning=true;$('#spin').disabled=true;
+function spin(pw=.6,dir=1){if(spinning||opts.length<2)return;const windup=!calm&&arguments.length===0;spinning=true;spinLowRes=!calm;$('#spin').disabled=true;
  const tot=opts.reduce((a,o)=>a+o.w,0);let r=rnd()*tot,wi=0;for(;wi<opts.length-1;wi++){r-=opts[wi].w;if(r<0)break}
  let a=0;for(let i=0;i<wi;i++)a+=opts[i].w/tot;const f=a+opts[wi].w/tot*(.12+.76*rnd());
  const st=rot,tn=Math.round(3+pw*6)+Math.floor(rnd()*2),delta=dir>0?((((-f*TAU-st)%TAU)+TAU)%TAU)+TAU*tn:-(((((f*TAU+st)%TAU)+TAU)%TAU)+TAU*tn),dur=calm?1800:3600+pw*3600,t0=performance.now(),WU=windup?340:0,off=windup?-dir*.22:0,T=st+delta;let last=idxAt(rot),launched=false;
@@ -595,7 +611,7 @@ function spin(pw=.6,dir=1){if(spinning||opts.length<2)return;const windup=!calm&
   const showM=()=>{if($('.view.on').id==='wheel')moment(w,'Wheel')};if(calm)moment(w,'Wheel');else setTimeout(showM,800);
   if(rmAfter&&opts.length>2)setTimeout(()=>delOpt(wi,true),calm?1500:2300);
   const SET=calm?0:420,t1=performance.now();
-  (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;rot=T+dir*.028*Math.exp(-5*u)*Math.sin(u*Math.PI*3);if(u>=1)rot=T;draw();if(u<1)requestAnimationFrame(settle);else{spinning=false;$('#spin').disabled=false}})(t1)})(t0)}
+  (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;rot=T+dir*.028*Math.exp(-5*u)*Math.sin(u*Math.PI*3);if(u>=1)rot=T;draw();if(u<1)requestAnimationFrame(settle);else{spinning=false;spinLowRes=false;draw();$('#spin').disabled=false}})(t1)})(t0)}
 $('#spin').onclick=()=>{sheet.classList.remove('open');spin()};
 const save=()=>store.set('d.opts',opts);
 function renderOpts(){const L=$('#olist');L.innerHTML='';
