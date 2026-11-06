@@ -1,6 +1,6 @@
 [package]
 name = "decider"
-version = "1.0.5"
+version = "1.0.6"
 description = "Decider - wheel, bottle & decision toolkit"
 edition = "2021"
 
