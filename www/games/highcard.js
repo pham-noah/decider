@@ -49,8 +49,8 @@
       const old = flip.querySelector('.cardface:not(.down)');
       if (old) old.remove();
       flip.insertAdjacentHTML('beforeend', face(hand[i]));
-      const fresh = flip.querySelector('.cardface:not(.down)');
-      if (fresh) { fresh.style.opacity = '1'; fresh.style.boxShadow = ''; }
+      const front = flip.querySelector('.cardface:not(.down)');
+      if (front) { front.style.opacity = '1'; front.style.boxShadow = ''; }
       flip.style.transition = 'none';
       flip.style.transform = 'rotateY(0deg)';
       void flip.offsetWidth;
@@ -105,7 +105,7 @@
     id: 'highcard', name: 'High card', short: 'High card', label: 'Deck',
     body: `<div class="cards3" id="hcHand" style="gap:20px;perspective:900px;min-height:156px"></div>
       <div class="lbl" id="hcDeck">52 cards</div>
-      <div class="res" id="hcRes" aria-live="polite" style="font-size:clamp(20px,5.4vw,30px);min-height:48px"><span class="muted">High card wins</span></div>
+      <div class="res" id="hcRes" aria-live="polite" style="font-size:calc(clamp(20px,5.4vw,30px)*var(--fs,1));min-height:48px"><span class="muted">High card wins</span></div>
       <button class="btn" id="hcGo">Flip</button>`,
     tune: `<div class="lbl">A full deck, shuffled every few deals. One card per option — high card wins.</div>`,
     init() {

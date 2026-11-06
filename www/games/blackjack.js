@@ -83,6 +83,7 @@
     if (state !== 'play') return;
     state = 'dealer';
     render(true); buttons(false);
+    K.setResult($('bjRes'), 'Dealer draws…');
     const my = gen;
     (function draw() {
       if (my !== gen) return;
@@ -114,7 +115,7 @@
       <div class="cards3" id="bjDC" style="gap:6px;min-height:86px"></div>
       <div class="lbl" id="bjPl">You</div>
       <div class="cards3" id="bjPC" style="gap:6px;min-height:86px"></div>
-      <div class="res" id="bjRes" aria-live="polite" style="font-size:clamp(18px,4.8vw,25px);min-height:44px"><span class="muted">Get closer to 21 than the dealer</span></div>
+      <div class="res" id="bjRes" aria-live="polite" style="font-size:calc(clamp(18px,4.8vw,25px)*var(--fs,1));min-height:44px"><span class="muted">Get closer to 21 than the dealer</span></div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
         <button class="btn" id="bjHit" style="padding:13px 30px">Hit</button>
         <button class="btn" id="bjStand" style="padding:13px 28px;background:linear-gradient(135deg,#2fe0c4,#6f8bff);box-shadow:0 12px 30px rgba(47,224,196,.35)">Stand</button>

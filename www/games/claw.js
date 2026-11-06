@@ -36,12 +36,12 @@
     try { tone(150, 0.22, 0.06, 'sawtooth', 90); } catch (e) {}
   }
   function win(cap) {
-    state = 'aim'; K.setResult(document.getElementById('clRes'), cap.label);
+    state = 'refill'; K.setResult(document.getElementById('clRes'), cap.label);
     K.decide(cap.label, 'Claw', 'Grabbed from the machine');
     setTimeout(refill, 700);
   }
   function refill() {
-    if (state !== 'aim' || held) { setTimeout(refill, 500); return; }
+    if (state !== 'refill') { setTimeout(refill, 500); return; }
     build();
   }
   function step(dt) {
@@ -146,7 +146,7 @@
   K && window.DECIDER_GAMES.push({
     id: 'claw', name: 'Claw', short: 'Claw', label: 'Prizes',
     body: `<canvas class="toy" id="clCv" style="max-height:min(62vh,max(140px,calc(100svh - 530px)))"></canvas>
-      <div class="res" id="clRes" aria-live="polite" style="min-height:40px;font-size:clamp(22px,5.2vw,30px)"><span class="muted">Drag the claw, then grab a capsule</span></div>
+      <div class="res" id="clRes" aria-live="polite" style="min-height:40px;font-size:calc(clamp(22px,5.2vw,30px)*var(--fs,1))"><span class="muted">Drag the claw, then grab a capsule</span></div>
       <button class="btn" id="clGo">Grab</button>`,
     tune: `<div class="lbl">Every capsule hides one of your options. Drag, grab, hope.</div>`,
     init() {

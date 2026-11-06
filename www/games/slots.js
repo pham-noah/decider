@@ -88,12 +88,6 @@
     const top = h * 0.20, wh = h * 0.46, m = 18, gap = 10;
     const rw = (w - 2 * m - 2 * gap) / 3;
     const bob = spinning ? 0 : Math.sin(now / 700) * 2;
-    let tileFont = Math.round(wh * 0.22);
-    x.font = `800 ${tileFont}px "Bricolage Grotesque",system-ui,sans-serif`;
-    while (tileFont > 10 && pool.some(l => x.measureText(l).width > rw - 26)) {
-      tileFont -= 1;
-      x.font = `800 ${tileFont}px "Bricolage Grotesque",system-ui,sans-serif`;
-    }
 
     reels.forEach((r, i) => {
       const cx = m + i * (rw + gap) + rw / 2;
@@ -122,10 +116,10 @@
           x.fillStyle = gl; x.fillRect(cx - tw / 2, y - th / 2, tw, th);
           x.restore();
 
-          let fs = tileFont;
+          let fs = Math.round(wh * 0.17);
           x.font = `800 ${fs}px "Bricolage Grotesque",system-ui,sans-serif`;
           const maxW = tw - 12;
-          while (fs > 9 && x.measureText(label).width > maxW) {
+          while (fs > 13 && x.measureText(label).width > maxW) {
             fs -= 1; x.font = `800 ${fs}px "Bricolage Grotesque",system-ui,sans-serif`;
           }
           let txt = label;

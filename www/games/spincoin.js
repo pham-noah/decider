@@ -86,7 +86,7 @@
         let label = faces[face];
         let fs = Math.round(ry * 0.95);
         x.font = `800 ${fs}px "Bricolage Grotesque",system-ui,sans-serif`;
-        while (fs > 8 && x.measureText(label).width > rx * 1.5) {
+        while (fs > 11 && x.measureText(label).width > rx * 1.5) {
           fs -= 1; x.font = `800 ${fs}px "Bricolage Grotesque",system-ui,sans-serif`;
         }
         if (x.measureText(label).width > rx * 1.5) {

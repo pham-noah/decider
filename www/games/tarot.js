@@ -147,7 +147,7 @@
   K && window.DECIDER_GAMES.push({
     id: 'tarot', name: 'Tarot', short: 'Tarot', label: 'Deck',
     body: `<canvas class="toy" id="trCv" style="max-height:min(62vh,max(140px,calc(100svh - 530px)))"></canvas>
-      <div class="res" id="trRes" aria-live="polite" style="font-size:clamp(22px,5.4vw,30px);min-height:40px"><span class="muted">Tap a card</span></div>
+      <div class="res" id="trRes" aria-live="polite" style="font-size:calc(clamp(22px,5.4vw,30px)*var(--fs,1));min-height:40px"><span class="muted">Tap a card</span></div>
       <button class="btn" id="trGo">Draw</button>`,
     tune: `<div class="lbl">Twelve cards, twelve messages. Turn one and let it answer.</div>`,
     init() {
