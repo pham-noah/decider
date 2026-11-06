@@ -9,8 +9,9 @@ Edit **only `www/`**. The version lives in `package.json` (Tauri and Android rea
 Downloads: [releases](https://github.com/pham-noah/decider/releases) (Windows installer/MSI, Android APK/AAB).
 
 The bar pins four games; the grid button opens the rest, and its stars move a game on or off the bar —
-so a seventh game costs nothing. Each game keeps its setup (dice count, player list, coin sides) behind one
-chip, so the play area stays on one screen. Pinch and double-tap zoom are off on purpose.
+so a seventh game costs nothing. Every game has the same options dock as the wheel: a handle above the bar
+that slides up to hold its setup. Pinch and double-tap zoom are off, and the app owns the viewport (no page
+scrolling). The header can be dismissed for a distraction-free screen — tap the top edge to bring it back.
 
 ## Run
 ```bash
