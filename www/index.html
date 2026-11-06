@@ -559,7 +559,13 @@ const LBLIMG=new Map(),GRAD={R:0,list:[]}; /* radial gradients depend only on th
 /* while a game animates, the glass cards would re-blur their backdrop on every frame.
    dropping the blur for those seconds is invisible (the surfaces are ~95% opaque) and
    takes the per-frame backdrop pass out of the way. */
-let spinLowRes=false;
+let spinLowRes=false,spinBase=null;
+/* per web.dev's compositor-only guidance and the usual wheel implementation: bake the
+   wheel once, promote the canvas to its own layer, and rotate that layer. Nothing is
+   painted during the spin — only the compositor moves a texture. */
+function spinBegin(){spinBase=rot;draw();cv.style.willChange='transform';cv.style.transform='translateZ(0)'}
+function spinPaint(){if(spinBase===null){spinBegin();return}cv.style.transform='translateZ(0) rotate('+((rot-spinBase)*57.2958).toFixed(2)+'deg)'}
+function spinFinish(){cv.style.transform='';cv.style.willChange='';spinBase=null;draw()}
 
 function draw(){const dprCap=spinLowRes?1.1:(document.documentElement.dataset.perf==='low'?1.5:2),dpr=Math.min(dprCap,devicePixelRatio||1);const S=Math.round(cv.clientWidth*dpr);if(!S)return;if(cv.width!==S){cv.width=S;cv.height=S}
  const x=cv.getContext('2d'),R=S/2,d=dpr,tot=opts.reduce((a,o)=>a+o.w,0);x.clearRect(0,0,S,S);x.save();x.translate(R,R);x.rotate(rot);
@@ -596,22 +602,22 @@ function flick(){const n=performance.now(),gap=n-lastFlick;lastFlick=n;const amp
 function landFx(wi){if(calm)return;flash={i:wi,t0:performance.now()};(function fl(){draw();if(flash&&performance.now()-flash.t0<1100)requestAnimationFrame(fl);else{flash=null;draw()}})();
  $('.wwrap').animate([{transform:'scale(1)'},{transform:'scale(1.06)',offset:.25},{transform:'scale(.985)',offset:.55},{transform:'scale(1)'}],{duration:620,easing:'ease-out'});
  $('#ptr').animate([{transform:'translateX(-50%) rotate(-32deg)'},{transform:'translateX(-50%) rotate(0)'}],{duration:520,easing:'cubic-bezier(.2,1.7,.4,1)'});tone(90,.22,.22,'sine',45)}
-function spin(pw=.6,dir=1){if(spinning||opts.length<2)return;const windup=!calm&&arguments.length===0;spinning=true;spinLowRes=!calm;$('#spin').disabled=true;
+function spin(pw=.6,dir=1){if(spinning||opts.length<2)return;const windup=!calm&&arguments.length===0;spinning=true;spinBegin();$('#spin').disabled=true;
  const tot=opts.reduce((a,o)=>a+o.w,0);let r=rnd()*tot,wi=0;for(;wi<opts.length-1;wi++){r-=opts[wi].w;if(r<0)break}
  let a=0;for(let i=0;i<wi;i++)a+=opts[i].w/tot;const f=a+opts[wi].w/tot*(.12+.76*rnd());
  const st=rot,tn=Math.round(3+pw*6)+Math.floor(rnd()*2),delta=dir>0?((((-f*TAU-st)%TAU)+TAU)%TAU)+TAU*tn:-(((((f*TAU+st)%TAU)+TAU)%TAU)+TAU*tn),dur=calm?1800:3600+pw*3600,t0=performance.now(),WU=windup?340:0,off=windup?-dir*.22:0,T=st+delta;let last=idxAt(rot),launched=false;
  $('#wres').innerHTML='<span class="muted">…</span>';if(windup){tone(300,.3,.04,'triangle',170);buzz(10)}
  (function step(now){const el=now-t0;
-  if(el<WU){const w=el/WU;rot=st+off*(1-Math.pow(1-w,3));draw();requestAnimationFrame(step);return}
+  if(el<WU){const w=el/WU;rot=st+off*(1-Math.pow(1-w,3));spinPaint();requestAnimationFrame(step);return}
   if(!launched){launched=true;last=idxAt(rot);if(windup){tone(180,.6,.05,'sawtooth',900);buzz(18)}}
   const p=Math.min(1,(el-WU)/dur);rot=st+delta*(1-Math.pow(1-p,5))+off*(1-Math.min(1,p*7));
-  const i=idxAt(rot);if(i!==last){last=i;tick();flick();buzz(5)}draw();
+  const i=idxAt(rot);if(i!==last){last=i;tick();flick();buzz(5)}spinPaint();
   if(p<1){requestAnimationFrame(step);return}
-  rot=T;draw();const w=opts[wi].l;show($('#wres'),w);chime();buzz([30,40,30]);confetti();log('Wheel',w);landFx(wi);
+  rot=T;spinFinish();const w=opts[wi].l;show($('#wres'),w);chime();buzz([30,40,30]);confetti();log('Wheel',w);landFx(wi);
   const showM=()=>{if($('.view.on').id==='wheel')moment(w,'Wheel')};if(calm)moment(w,'Wheel');else setTimeout(showM,800);
   if(rmAfter&&opts.length>2)setTimeout(()=>delOpt(wi,true),calm?1500:2300);
   const SET=calm?0:420,t1=performance.now();
-  (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;rot=T+dir*.028*Math.exp(-5*u)*Math.sin(u*Math.PI*3);if(u>=1)rot=T;draw();if(u<1)requestAnimationFrame(settle);else{spinning=false;spinLowRes=false;draw();$('#spin').disabled=false}})(t1)})(t0)}
+  (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;rot=T+dir*.028*Math.exp(-5*u)*Math.sin(u*Math.PI*3);if(u>=1)rot=T;spinPaint();if(u<1)requestAnimationFrame(settle);else{spinning=false;spinFinish();$('#spin').disabled=false}})(t1)})(t0)}
 $('#spin').onclick=()=>{sheet.classList.remove('open');spin()};
 const save=()=>store.set('d.opts',opts);
 function renderOpts(){const L=$('#olist');L.innerHTML='';
