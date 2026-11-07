@@ -191,8 +191,10 @@
   function paint(dt, now) {
     if (!g) return;
     /* a skin switch has to repaint the stock's ink and the foil as well; build(true)
-       keeps the holes the player already scratched */
-    if (K.mat().skin !== baseSkin) build(true);
+       keeps the holes the player already scratched. A height-only resize (a collapsing
+       URL bar, max-height:62vh) changes the canvas too, so watch both. */
+    const f = K.fit(cv());
+    if (K.mat().skin !== baseSkin || f.w !== g.w || f.h !== g.h) build(true);
     const x = g.x, B = box(), m = K.mat();
 
     if (autoY >= 0) {
@@ -286,7 +288,7 @@
       <button class="btn" id="scGo">Scratch it</button>
       <button class="chip" id="scNew" style="margin-top:10px">New card</button>`,
     init(card) {
-      L = K.loop((dt, now) => { window.__ticks=(window.__ticks||0)+1; try { paint(dt, now); } catch (e) { window.__scErr = String(e && e.stack || e); } });
+      L = K.loop((dt, now) => paint(dt, now));
       newCard();
       const c = cv();
       c.addEventListener('pointerdown', (e) => {

@@ -61,7 +61,8 @@
     winFlash = { label: best, t: 0, bn };
     try { buzz(bn === 3 ? [12, 40, 12] : [8, 24]); } catch (e) {}
     K.setResult(res, bn === 3 ? label + ' ×3' : label + ' ×2');
-    K.decide(label, 'Slots', bn === 3 ? 'Three of a kind' : 'Two of a kind');
+    /* noResult:true — a machine that pays out celebrates here, it does not deal a verdict */
+    if (bn === 3) { try { chime(); confetti(); } catch (e) {} }
   }
 
   function tick(dt, now) {
@@ -154,7 +155,7 @@
     /* the cabinet body: one panel, ink edge and hard offset on paper */
     if (m.flat) {
       x.fillStyle = '#1d1340';
-      K.rr(x, 12, 12, w - 24, h - 24, 22); x.fill();
+      K.rr(x, 13, 13, w - 22, h - 22, 22); x.fill();
       K.panel(x, 8, 8, w - 16, h - 16, { r: 22, face: '#efe8d8' });
     } else {
       x.save();
@@ -359,7 +360,7 @@
   const at = (e) => { const r = cv().getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
 
   K && window.DECIDER_GAMES.push({
-    id: 'slots', name: 'Slot machine', short: 'Slots', label: 'Reels', button: false,
+    id: 'slots', name: 'Slot machine', short: 'Slots', label: 'Reels', noResult: true, button: false,
     body: `<canvas class="toy" id="slCv"></canvas>
       <div class="res" id="slRes" aria-live="polite"><span class="muted">Pull the lever</span></div>`,
     init() {

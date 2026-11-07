@@ -71,7 +71,6 @@
     const t = tiles.find(q => q.win) || tiles[tiles.length - 1];
     K.setResult(document.getElementById('dmRes'), t.lbl);
     try { tone(560, .10, .05, 'sine', 840); } catch (e) {}
-    K.decide(t.lbl, 'Dominoes', 'Tile ' + (t.c + 1) + ' fell last');
     relaunchAt = performance.now() + 520;      // consume a queued tap once the row is down
   }
 
@@ -164,7 +163,7 @@
     x.translate(-shift, 0);
 
     /* the base the row stands on: one panel, ink edge and a hard offset on paper */
-    const shelfH = Math.max(10, geo.th * 0.12);
+    const shelfH = Math.max(11, geo.th * 0.15);
     const sx = geo.left - geo.tw / 2 - 8, sw = (geo.right - geo.left) + geo.tw + 16;
     const sy = geo.baseY + 3;
     if (m.flat) {
