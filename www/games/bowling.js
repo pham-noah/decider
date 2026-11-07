@@ -41,6 +41,14 @@
       if (dd < b.r + geo.pinR) {
         p.down = 1; p.f = .01; p.dir = Math.atan2(p.y - b.y, p.x - b.x);
         if (!firstHit) firstHit = p;
+        /* a struck pin takes its neighbours: without this a full-power straight roll
+           knocked two of ten, so the toy always 'decided' from a near-full deck */
+        pins.forEach((q) => {
+          if (q.down || q === p) return;
+          if (Math.hypot(q.x - p.x, q.y - p.y) < geo.pinR * 2.4) {
+            q.down = 1; q.f = .01; q.dir = Math.atan2(q.y - p.y, q.x - p.x);
+          }
+        });
         b.vx += (dx / dd) * 1.7; b.vy *= .88;
         try { tone(230 + Math.random() * 140, .06, .04, 'triangle'); } catch (e) {}
       }
@@ -60,10 +68,10 @@
   }
 
   function finish() {
-    const standing = pins.filter((p) => !p.down); let win = firstHit;
-    if (standing.length) {
-      win = standing.reduce((a, p) => Math.abs(p.x - ball.x) < Math.abs(a.x - ball.x) ? p : a, standing[0]);
-    }
+    const standing = pins.filter((p) => !p.down);
+    /* the reduce over ball.x replaced the pin you actually hit with whichever standing
+       pin shared the ball's final column — a dead-straight roll returned the same answer */
+    const win = firstHit || standing[0] || null;
     rolling = false; done = true; const label = win ? win.l : labels[0];
     K.setResult(res(), label);
     try { tone(560, .12, .05, 'sine', 840); } catch (e) {}

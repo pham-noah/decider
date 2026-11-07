@@ -149,7 +149,10 @@
           const label = pool[((k % pool.length) + pool.length) % pool.length];
           const tw = rw - 13, th = cell * 0.80;
           K.rr(x, cx - tw / 2, y - th / 2, tw, th, 12);
-          x.fillStyle = PAL[((k % PAL.length) + PAL.length) % PAL.length];
+          /* colour by identity: bound to the strip index, the same label turned pink
+             in one spin and blue in the next, and two labels could read as a pair */
+          const li = pool.indexOf(label);
+          x.fillStyle = PAL[(((li < 0 ? k : li) % PAL.length) + PAL.length) % PAL.length];
           x.fill();
           x.save();
           K.rr(x, cx - tw / 2, y - th / 2, tw, th, 12); x.clip();
@@ -302,7 +305,7 @@
     init() {
       L = K.loop(tick);
       g = K.fit(cv());
-      pool = K.options(5);
+      pool = [...new Set(K.options(5))];   // two identical options could show 'No match'
       if (pool.length < 2) pool = ['Yes', 'No', 'Maybe'];
       reels = [0, 1, 2].map(i => ({ pos: i % pool.length, vel: 0, phase: 'done', target: null, stopAt: 0, settled: true, spd: 0 }));
       const c = cv();
@@ -312,6 +315,9 @@
         try { c.setPointerCapture(e.pointerId); } catch (err) {}
         const p = at(e);
         armed = true; pulling = false; startX = p.x; startY = p.y;
+        /* a touch during a spin used to be swallowed in silence */
+        if (spinning) { try { tone(150, .05, .03, 'square', 90); } catch (err) {} try { buzz(6); } catch (err) {} return; }
+        try { buzz(8); } catch (err) {}
       });
       c.addEventListener('pointermove', e => {
         if (!armed) return;

@@ -190,6 +190,10 @@
       c.addEventListener('pointerdown', e => {
         try { c.setPointerCapture(e.pointerId); } catch (err) {}
         dragging = true; vAng = 0; lastX = at(e).x;
+        /* a plain tap used to produce nothing at all: sound, haptic and a nudge */
+        try { sfx(220, .05, .03, 'sine', 300); } catch (err) {}
+        try { hap(4); } catch (err) {}
+        bounce = Math.min(1.1, bounce + .12);
       });
       c.addEventListener('pointermove', e => {
         if (!dragging) return; const px = at(e).x; ang += (px - lastX) * .014; lastX = px;

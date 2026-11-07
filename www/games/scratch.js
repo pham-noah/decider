@@ -6,7 +6,7 @@
   const cv = () => $('scCv');
   const TAU = Math.PI * 2;
   let L = null, g = null, base = null, mask = null, pool = [], label = 'Yes',
-      down = false, seen = null, revealed = false, done = false, frac = 0,
+      down = false, pid = null, seen = null, revealed = false, done = false, frac = 0,
       checkAt = 0, autoY = -1, fading = 0, sheen = 0, specks = [];
 
   const box = () => ({ x: 10, y: 10, w: g.w - 20, h: g.h - 20 });
@@ -229,11 +229,11 @@
       c.addEventListener('pointerdown', e => {
         if (revealed || fading > 0) return;
         c.setPointerCapture(e.pointerId);
-        down = true; seen = pos(e); autoY = -1;
+        down = true; pid = e.pointerId; seen = pos(e); autoY = -1;
         erase(seen.x, seen.y, seen.x, seen.y);
       });
       c.addEventListener('pointermove', e => {
-        if (!down || !seen) return;
+        if (!down || !seen || e.pointerId !== pid) return;   // a second finger used to draw a line between thumbs
         const p = pos(e);
         erase(seen.x, seen.y, p.x, p.y);
         seen = p;
@@ -245,7 +245,7 @@
       });
       const up = () => {
         if (!down) return;
-        down = false; seen = null;
+        down = false; pid = null; seen = null;
         frac = Math.min(1, percent());
         if (frac > 0.55) finish();
       };

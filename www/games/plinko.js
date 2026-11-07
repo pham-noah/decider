@@ -6,7 +6,7 @@
   const K = window.DKIT;
   const cv = () => document.getElementById('pkCv');
   let L = null, rows = 7, pegs = [], slots = [], balls = [], busy = false, landed = null;
-  let aim = 0.5, aimVx = 0, power = 0;
+  let aim = 0.5, aimVx = 0, power = 0, boardW = 0;
 
   function layout() {
     const c = cv();
@@ -24,6 +24,7 @@
     }
     const labels = K.options(rows);
     slots = labels.map((l, i) => ({ l, x: ((i + 0.5) * g.w) / labels.length, w: g.w / labels.length }));
+    boardW = g.w;
     return g;
   }
 
@@ -38,13 +39,16 @@
     const x = Math.max(w * 0.10, Math.min(w * 0.90, aim * w));
     balls.push({
       x, y: 8,
-      vx: aimVx * 4 + (aim - 0.5) * power * 1.8,
+      vx: aimVx * 4 + (aim - 0.5) * power * 1.8 + (rnd() - .5) * 0.9,   // identical aim gave identical bins
       vy: 0,
       r: Math.max(5, w * 0.018)
     });
   }
 
   function step(g) {
+    /* pegs and bins were built once while the landing index used the live width, so a
+       resize scored a ball against bins that were drawn somewhere else */
+    if (Math.abs(g.w - boardW) > 1) { layout(); }
     const { x } = g;
     x.clearRect(0, 0, g.w, g.h);
 
@@ -143,7 +147,7 @@
     });
     balls = balls.filter(b => !b.done);
 
-    K.meter(x, g.w, g.h, busy ? power : 0,
+    K.meter(x, g.w, g.h * 0.78, busy ? power : 0,
       busy ? '' : 'Aim ' + Math.round(aim * 100) + '% — drag to move, flick to drop');
   }
 

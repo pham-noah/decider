@@ -21,18 +21,18 @@
     !!g && Math.abs(px - g.slot.x) <= g.slot.w / 2 + 12 && Math.abs(py - g.slot.y) <= g.slot.h / 2 + 12;
   const faceOf = g => g.back + (0.5 - 0.5 * Math.cos(phase)) * g.travel;
 
-  function add() {
+  function add(quiet) {
     const g = G || geom(); if (!g) return;
     if (!labels.length) labels = K.options(5);
     slotPulse = 1;
-    const f = faceOf(g), n = coins.length ? 1 : 6;   // an empty shelf gets a fresh handful
+    const f = faceOf(g), n = coins.length < 8 ? 6 : 1;   // the shelf used to drain and stay empty
     for (let i = 0; i < n && coins.length <= 70; i++) {
       coins.push({ x: g.l + g.cr + Math.random() * (g.r - g.l - g.cr * 2), y: f + g.cr + 2 + i * 0.5,
         r: g.cr, vx: (Math.random() - 0.5) * 0.5, vy: 0, rot: Math.random() * 6.28,
         ci: Math.floor(Math.random() * labels.length), pop: 1, fall: -1 });
     }
     coins.forEach(c => { if (c.fall < 0) c.y += 0.8; });
-    try { tone(480 + Math.random() * 220, .05, .035, 'triangle'); } catch (e) {}
+    if (!quiet) try { tone(480 + Math.random() * 220, .05, .035, 'triangle'); } catch (e) {}
   }
 
   function win(c) {
@@ -208,7 +208,7 @@
     const g = geom(); if (!g) return;
     G = g;
     if (Math.abs(g.w - builtW) > 1) { builtW = g.w; labels = K.options(5); }
-    if (!seeded && g.w > 120) { seeded = true; for (let i = 0; i < 16; i++) add(); }
+    if (!seeded && g.w > 120) { seeded = true; for (let i = 0; i < 16; i++) add(true); }   // was 16 notes at once
     update(dt);
     paint(g);
   }
@@ -224,7 +224,12 @@
       cv().addEventListener('pointerdown', e => {
         const g = G || geom(); if (!g) return;
         const r = cv().getBoundingClientRect();
-        if (!inSlot(g, e.clientX - r.left, e.clientY - r.top)) return;
+        if (!inSlot(g, e.clientX - r.left, e.clientY - r.top)) {
+          /* the whole playfield was a dead zone; answer every touch */
+          try { tone(200, .05, .03, 'sine', 150); } catch (err) {}
+          try { buzz(5); } catch (err) {}
+          return;
+        }
         e.preventDefault();
         add();
       });

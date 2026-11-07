@@ -31,7 +31,7 @@
       slot.innerHTML = `<div class="hcFlip" style="position:relative;width:96px;height:138px;transform-style:preserve-3d;transition:transform .72s cubic-bezier(.3,1.35,.4,1)">
           <div class="cardface down" style="position:absolute;inset:0;width:100%;height:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden"></div>
         </div>
-        <div class="lbl" style="margin:0;max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>`;
+        <div class="lbl" style="margin:0;max-width:126px;line-height:1.15;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">—</div>`;
       host.appendChild(slot);
       return slot;
     });

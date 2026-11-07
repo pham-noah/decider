@@ -64,7 +64,7 @@
   function end(won, note) {
     gen++; state = 'over';
     render(true); buttons(false);
-    K.setResult($('bjRes'), note);
+    K.setResult($('bjRes'), (won ? winLabel : loseLabel) + ' — ' + note);   // the option was only in a dead K.decide
     try { tone(won ? 720 : 170, 0.3, 0.06, won ? 'sine' : 'sawtooth', won ? 940 : 90); } catch (e) {}
     K.decide(won ? winLabel : loseLabel, 'Blackjack', note);
   }

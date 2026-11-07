@@ -12,7 +12,7 @@
     ['Strength', 'gentle wins', '✚'], ['Justice', 'fair, not easy', '≡']
   ];
   let L = null, g = null, spots = [], picks = [], stars = [];
-  let state = 'deck', pick = -1, t = 0, hov = -1, dealT = 0;
+  let state = 'deck', pick = -1, t = 0, hov = -1, dealT = 0, lw = 0, lh = 0;
   function layout() {
     const c = cv(); if (!c) return;
     g = K.fit(c);
@@ -107,6 +107,8 @@
   }
   function draw() {
     const c = cv(); if (!c) return; g = K.fit(c);
+    /* spots were laid out once, so a resize left the third card off-canvas and untappable */
+    if (g.w !== lw || g.h !== lh) { lw = g.w; lh = g.h; layout(); }
     const { x, w, h } = g;
     x.clearRect(0, 0, w, h);
     const bg = x.createRadialGradient(w * 0.5, h * 0.34, 8, w * 0.5, h * 0.55, w * 0.85);
@@ -188,6 +190,7 @@
         c.style.cursor = hov >= 0 ? 'pointer' : 'default';
       });
       c.addEventListener('pointerleave', () => { hov = -1; });
+      c.addEventListener('pointerup', () => { hov = -1; });   // touch never fires pointerleave
       layout(); reset();
     },
     enter() { layout(); L.start(); },
