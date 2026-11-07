@@ -85,7 +85,7 @@
   function capsule(x, cx, cy, r, col, label, alpha) {
     x.save(); x.globalAlpha = alpha;
     const gr = x.createLinearGradient(0, cy - r, 0, cy + r);
-    gr.addColorStop(0, INK(1)); gr.addColorStop(0.42, col); gr.addColorStop(1, col);
+    gr.addColorStop(0, K.light(1)); gr.addColorStop(0.42, col); gr.addColorStop(1, col);
     K.rr(x, cx - r, cy - r * 0.82, r * 2, r * 1.64, r * 0.8); x.fillStyle = gr; x.fill();
     K.rr(x, cx - r * 0.66, cy - r * 0.62, r * 1.3, r * 0.36, r * 0.18); x.fillStyle = INK(.4); x.fill();
     if (label) {

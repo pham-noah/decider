@@ -134,9 +134,9 @@
         x.beginPath(); x.arc(cx, cy, r * .34, 0, TAU); x.fillStyle = 'rgba(0,0,0,.18)'; x.fill(); continue;
       }
       const s = .4 + .6 * b.s; x.beginPath(); x.arc(cx, cy, r * s, 0, TAU); const bg = x.createRadialGradient(cx - r * .3, cy - r * .35, 1, cx, cy, r);
-      bg.addColorStop(0, INK(.96)); bg.addColorStop(.5, 'rgba(196,226,255,.55)'); bg.addColorStop(1, 'rgba(120,160,230,.3)'); x.fillStyle = bg; x.fill();
+      bg.addColorStop(0, K.light(.96)); bg.addColorStop(.5, 'rgba(196,226,255,.55)'); bg.addColorStop(1, 'rgba(120,160,230,.3)'); x.fillStyle = bg; x.fill();
       x.strokeStyle = 'rgba(255,255,255,' + (.45 + .45 * b.flash) + ')'; x.lineWidth = 1.2; x.stroke();
-      x.beginPath(); x.arc(cx - r * .3, cy - r * .35, r * .2, 0, TAU); x.fillStyle = INK(.9); x.fill();
+      x.beginPath(); x.arc(cx - r * .3, cy - r * .35, r * .2, 0, TAU); x.fillStyle = K.light(.9); x.fill();
     }
   }
   function drawKnob(x, z) {
@@ -147,7 +147,7 @@
       const dx = q.x0 + (q.x1 - q.x0) * i / 6; x.beginPath(); x.arc(dx, q.y + 13, 1.8, 0, TAU); x.fillStyle = i <= Math.round(knob.v) ? 'rgba(190,215,255,.9)' : INK(.22); x.fill();
     }
     const kx = q.x0 + (q.x1 - q.x0) * f; x.beginPath(); x.arc(kx, q.y, 14, 0, TAU); const kg = x.createRadialGradient(kx - 5, q.y - 6, 1, kx, q.y, 14);
-    kg.addColorStop(0, INK(1)); kg.addColorStop(.55, '#9fc4ff'); kg.addColorStop(1, '#5b7fd6');
+    kg.addColorStop(0, K.light(1)); kg.addColorStop(.55, '#9fc4ff'); kg.addColorStop(1, '#5b7fd6');
     x.fillStyle = kg; x.fill(); x.strokeStyle = INK(.7); x.lineWidth = 1.4; x.stroke(); x.beginPath(); x.moveTo(kx, q.y - 7); x.lineTo(kx, q.y + 7);
     x.strokeStyle = 'rgba(40,30,80,.45)'; x.lineWidth = 2; x.stroke();
   }
@@ -155,7 +155,7 @@
     const cw = 66, chh = 30, cx = z.x + z.w / 2, cy = z.y + z.h * .62, a = sw.a; K.rr(x, cx - cw / 2, cy - chh / 2, cw, chh, chh / 2);
     x.fillStyle = a > .5 ? 'rgba(94,234,212,.28)' : INK(.09); x.fill(); x.strokeStyle = a > .5 ? 'rgba(94,234,212,.8)' : INK(.24); x.lineWidth = 1.4; x.stroke();
     const tx = cx - cw / 2 + chh / 2 + a * (cw - chh); x.beginPath(); x.arc(tx, cy, chh / 2 - 4, 0, TAU); const tg = x.createRadialGradient(tx - 4, cy - 4, 1, tx, cy, chh / 2);
-    tg.addColorStop(0, INK(1)); tg.addColorStop(1, a > .5 ? '#3ecdb6' : '#cfc6e6'); x.fillStyle = tg; x.fill();
+    tg.addColorStop(0, K.light(1)); tg.addColorStop(1, a > .5 ? '#3ecdb6' : '#cfc6e6'); x.fillStyle = tg; x.fill();
     /* the thumb parks over one end, so only the word on the far side ever reads */
     x.fillStyle = a > .5 ? INK(.72) : INK(.5); x.font = '700 8px "Bricolage Grotesque",system-ui,sans-serif';
     x.textAlign = 'center'; x.textBaseline = 'middle';

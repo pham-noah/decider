@@ -129,7 +129,7 @@
     x.restore();
 
     x.save(); x.beginPath(); x.arc(kn.x, kn.y, kn.r, 0, Math.PI * 2);
-    x.fillStyle = INK(.9); x.fill();
+    x.fillStyle = K.light(.9); x.fill();
     x.strokeStyle = 'rgba(36,26,85,.35)'; x.lineWidth = 2; x.stroke();
     x.translate(kn.x, kn.y); x.rotate(angle);
     x.beginPath(); x.moveTo(0, 0); x.lineTo(kn.r * 0.8, 0);

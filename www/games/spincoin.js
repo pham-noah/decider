@@ -46,7 +46,7 @@
 
     // table glow
     const tg = x.createRadialGradient(cx, cy + 18, 6, cx, cy + 18, R * 2.1);
-    tg.addColorStop(0, INK(.30));
+    tg.addColorStop(0, K.light(.30));
     tg.addColorStop(.55, INK(.06));
     tg.addColorStop(1, INK(0));
     x.fillStyle = tg;
@@ -173,6 +173,9 @@
       }
       if (taps >= 4 && Math.abs(wob) < 0.03) {
         state = 'rest'; flat = 1; wob = 0;
+        /* face was declared 0 and never derived, so the coin always landed on the
+           first option */
+        face = ((Math.floor(th / Math.PI) % 2) + 2) % 2;
         const secs = Math.round(spinT * 10) / 10;
         if (secs > best) { best = secs; store.set('d.coinspinBest', best); try { chime(); confetti(); } catch (e) {} }
         else try { tone(320, .12, .05, 'sine', 240); } catch (e) {}

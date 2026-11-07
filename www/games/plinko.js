@@ -60,7 +60,7 @@
     slots.forEach((s, i) => {
       x.save();
       K.rr(x, s.x - s.w / 2 + 3, slotY - 2, s.w - 6, g.h - slotY + 2, 10);
-      x.fillStyle = landed === i ? INK(.98) : PAL[i % PAL.length] + 'cc';
+      x.fillStyle = landed === i ? '#fffdf8' : PAL[i % PAL.length] + 'cc';
       x.fill();
       x.restore();
       x.fillStyle = landed === i ? '#241a55' : INK(1);
@@ -127,7 +127,7 @@
       x.beginPath();
       x.arc(b.x, b.y, b.r, 0, Math.PI * 2);
       const grd = x.createRadialGradient(b.x - b.r * 0.3, b.y - b.r * 0.3, 1, b.x, b.y, b.r);
-      grd.addColorStop(0, INK(1)); grd.addColorStop(1, '#7b6cff');
+      grd.addColorStop(0, K.light(1)); grd.addColorStop(1, '#7b6cff');
       x.fillStyle = grd;
       x.fill();
 

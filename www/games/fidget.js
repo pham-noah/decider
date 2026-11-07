@@ -66,7 +66,7 @@
         const rg = x.createRadialGradient(
           G.cx + Math.cos(th) * G.R - G.lobe * .3, G.cy + Math.sin(th) * G.R - G.lobe * .35, 2,
           G.cx + Math.cos(th) * G.R, G.cy + Math.sin(th) * G.R, G.lobe);
-        rg.addColorStop(0, INK(1)); rg.addColorStop(.55, PAL[(i + 2) % PAL.length]); rg.addColorStop(1, PAL[(i + 4) % PAL.length]);
+        rg.addColorStop(0, K.light(1)); rg.addColorStop(.55, PAL[(i + 2) % PAL.length]); rg.addColorStop(1, PAL[(i + 4) % PAL.length]);
         x.fillStyle = rg; x.fill();
         x.beginPath();
         x.arc(G.cx + Math.cos(th) * G.R, G.cy + Math.sin(th) * G.R, G.lobe * 0.42, 0, TAU);
@@ -79,7 +79,7 @@
     // hub
     x.beginPath(); x.arc(G.cx, G.cy, G.R * 0.30, 0, TAU);
     const hg = x.createRadialGradient(G.cx - 6, G.cy - 8, 2, G.cx, G.cy, G.R * 0.3);
-    hg.addColorStop(0, INK(1)); hg.addColorStop(1, INK(.55));
+    hg.addColorStop(0, K.light(1)); hg.addColorStop(1, K.light(.55));
     x.fillStyle = hg; x.fill();
     x.strokeStyle = INK(.9); x.lineWidth = 2; x.stroke();
     x.beginPath(); x.arc(G.cx, G.cy, G.R * 0.11, 0, TAU);
@@ -94,7 +94,7 @@
       x.font = `700 ${fs}px "Bricolage Grotesque",system-ui,sans-serif`;
       while (txt.length > 2 && x.measureText(txt).width > 84) txt = txt.slice(0, -1);
       if (txt !== labels[i]) txt = txt.slice(0, -1) + '…';
-      K.tag(x, lx, ly, txt, INK(.94), '#241a55', fs);
+      K.tag(x, lx, ly, txt, '#fffdf8', '#241a55', fs);
     }
 
     // fixed pointer at the top

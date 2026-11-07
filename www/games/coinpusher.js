@@ -94,7 +94,7 @@
     x.save(); x.globalAlpha = alpha;
     x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2);
     const gr = x.createRadialGradient(cx - r * .35, cy - r * .4, r * .1, cx, cy, r);
-    gr.addColorStop(0, INK(1)); gr.addColorStop(.45, PAL[ci % PAL.length]); gr.addColorStop(1, 'rgba(20,10,50,.45)');
+    gr.addColorStop(0, K.light(1)); gr.addColorStop(.45, PAL[ci % PAL.length]); gr.addColorStop(1, 'rgba(20,10,50,.45)');
     x.fillStyle = gr; x.fill();
     x.lineWidth = Math.max(1, r * .16);
     x.strokeStyle = INK(.85); x.stroke();

@@ -94,7 +94,7 @@
     pegs.forEach((p) => {
       x.beginPath(); x.moveTo(p.x - 4, baseY - 4); x.lineTo(p.x - 3, p.top + 4); x.lineTo(p.x + 3, p.top + 4); x.lineTo(p.x + 4, baseY - 4); x.closePath(); x.fillStyle = INK(.96); x.fill();
       x.strokeStyle = 'rgba(36,26,85,.16)'; x.lineWidth = 1; x.stroke(); x.beginPath(); x.arc(p.x, p.top, 6.5, 0, TAU); x.fillStyle = p.c; x.fill(); x.strokeStyle = INK(.9); x.lineWidth = 1.5; x.stroke();
-      pill(x, p.x, baseY + 31, p.l, geo.stepX * .9, 10, p.hit ? p.c : INK(.95), '#241a55');
+      pill(x, p.x, baseY + 31, p.l, geo.stepX * .9, 10, p.hit ? p.c : '#fffdf8', '#241a55');
     }); x.strokeStyle = INK(.45); x.lineWidth = 2; x.beginPath(); x.moveTo(cx - 60, g.h - 30); x.lineTo(cx + 60, g.h - 30); x.stroke();
   }
 

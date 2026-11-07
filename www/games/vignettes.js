@@ -141,7 +141,7 @@
     grd.addColorStop(1, mix(col, '#2a1b46', .45)); x.fillStyle = grd; x.fill();
 
     x.save(); path(x, lobes); x.clip(); const sheen = x.createRadialGradient(-.45, -.75, .05, -.2, -.4, 1.8);
-    sheen.addColorStop(0, INK(.4)); sheen.addColorStop(1, INK(0));
+    sheen.addColorStop(0, K.light(.4)); sheen.addColorStop(1, K.light(0));
     x.fillStyle = sheen; x.fillRect(-1.3, -1.3, 2.6, 2.6); x.restore();
 
     const side = 'rgba(26,18,50,.42)'; if (m < .55) accent(x, A.acc, (1 - m / .55) * .85, side);

@@ -26,6 +26,7 @@
   }
 
   function tip() {
+    if (state === 'fall') return;
     if (!tiles.length) layout();
     pool = K.options(5);
     if (pool.length < 2) pool = ['Yes', 'No'];
@@ -35,9 +36,9 @@
     const fromX = tipX >= 0 ? tipX : 0;
     tiles.forEach((t, i) => {
       t.ang = 0; t.clicked = false;
-      t.jit = (i % 5) * 4;                                  // fixed wobble, not chance
+      t.jit = rnd() * 18;                                   // wobble is chance, not index
       // the further a tile is from where you tipped, the later it settles
-      t.hold = 60 + Math.abs(t.x - fromX) * 2.4;
+      t.hold = 70 + Math.abs(t.x - fromX) * 1.1 + rnd() * 210;
       t.settleAt = 0;
     });
     K.setResult(document.getElementById('dmRes'), '…');
@@ -73,7 +74,8 @@
 
     if (state === 'fall') {
       tiles.forEach((t, i) => {
-        const st = tipT + i * 34 + t.jit;
+        /* the index stagger outran every hold, so only the end tiles could settle last */
+        const st = tipT + t.jit;
         const k = Math.max(0, Math.min(1, (now - st) / 230));
         const e = 1 - Math.pow(1 - k, 3);
         t.ang = 1.47 * e;

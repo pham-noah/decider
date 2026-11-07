@@ -274,6 +274,8 @@
     }
     x.restore();
   };
+  /* a specular / gloss / glow is light on every skin — inkColor() is for marks and type */
+  kit.light = function (a) { return 'rgba(255,255,255,' + (a == null ? 1 : a) + ')'; };
   /* a caption that is legible on both materials and never drops under 10px */
   kit.label = function (x, text, X, Y, size, align) {
     const m = kit.mat();

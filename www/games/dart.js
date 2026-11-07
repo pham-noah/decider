@@ -51,7 +51,7 @@
     for (let i = 0; i < n; i++) {
       const a = -Math.PI / 2 + (i + .5) * st;
       pill(x, cx + Math.cos(a) * R * .60, cy + Math.sin(a) * R * .60, labels[i],
-        Math.min(86, chord * .92), Math.max(8, Math.min(11, R * .075)), INK(.95), '#241a55');
+        Math.min(86, chord * .92), Math.max(8, Math.min(11, R * .075)), '#fffdf8', '#241a55');
     }
     x.beginPath(); x.arc(cx, cy, R * .10, 0, TAU); x.fillStyle = '#fffdf8'; x.fill();
     x.strokeStyle = 'rgba(38,28,86,.65)'; x.lineWidth = 2; x.stroke();

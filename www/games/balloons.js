@@ -4,14 +4,14 @@
   const K = window.DKIT;
   const cv = () => document.getElementById('blCv');
   const TAU = Math.PI * 2;
-  let L = null, g = null, pool = [], bs = [], parts = [], pending = [], popped = 0, t = 0;
+  let L = null, g = null, pool = [], bs = [], parts = [], pending = [], popped = 0, t = 0, done = false;
 
   function fill() {
     pool = K.options(5);
     if (pool.length < 2) pool = ['Yes', 'No', 'Maybe'];
     const cols = 4, rows = 3, cw = g.w / cols, ch = (g.h - 84) / rows, top = 46;
     const r = Math.min(cw, ch) * 0.37;
-    bs = []; parts = []; pending = []; popped = 0;
+    bs = []; parts = []; pending = []; popped = 0; done = false;
     for (let ry = 0; ry < rows; ry++) {
       for (let cx = 0; cx < cols; cx++) {
         const i = ry * cols + cx;
@@ -42,13 +42,13 @@
     x.save();
     x.beginPath(); x.ellipse(bx, by, b.r, b.r * 1.16, 0, 0, TAU);
     const gr = x.createRadialGradient(bx - b.r * .35, by - b.r * .45, 2, bx, by, b.r * 1.25);
-    gr.addColorStop(0, INK(.95));
+    gr.addColorStop(0, K.light(.95));
     gr.addColorStop(.32, b.col);
     gr.addColorStop(1, b.col);
     x.fillStyle = gr; x.fill();
     x.save(); x.clip();
     const sh = x.createLinearGradient(0, by - b.r, 0, by + b.r * 1.2);
-    sh.addColorStop(0, INK(.25));
+    sh.addColorStop(0, K.light(.25));
     sh.addColorStop(.55, INK(0));
     sh.addColorStop(1, 'rgba(20,8,50,.35)');
     x.fillStyle = sh; x.fillRect(bx - b.r, by - b.r * 1.2, b.r * 2, b.r * 2.4);
@@ -75,7 +75,10 @@
   }
 
   function pop(b) {
+    /* a second balloon used to re-roll the verdict while the first was still pending */
+    if (done) { if (b.live) { b.live = false; burst(b); try { tone(520, .06, .04, 'sine', 300); } catch (e) {} } return; }
     if (!b.live || pending.length) return;
+    done = true;
     b.live = false; b.pop = 0.001;
     popped++;
     burst(b);

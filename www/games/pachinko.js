@@ -40,7 +40,12 @@
     const g = geom() || G; if (!g) return;
     G = g; charging = false; landed = -1;
     const p = Math.max(0.14, charge); charge = 0;
-    balls.push({ x: g.laneCx, y: g.shelfY - 12, vx: 0, vy: -(15 + p * 1.2), r: g.ballR, phase: 'chute', power: p });
+    /* the chute is exited only by reaching topY, so the launch speed has to be
+       derived from the climb it faces — the old fixed -(15 + p*1.2) apexed under
+       the top on a tall canvas and the ball fell back, bricking the toy forever */
+    const climb = Math.max(80, (g.shelfY - g.topY) + 24);
+    const vmin = Math.sqrt(2 * 0.34 * climb * 1.12);
+    balls.push({ x: g.laneCx, y: g.shelfY - 12, vx: 0, vy: -(vmin + p * 70), r: g.ballR, phase: 'chute', power: p, age: 0 });
     K.setResult(out(), '…');
     try { tone(220 + p * 620, .12, .05, 'triangle', 900); } catch (e) {}
   }
@@ -56,7 +61,11 @@
   function step(b, dt, g) {
     if (b.phase === 'chute') {
       b.vy += 0.34 * dt; b.y += b.vy * dt;
-      if (b.y <= g.topY) {
+      b.age = (b.age || 0) + dt;
+      /* leave the chute at the top, or the moment the ball stops rising, and never
+         let a chute shot hold balls.length hostage */
+      if (b.age > 300) { land(b, g); return; }
+      if (b.y <= g.topY || b.vy >= 0) {
         b.phase = 'field'; b.y = g.topY; b.x = g.laneX - b.r - 2;
         b.vx = -(1.2 + b.power * 7.4); b.vy = 0.6;
         try { tone(880, .05, .03, 'sine'); } catch (e) {}
@@ -88,7 +97,7 @@
     slots.forEach((s, i) => {
       x.save();
       K.rr(x, s.x + 2, g.shelfY - 2, s.w - 4, g.h - g.shelfY - 2, 9);
-      x.fillStyle = landed === i ? INK(.98) : PAL[i % PAL.length] + 'cc';
+      x.fillStyle = landed === i ? '#fffdf8' : PAL[i % PAL.length] + 'cc';
       x.fill(); x.restore();
       x.fillStyle = landed === i ? '#241a55' : INK(1);
       x.font = `700 ${Math.max(9, Math.min(12, s.w / 5.2))}px "Bricolage Grotesque",system-ui,sans-serif`;
@@ -140,7 +149,7 @@
     const ball = (bx, by, r) => {
       x.beginPath(); x.arc(bx, by, r, 0, Math.PI * 2);
       const gr = x.createRadialGradient(bx - r * .3, by - r * .3, 1, bx, by, r);
-      gr.addColorStop(0, INK(1)); gr.addColorStop(1, '#7b6cff');
+      gr.addColorStop(0, K.light(1)); gr.addColorStop(1, '#7b6cff');
       x.fillStyle = gr; x.fill();
       x.strokeStyle = INK(.9); x.lineWidth = 1.2; x.stroke();
     };
@@ -186,7 +195,12 @@
       };
       render();
     },
-    enter() { charging = false; charge = 0; autoT = 0; L.start(); },
+    enter() {
+      /* a wedged or lost ball used to survive a view change and stop the plunger for good */
+      balls = []; landed = -1; charging = false; charge = 0; autoT = 0;
+      try { K.setResult(out(), ''); } catch (e) {}
+      L.start();
+    },
     leave() { L.stop(); charging = false; autoT = 0; charge = 0; },
     action() {
       if (charging) { fire(); return; }

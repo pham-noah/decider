@@ -91,7 +91,7 @@
     while (s.length > 1 && x.measureText(s).width > max - 10) s = s.slice(0, -1);
     if (s !== p.l) s = s.trim() + '…';
     const w = Math.min(max, x.measureText(s).width + 10), h2 = size + 7;
-    K.rr(x, p.x - w / 2, p.y + geo.pinR + 2, w, h2, h2 / 2); x.fillStyle = p.down ? INK(.38) : INK(.93); x.fill();
+    K.rr(x, p.x - w / 2, p.y + geo.pinR + 2, w, h2, h2 / 2); x.fillStyle = p.down ? 'rgba(36,26,85,.38)' : '#fffdf8'; x.fill();
     x.fillStyle = p.down ? 'rgba(36,26,85,.42)' : '#241a55'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(s, p.x, p.y + geo.pinR + 2 + h2 / 2 + .5);
   }
 

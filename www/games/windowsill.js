@@ -85,7 +85,7 @@
     x.fillStyle = 'rgba(255,214,120,.75)'; [[.26, .16], [.46, .1], [.62, .2], [.8, .12]].forEach(b => { x.fillRect(W.x + b[0] * W.w, W.y + W.h - b[1] * W.h, 2.5, 3); });
     x.restore(); x.fillStyle = '#efe7ff'; x.fillRect(W.x + W.w / 2 - 2.5, W.y, 5, W.h); x.fillRect(W.x, W.y + W.h * .5 - 2.5, W.w, 5);
     x.save(); K.rr(x, W.x, W.y, W.w, W.h, 9); x.clip(); const sh = x.createLinearGradient(W.x, W.y, W.x + W.w * .8, W.y + W.h);
-    sh.addColorStop(0, INK(.12)); sh.addColorStop(.55, INK(0)); x.fillStyle = sh; x.fillRect(W.x, W.y, W.w, W.h); x.restore();
+    sh.addColorStop(0, K.light(.12)); sh.addColorStop(.55, INK(0)); x.fillStyle = sh; x.fillRect(W.x, W.y, W.w, W.h); x.restore();
     x.strokeStyle = INK(.2); x.lineWidth = 1; K.rr(x, W.x, W.y, W.w, W.h, 9); x.stroke();
   }
   function drawClock(x, G) {
@@ -101,7 +101,7 @@
     };
     hand(clock.a * 1.4 + 1.1, r * .68, 2.6, '#3a2b60'); hand(clock.a, r * .44, 3.6, '#241a55');
     x.beginPath(); x.arc(c.x, c.y, 3.2, 0, TAU); x.fillStyle = '#d6215b'; x.fill(); const gl = x.createLinearGradient(c.x - r, c.y - r, c.x + r, c.y + r);
-    gl.addColorStop(0, INK(.26)); gl.addColorStop(.45, INK(0)); x.beginPath(); x.arc(c.x, c.y, r - 4, 0, TAU); x.fillStyle = gl; x.fill();
+    gl.addColorStop(0, K.light(.26)); gl.addColorStop(.45, INK(0)); x.beginPath(); x.arc(c.x, c.y, r - 4, 0, TAU); x.fillStyle = gl; x.fill();
     x.beginPath(); x.arc(c.x, c.y, r - 2, 0, TAU); x.strokeStyle = INK(.3); x.lineWidth = 1.4; x.stroke();
   }
   function drawCabinet(x, G) {
