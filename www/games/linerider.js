@@ -2,6 +2,8 @@
  * The line is the whole outcome: gravity is projected onto whatever you drew,
  * so downslopes speed you up, upslopes cost you, and the end of the line is a crash. */
 (function () {
+  /* white ink flips to ink-black on the paper skin */
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT, TAU = Math.PI * 2;
   const cv = () => document.getElementById('lrCv');
   const res = () => document.getElementById('lrRes');
@@ -214,7 +216,7 @@
     /* rider */
     x.strokeStyle = PAL[0] || '#8f7dff'; x.lineWidth = 3.8;
     x.beginPath(); x.moveTo(1.8, 2.2); x.lineTo(-1.4, -4.4); x.stroke();
-    x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = 1.2;
+    x.strokeStyle = INK(.35); x.lineWidth = 1.2;
     x.beginPath(); x.moveTo(1.2, 1.4); x.lineTo(-1.2, -3.6); x.stroke();
     x.beginPath(); x.arc(0.4, -7, 3.1, 0, TAU); x.fillStyle = '#ffcf6a'; x.fill();
     x.strokeStyle = 'rgba(40,20,80,.55)'; x.lineWidth = 1; x.stroke();
@@ -226,7 +228,7 @@
   function hud(x, w) {
     x.save();
     x.textAlign = 'left'; x.textBaseline = 'top';
-    x.fillStyle = 'rgba(255,255,255,.92)';
+    x.fillStyle = INK(.92);
     x.font = '800 20px "Bricolage Grotesque",system-ui,sans-serif';
     x.fillText(Math.round(dist) + ' m', 14, 12);
     x.fillStyle = 'rgba(190,215,255,.62)';
@@ -246,13 +248,13 @@
     x.clearRect(0, 0, w, h);
     x.save();
     K.rr(x, 0, 0, w, h, 18);
-    const bg = x.createLinearGradient(0, 0, 0, h);
-    bg.addColorStop(0, '#16233d'); bg.addColorStop(.55, '#0e1729'); bg.addColorStop(1, '#070c17');
-    x.fillStyle = bg; x.fill();
+    K.surf(x, w, h);
     x.clip();
-    const aur = x.createRadialGradient(w * .5, -h * .12, 8, w * .5, -h * .12, h * .85);
-    aur.addColorStop(0, 'rgba(126,168,255,.28)'); aur.addColorStop(.6, 'rgba(88,90,200,.07)'); aur.addColorStop(1, 'rgba(0,0,0,0)');
-    x.fillStyle = aur; x.fillRect(0, 0, w, h);
+    if (!K.mat().flat) {
+      const aur = x.createRadialGradient(w * .5, -h * .12, 8, w * .5, -h * .12, h * .85);
+      aur.addColorStop(0, 'rgba(126,168,255,.28)'); aur.addColorStop(.6, 'rgba(88,90,200,.07)'); aur.addColorStop(1, 'rgba(0,0,0,0)');
+      x.fillStyle = aur; x.fillRect(0, 0, w, h);
+    }
 
     /* the track */
     if (strokes.length) {
@@ -273,7 +275,7 @@
         x.save();
         x.beginPath(); x.arc(hp.x, hp.y, 4.5, 0, TAU);
         x.fillStyle = '#ffd76a'; x.fill();
-        x.strokeStyle = 'rgba(255,255,255,.7)'; x.lineWidth = 1.4; x.stroke();
+        x.strokeStyle = INK(.7); x.lineWidth = 1.4; x.stroke();
         x.restore();
       }
     }
@@ -290,7 +292,7 @@
 
     x.save();
     K.rr(x, .75, .75, w - 1.5, h - 1.5, 18);
-    x.strokeStyle = 'rgba(255,255,255,.14)'; x.lineWidth = 1.5; x.stroke();
+    x.strokeStyle = INK(.14); x.lineWidth = 1.5; x.stroke();
     x.restore();
     hud(x, w);
   }

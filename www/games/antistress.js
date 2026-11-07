@@ -2,6 +2,8 @@
  * refills, a knob with detents, a switch, a springy button, a rubber band and a
  * stress ball. Touch only, no score. */
 (function () {
+  /* white ink flips to ink-black on the paper skin */
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT, TAU = Math.PI * 2; const cv = () => document.getElementById('antsCv'); const resEl = () => document.getElementById('antsRes');
   let L = null, g = null, zones = [], t = 0, active = null; const bub = Array.from({ length: 12 }, () => ({ s: 1, cool: 0, grew: false, flash: 0 })); const puffs = [];
   const knob = { v: 2, target: 2, dragging: false, last: 2 }; const sw = { on: false, a: 0 };
@@ -120,63 +122,65 @@
     ball.sq += ((ball.held ? 1 : 0) - ball.sq) * .2 * dt; ball.wob += ball.vs * dt; ball.vs += -ball.wob * .35 * dt; ball.vs *= Math.pow(.9, dt);
   }
   function panel(x, z, label) {
-    K.rr(x, z.x, z.y, z.w, z.h, 16); x.fillStyle = 'rgba(255,255,255,.05)'; x.fill(); x.strokeStyle = 'rgba(255,255,255,.1)'; x.lineWidth = 1; x.stroke(); x.fillStyle = 'rgba(255,255,255,.42)';
+    K.rr(x, z.x, z.y, z.w, z.h, 16); x.fillStyle = INK(.05); x.fill(); x.strokeStyle = INK(.1); x.lineWidth = 1; x.stroke(); x.fillStyle = INK(.42);
     x.font = '700 9px "Bricolage Grotesque",system-ui,sans-serif'; x.textAlign = 'left'; x.textBaseline = 'middle'; x.fillText(label, z.x + 12, z.y + 13);
   }
   function drawBubbles(x, z) {
     const cols = 4, rows = 3, pad = 13, top = 22; const bw = (z.w - pad * 2) / cols, bh = (z.h - top - 10) / rows; const r = Math.min(bw, bh) * .4;
     for (let i = 0; i < 12; i++) {
       const cx = z.x + pad + bw * (i % cols) + bw / 2; const cy = z.y + top + bh * Math.floor(i / cols) + bh / 2;
-      const b = bub[i]; x.beginPath(); x.arc(cx, cy, r * .92, 0, TAU); x.fillStyle = b.s < .3 ? 'rgba(255,255,255,.07)' : 'rgba(255,255,255,.03)'; x.fill();
+      const b = bub[i]; x.beginPath(); x.arc(cx, cy, r * .92, 0, TAU); x.fillStyle = b.s < .3 ? INK(.07) : INK(.03); x.fill();
       if (b.s < .04) {
         x.beginPath(); x.arc(cx, cy, r * .34, 0, TAU); x.fillStyle = 'rgba(0,0,0,.18)'; x.fill(); continue;
       }
       const s = .4 + .6 * b.s; x.beginPath(); x.arc(cx, cy, r * s, 0, TAU); const bg = x.createRadialGradient(cx - r * .3, cy - r * .35, 1, cx, cy, r);
-      bg.addColorStop(0, 'rgba(255,255,255,.96)'); bg.addColorStop(.5, 'rgba(196,226,255,.55)'); bg.addColorStop(1, 'rgba(120,160,230,.3)'); x.fillStyle = bg; x.fill();
+      bg.addColorStop(0, INK(.96)); bg.addColorStop(.5, 'rgba(196,226,255,.55)'); bg.addColorStop(1, 'rgba(120,160,230,.3)'); x.fillStyle = bg; x.fill();
       x.strokeStyle = 'rgba(255,255,255,' + (.45 + .45 * b.flash) + ')'; x.lineWidth = 1.2; x.stroke();
-      x.beginPath(); x.arc(cx - r * .3, cy - r * .35, r * .2, 0, TAU); x.fillStyle = 'rgba(255,255,255,.9)'; x.fill();
+      x.beginPath(); x.arc(cx - r * .3, cy - r * .35, r * .2, 0, TAU); x.fillStyle = INK(.9); x.fill();
     }
   }
   function drawKnob(x, z) {
-    const q = knobGeo(z), f = knob.v / 6; x.lineCap = 'round'; x.strokeStyle = 'rgba(255,255,255,.13)'; x.lineWidth = 6;
+    const q = knobGeo(z), f = knob.v / 6; x.lineCap = 'round'; x.strokeStyle = INK(.13); x.lineWidth = 6;
     x.beginPath(); x.moveTo(q.x0, q.y); x.lineTo(q.x1, q.y); x.stroke(); x.strokeStyle = 'rgba(105,167,255,.85)';
     x.beginPath(); x.moveTo(q.x0, q.y); x.lineTo(q.x0 + (q.x1 - q.x0) * f, q.y); x.stroke();
     for (let i = 0; i < 7; i++) {
-      const dx = q.x0 + (q.x1 - q.x0) * i / 6; x.beginPath(); x.arc(dx, q.y + 13, 1.8, 0, TAU); x.fillStyle = i <= Math.round(knob.v) ? 'rgba(190,215,255,.9)' : 'rgba(255,255,255,.22)'; x.fill();
+      const dx = q.x0 + (q.x1 - q.x0) * i / 6; x.beginPath(); x.arc(dx, q.y + 13, 1.8, 0, TAU); x.fillStyle = i <= Math.round(knob.v) ? 'rgba(190,215,255,.9)' : INK(.22); x.fill();
     }
     const kx = q.x0 + (q.x1 - q.x0) * f; x.beginPath(); x.arc(kx, q.y, 14, 0, TAU); const kg = x.createRadialGradient(kx - 5, q.y - 6, 1, kx, q.y, 14);
-    kg.addColorStop(0, '#ffffff'); kg.addColorStop(.55, '#9fc4ff'); kg.addColorStop(1, '#5b7fd6');
-    x.fillStyle = kg; x.fill(); x.strokeStyle = 'rgba(255,255,255,.7)'; x.lineWidth = 1.4; x.stroke(); x.beginPath(); x.moveTo(kx, q.y - 7); x.lineTo(kx, q.y + 7);
+    kg.addColorStop(0, INK(1)); kg.addColorStop(.55, '#9fc4ff'); kg.addColorStop(1, '#5b7fd6');
+    x.fillStyle = kg; x.fill(); x.strokeStyle = INK(.7); x.lineWidth = 1.4; x.stroke(); x.beginPath(); x.moveTo(kx, q.y - 7); x.lineTo(kx, q.y + 7);
     x.strokeStyle = 'rgba(40,30,80,.45)'; x.lineWidth = 2; x.stroke();
   }
   function drawSwitch(x, z) {
     const cw = 66, chh = 30, cx = z.x + z.w / 2, cy = z.y + z.h * .62, a = sw.a; K.rr(x, cx - cw / 2, cy - chh / 2, cw, chh, chh / 2);
-    x.fillStyle = a > .5 ? 'rgba(94,234,212,.28)' : 'rgba(255,255,255,.09)'; x.fill(); x.strokeStyle = a > .5 ? 'rgba(94,234,212,.8)' : 'rgba(255,255,255,.24)'; x.lineWidth = 1.4; x.stroke();
+    x.fillStyle = a > .5 ? 'rgba(94,234,212,.28)' : INK(.09); x.fill(); x.strokeStyle = a > .5 ? 'rgba(94,234,212,.8)' : INK(.24); x.lineWidth = 1.4; x.stroke();
     const tx = cx - cw / 2 + chh / 2 + a * (cw - chh); x.beginPath(); x.arc(tx, cy, chh / 2 - 4, 0, TAU); const tg = x.createRadialGradient(tx - 4, cy - 4, 1, tx, cy, chh / 2);
-    tg.addColorStop(0, '#ffffff'); tg.addColorStop(1, a > .5 ? '#3ecdb6' : '#cfc6e6'); x.fillStyle = tg; x.fill();
-    x.fillStyle = 'rgba(255,255,255,.5)'; x.font = '700 8px "Bricolage Grotesque",system-ui,sans-serif';
-    x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('on', cx + 20, cy); x.fillText('off', cx - 20, cy);
+    tg.addColorStop(0, INK(1)); tg.addColorStop(1, a > .5 ? '#3ecdb6' : '#cfc6e6'); x.fillStyle = tg; x.fill();
+    /* the thumb parks over one end, so only the word on the far side ever reads */
+    x.fillStyle = a > .5 ? INK(.72) : INK(.5); x.font = '700 8px "Bricolage Grotesque",system-ui,sans-serif';
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.fillText(a > .5 ? 'on' : 'off', a > .5 ? cx - 20 : cx + 20, cy);
   }
   function drawButton(x, z) {
     const cx = z.x + z.w / 2, cy = z.y + z.h * .58, r = Math.min(z.w, z.h) * .26; x.beginPath(); x.arc(cx, cy + 3, r + 8, 0, TAU); x.fillStyle = 'rgba(0,0,0,.24)'; x.fill();
-    x.beginPath(); x.arc(cx, cy, r + 8, 0, TAU); x.fillStyle = 'rgba(255,255,255,.07)'; x.fill(); x.strokeStyle = 'rgba(255,255,255,.18)'; x.lineWidth = 1.2; x.stroke();
+    x.beginPath(); x.arc(cx, cy, r + 8, 0, TAU); x.fillStyle = INK(.07); x.fill(); x.strokeStyle = INK(.18); x.lineWidth = 1.2; x.stroke();
     const p = Math.max(0, btn.p), rr = r * (1 - p * .13), yy = cy + p * 8; x.beginPath(); x.arc(cx, yy, rr, 0, TAU); const bg = x.createRadialGradient(cx - rr * .3, yy - rr * .38, 2, cx, yy, rr);
     bg.addColorStop(0, '#ffc2d5'); bg.addColorStop(.5, '#ff6fae'); bg.addColorStop(1, '#bc3a72'); x.fillStyle = bg; x.fill(); x.beginPath(); x.arc(cx, yy, rr, 0, TAU);
-    x.strokeStyle = 'rgba(255,255,255,.55)'; x.lineWidth = 1.4; x.stroke(); x.beginPath(); x.ellipse(cx - rr * .3, yy - rr * .35, rr * .26, rr * .16, -.6, 0, TAU);
-    x.fillStyle = 'rgba(255,255,255,.55)'; x.fill();
+    x.strokeStyle = INK(.55); x.lineWidth = 1.4; x.stroke(); x.beginPath(); x.ellipse(cx - rr * .3, yy - rr * .35, rr * .26, rr * .16, -.6, 0, TAU);
+    x.fillStyle = INK(.55); x.fill();
   }
   function drawBand(x, z) {
     const q = bandGeo(z); const mx = q.mx + band.x, my = q.my + band.y; const st = Math.min(1, Math.hypot(band.x, band.y) / 50); x.fillStyle = '#7f6da8';
-    K.rr(x, q.ax - 4, q.my - 18, 8, 36, 4); x.fill(); K.rr(x, q.bx - 4, q.my - 18, 8, 36, 4); x.fill(); x.fillStyle = 'rgba(255,255,255,.35)'; K.rr(x, q.ax - 4, q.my - 18, 8, 4, 2); x.fill();
+    K.rr(x, q.ax - 4, q.my - 18, 8, 36, 4); x.fill(); K.rr(x, q.bx - 4, q.my - 18, 8, 36, 4); x.fill(); x.fillStyle = INK(.35); K.rr(x, q.ax - 4, q.my - 18, 8, 4, 2); x.fill();
     K.rr(x, q.bx - 4, q.my - 18, 8, 4, 2); x.fill(); x.strokeStyle = 'rgba(255,111,174,' + (.7 + .25 * st) + ')'; x.lineWidth = Math.max(2.2, 5 - st * 2.4); x.beginPath(); x.moveTo(q.ax, q.my - 7);
     x.quadraticCurveTo(mx, my - 7, q.bx, q.my - 7); x.stroke(); x.beginPath(); x.moveTo(q.ax, q.my + 7);
-    x.quadraticCurveTo(mx, my + 7, q.bx, q.my + 7); x.stroke(); x.beginPath(); x.arc(mx, my, 7, 0, TAU); x.fillStyle = 'rgba(255,255,255,.14)'; x.fill();
-    x.strokeStyle = 'rgba(255,255,255,.45)'; x.lineWidth = 1.3; x.stroke();
+    x.quadraticCurveTo(mx, my + 7, q.bx, q.my + 7); x.stroke(); x.beginPath(); x.arc(mx, my, 7, 0, TAU); x.fillStyle = INK(.14); x.fill();
+    x.strokeStyle = INK(.45); x.lineWidth = 1.3; x.stroke();
   }
   function drawBall(x, z) {
     const q = ballGeo(z); const sq = ball.sq, wob = Math.sin(ball.wob * 7) * ball.vs * .06; x.save(); x.translate(q.cx, q.cy); x.scale(1 + .14 * sq + wob, 1 - .16 * sq - wob);
     x.beginPath(); x.arc(0, 0, q.r, 0, TAU); const bg = x.createRadialGradient(-q.r * .32, -q.r * .36, 2, 0, 0, q.r);
-    bg.addColorStop(0, '#ffb3a3'); bg.addColorStop(.55, '#ff7a5c'); bg.addColorStop(1, '#b93c2c'); x.fillStyle = bg; x.fill(); x.strokeStyle = 'rgba(255,255,255,.45)'; x.lineWidth = 1.4; x.stroke();
+    bg.addColorStop(0, '#ffb3a3'); bg.addColorStop(.55, '#ff7a5c'); bg.addColorStop(1, '#b93c2c'); x.fillStyle = bg; x.fill(); x.strokeStyle = INK(.45); x.lineWidth = 1.4; x.stroke();
     if (sq > .15) {
       x.strokeStyle = 'rgba(120,30,20,.35)'; x.lineWidth = 1.2;
       for (let i = -1; i <= 1; i++) {
@@ -198,11 +202,11 @@
     x.restore();
   }
   function draw() {
-    const x = g.x, w = g.w, h = g.h; const bg = x.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#2a2064'); bg.addColorStop(1, '#150e36'); x.fillStyle = bg; x.fillRect(0, 0, w, h);
+    const x = g.x, w = g.w, h = g.h; K.surf(x, w, h);
     const labels = ['BUBBLE WRAP', 'KNOB', 'SWITCH', 'BUTTON', 'RUBBER BAND', 'STRESS BALL']; zones.forEach((z, i) => panel(x, z, labels[i])); drawBubbles(x, zones[0]); drawKnob(x, zones[1]);
     drawSwitch(x, zones[2]); drawButton(x, zones[3]); drawBand(x, zones[4]); drawBall(x, zones[5]);
     puffs.forEach(p => {
-      x.globalAlpha = Math.max(0, p.a); x.beginPath(); x.arc(p.x, p.y, p.r, 0, TAU); x.strokeStyle = 'rgba(255,255,255,.8)'; x.lineWidth = 1.2; x.stroke();
+      x.globalAlpha = Math.max(0, p.a); x.beginPath(); x.arc(p.x, p.y, p.r, 0, TAU); x.strokeStyle = INK(.8); x.lineWidth = 1.2; x.stroke();
     });
     x.globalAlpha = 1;
   }

@@ -2,6 +2,8 @@
  * the shape you drew slides across the pit, bouncing off the walls forever,
  * lighting the dots it touches. Nothing is random — the line is yours. */
 (function () {
+  /* white ink flips to ink-black on the paper skin */
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT, TAU = Math.PI * 2;
   const cv = () => document.getElementById('bkCv');
   const res = () => document.getElementById('bkRes');
@@ -160,15 +162,15 @@
     x.clearRect(0, 0, w, h);
     x.save();
     K.rr(x, 0, 0, w, h, 18);
-    const bg = x.createLinearGradient(0, 0, w * .3, h);
-    bg.addColorStop(0, '#1b1440'); bg.addColorStop(.55, '#120e2c'); bg.addColorStop(1, '#0a0718');
-    x.fillStyle = bg; x.fill();
+    K.surf(x, w, h);
     x.clip();
-    const glow = x.createRadialGradient(w * .5, h * .42, 10, w * .5, h * .5, Math.max(w, h) * .7);
-    glow.addColorStop(0, 'rgba(120,96,255,.20)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
-    x.fillStyle = glow; x.fillRect(0, 0, w, h);
+    if (!K.mat().flat) {
+      const glow = x.createRadialGradient(w * .5, h * .42, 10, w * .5, h * .5, Math.max(w, h) * .7);
+      glow.addColorStop(0, 'rgba(120,96,255,.20)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
+      x.fillStyle = glow; x.fillRect(0, 0, w, h);
+    }
     /* faint dot grid, so the pit feels like a place */
-    x.fillStyle = 'rgba(255,255,255,.055)';
+    x.fillStyle = K.inkColor(.055);
     for (let gx = 22; gx < w; gx += 44) for (let gy = 22; gy < h; gy += 44) {
       x.beginPath(); x.arc(gx, gy, 1.1, 0, TAU); x.fill();
     }
@@ -186,10 +188,10 @@
         x.strokeStyle = t.c; x.globalAlpha = .25 + t.pulse * .6; x.lineWidth = 2; x.stroke();
         x.globalAlpha = 1;
         x.beginPath(); x.arc(t.x, t.y, pr * .34, 0, TAU);
-        x.fillStyle = 'rgba(255,255,255,.92)'; x.fill();
+        x.fillStyle = INK(.92); x.fill();
       } else {
         x.beginPath(); x.arc(t.x, t.y, pr, 0, TAU);
-        x.strokeStyle = 'rgba(255,255,255,.22)'; x.lineWidth = 1.6; x.stroke();
+        x.strokeStyle = INK(.22); x.lineWidth = 1.6; x.stroke();
         x.beginPath(); x.arc(t.x, t.y, pr * .30, 0, TAU);
         x.fillStyle = t.c; x.globalAlpha = .75; x.fill();
         x.globalAlpha = 1;
@@ -206,7 +208,7 @@
       x.restore();
     } else if (drawing && pts.length > 1) {
       x.save();
-      x.strokeStyle = 'rgba(255,255,255,.9)'; x.lineWidth = 3.2;
+      x.strokeStyle = INK(.9); x.lineWidth = 3.2;
       x.lineCap = 'round'; x.lineJoin = 'round';
       x.shadowColor = 'rgba(160,190,255,.7)'; x.shadowBlur = 12;
       strokePath(x, pts, 0, 0); x.stroke();
@@ -226,14 +228,14 @@
       x.shadowColor = 'rgba(150,170,255,.75)'; x.shadowBlur = 16;
       x.strokeStyle = lg; x.lineWidth = 6; strokePath(x, b.rel, 0, 0); x.stroke();
       x.shadowBlur = 0;
-      x.strokeStyle = 'rgba(255,255,255,.9)'; x.lineWidth = 2.1; strokePath(x, b.rel, 0, 0); x.stroke();
+      x.strokeStyle = INK(.9); x.lineWidth = 2.1; strokePath(x, b.rel, 0, 0); x.stroke();
       /* head and tail */
       const head = b.rel[b.rel.length - 1], tail = b.rel[0];
       x.beginPath(); x.arc(head.x, head.y, 5, 0, TAU);
-      x.fillStyle = '#fff'; x.shadowColor = '#fff'; x.shadowBlur = 12; x.fill();
+      x.fillStyle = INK(1); x.shadowColor = INK(1); x.shadowBlur = 12; x.fill();
       x.shadowBlur = 0;
       x.beginPath(); x.arc(tail.x, tail.y, 3, 0, TAU);
-      x.fillStyle = 'rgba(255,255,255,.8)'; x.fill();
+      x.fillStyle = INK(.8); x.fill();
       x.restore();
     }
 
@@ -262,7 +264,7 @@
 
     x.save();
     K.rr(x, .75, .75, w - 1.5, h - 1.5, 18);
-    x.strokeStyle = 'rgba(255,255,255,.14)'; x.lineWidth = 1.5; x.stroke();
+    x.strokeStyle = INK(.14); x.lineWidth = 1.5; x.stroke();
     x.restore();
   }
 

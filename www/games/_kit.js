@@ -194,6 +194,60 @@
     ctx.restore();
   };
 
+
+  /* ---------- material layer ----------
+     Canvas cannot read CSS variables, so every toy used to invent its own palette.
+     mat() resolves the active skin's tokens once and caches them; the observer drops
+     the cache when :root changes skin, theme, contrast or an inline var. K.surf() paints
+     the card's own surface so a toy stops repainting over .toy with a different purple. */
+  let MATC = null;
+  function readMat() {
+    const root = document.documentElement;
+    const cs = getComputedStyle(root);
+    const v = (n) => (cs.getPropertyValue(n) || '').trim();
+    const num = (n, d) => { const t = parseFloat(v(n)); return Number.isFinite(t) ? t : d; };
+    return {
+      skin: root.dataset.skin || 'classic',
+      s1: v('--toy-s1') || '#2a2064',
+      s2: v('--toy-s2') || '#1b1443',
+      s3: v('--toy-s3') || '#241a55',
+      ink: v('--toy-ink') || '#f6f2ff',
+      muted: v('--toy-muted') || 'rgba(246,242,255,.62)',
+      line: v('--toy-line') || 'rgba(255,255,255,.16)',
+      radius: num('--toy-radius', 20),
+      flat: v('--toy-flat') === '1',
+      outline: v('--toy-outline') || '',
+      b: [1, 2, 3, 4].map((i) => v('--b' + i)),
+      pal: (window.PAL || []).slice(0)
+    };
+  }
+  kit.mat = function (force) { if (!MATC || force) MATC = readMat(); return MATC; };
+  kit.invalidate = function () { MATC = null; };
+  if (document.documentElement.dataset) {
+    new MutationObserver(() => { MATC = null; })
+      .observe(document.documentElement, { attributes: true, attributeFilter: ['data-skin', 'data-theme', 'data-contrast', 'style'] });
+  }
+  /* paint the card surface into the canvas: gradient for classic/soft, flat ink for paper */
+  kit.surf = function (x, w, h) {
+    const m = kit.mat();
+    x.save();
+    kit.rr(x, 0, 0, w, h, m.radius);
+    if (m.flat) { x.fillStyle = m.s1; }
+    else {
+      const g = x.createLinearGradient(0, 0, w * .35, h);
+      g.addColorStop(0, m.s1); g.addColorStop(.6, m.s2); g.addColorStop(1, m.s3);
+      x.fillStyle = g;
+    }
+    x.fill(); x.restore();
+    return m;
+  };
+  /* a material-aware ink that also works on paper (dark) and on the violet skins (light) */
+  kit.inkColor = function (alpha) {
+    const m = kit.mat();
+    if (m.flat) return 'rgba(36,26,58,' + (alpha == null ? 1 : alpha) + ')';
+    return 'rgba(255,255,255,' + (alpha == null ? 1 : alpha) + ')';
+  };
+
   window.DKIT = kit;
   window.DECIDER_GAMES = window.DECIDER_GAMES || [];
 })();

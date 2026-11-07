@@ -1,6 +1,8 @@
 /* Sandspiel — a falling-sand sandbox. Pour sand, pool water, set wood alight.
  * Pure toy: every grain comes from your finger, not from a dice roll. */
 (function () {
+  /* white ink flips to ink-black on the paper skin */
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   const cv = () => document.getElementById('ssCv');
   const res = () => document.getElementById('ssRes');
@@ -23,7 +25,7 @@
     { id: FIRE, n: 'Fire', c: '#ff7a2a', b: 2 },
     { id: WOOD, n: 'Wood', c: '#8a5a33', b: 3 },
     { id: STONE, n: 'Stone', c: '#8c93a6', b: 3 },
-    { id: EMPTY, n: 'Erase', c: '#ffffff', b: 4 }
+    { id: EMPTY, n: 'Erase', c: INK(1), b: 4 }
   ];
 
   let cols = 0, rows = 0, offX = 0, offY = 0;
@@ -35,15 +37,25 @@
 
   /* ---------- grid ---------- */
   function alloc(c, r) {
+    const og = grid, oh = heat, os = shade, oc = cols, orw = rows;
     cols = c; rows = r;
     const n = cols * rows;
     grid = new Uint8Array(n); heat = new Uint8Array(n);
     shade = new Uint8Array(n); stamp = new Int32Array(n);
+    /* a rotation or a theme re-layout used to wipe the pit: carry the overlapping
+       region across, and only seed a pit that is genuinely new or still empty */
+    if (og && oc && orw) {
+      const cw = Math.min(oc, cols), rh = Math.min(orw, rows);
+      for (let y = 0; y < rh; y++) {
+        const src = y * oc, dst = y * cols;
+        for (let x = 0; x < cw; x++) { grid[dst + x] = og[src + x]; heat[dst + x] = oh[src + x]; shade[dst + x] = os[src + x]; }
+      }
+    }
     off.width = cols; off.height = rows;
     octx = off.getContext('2d');
     img = octx.createImageData(cols, rows);
     tick = 0;
-    if (!seeded) { seeded = true; seed(); }
+    if (!seeded || !grid.some(v => v)) { seeded = true; seed(); }
     dirty = true;
   }
 
@@ -235,21 +247,21 @@
     x.clearRect(0, 0, g.w, g.h);
     x.save();
     K.rr(x, 0, 0, g.w, g.h, 18);
-    const bg = x.createLinearGradient(0, 0, 0, g.h);
-    bg.addColorStop(0, '#191233'); bg.addColorStop(.6, '#120d26'); bg.addColorStop(1, '#0b0819');
-    x.fillStyle = bg; x.fill();
+    K.surf(x, g.w, g.h);
     x.clip();
     x.imageSmoothingEnabled = false;
     x.drawImage(off, offX, offY, cols * CELL, rows * CELL);
     x.imageSmoothingEnabled = true;
     /* glass sheen + soft corner shade so the sand sits inside the card */
-    const vg = x.createRadialGradient(g.w / 2, g.h * .42, g.w * .18, g.w / 2, g.h * .5, g.w * .95);
-    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(4,2,14,.55)');
-    x.fillStyle = vg; x.fillRect(0, 0, g.w, g.h);
+    if (!K.mat().flat) {
+      const vg = x.createRadialGradient(g.w / 2, g.h * .42, g.w * .18, g.w / 2, g.h * .5, g.w * .95);
+      vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(4,2,14,.55)');
+      x.fillStyle = vg; x.fillRect(0, 0, g.w, g.h);
+    }
     x.restore();
     x.save();
     K.rr(x, .75, .75, g.w - 1.5, g.h - 1.5, 18);
-    x.strokeStyle = 'rgba(255,255,255,.16)'; x.lineWidth = 1.5; x.stroke();
+    x.strokeStyle = INK(.16); x.lineWidth = 1.5; x.stroke();
     x.restore();
   }
 

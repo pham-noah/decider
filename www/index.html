@@ -185,9 +185,16 @@ main{height:100%;overflow:hidden;display:flex;flex-direction:column}
 .view.on::-webkit-scrollbar{display:none}
 
 /* plug-in toy games (www/games/*.js) */
-.toy{width:100%;aspect-ratio:1/1.12;display:block;border-radius:20px;touch-action:none;max-height:62vh;
-  background:linear-gradient(165deg,#2a2064,#1b1443 60%,#241a55);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 10px 26px rgba(20,10,50,.22)}
+:root{--toy-s1:#2a2064;--toy-s2:#1b1443;--toy-s3:#241a55;--toy-ink:#f6f2ff;--toy-muted:rgba(246,242,255,.62);--toy-line:rgba(255,255,255,.16);--toy-radius:20px;--toy-flat:0;--toy-outline:;--toy-surface:linear-gradient(165deg,#2a2064,#1b1443 60%,#241a55)}
+/* Soft toy: chunky soft-plastic. One big bevel, one long soft shadow, fatter corners. */
+:root[data-skin="soft"]{--toy-s1:#2a2064;--toy-s2:#1b1443;--toy-s3:#241a55;--toy-radius:22px;--toy-line:rgba(255,255,255,.5);--toy-surface:linear-gradient(165deg,#2a2064,#1b1443 60%,#241a55)}
+/* Paper: risograph. Flat bone stock, ink edge, offset shadow, no gradients anywhere. */
+:root[data-skin="paper"]{--toy-s1:#f7f2e6;--toy-s2:#efe8d8;--toy-s3:#e6dfcc;--toy-ink:#241a3a;--toy-muted:rgba(36,26,58,.66);--toy-line:#241a3a;--toy-radius:8px;--toy-flat:1;--toy-outline:#241a3a;--toy-surface:#f7f2e6}
+.toy{width:100%;aspect-ratio:1/1.12;display:block;border-radius:var(--toy-radius,20px);touch-action:none;max-height:62vh;
+  background:var(--toy-surface);
+  box-shadow:inset 0 1px 0 var(--toy-line),0 10px 26px rgba(20,10,50,.22)}
+:root[data-skin="soft"] .toy{box-shadow:inset 0 2px 0 rgba(255,255,255,.5),inset 0 -14px 24px rgba(255,255,255,.06),0 14px 30px rgba(20,10,50,.42)}
+:root[data-skin="paper"] .toy{box-shadow:4px 4px 0 #1d1340,inset 0 0 0 1.5px #241a3a}
 .toy.wide{aspect-ratio:4/3}
 .cards3{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap}
 .cardface{width:82px;height:118px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:30px;background:#fffdf8;box-shadow:0 10px 24px var(--sh);color:#241a55}
@@ -826,8 +833,10 @@ if(store.get('d.shake',false)&&typeof DeviceMotionEvent!=='undefined'&&typeof De
 const TH={aurora:{n:'Aurora',b:['#ff5fa2','#6f8bff','#2fe0c4','#ffb347'],a:['#ff5fa2','#7b6cff'],p:['#ff6fae','#ffb347','#ffe066','#5eead4','#69a7ff','#a78bfa','#fb7185','#4ade80']},
  ocean:{n:'Ocean',b:['#2bb8ff','#3d5bff','#18e0c8','#8be3ff'],a:['#1fa2ff','#3b5bff'],p:['#38bdf8','#22d3ee','#2dd4bf','#60a5fa','#818cf8','#a5f3fc','#34d399','#93c5fd']},
  sunset:{n:'Sunset',b:['#ff6b4a','#ff2f7a','#ffb02e','#a24bff'],a:['#ff7a45','#ff2f7a'],p:['#ff7a45','#ff4d8d','#ffb02e','#ffd166','#f97316','#e879f9','#fb7185','#c084fc']},
+ soft:{n:'Soft toy',b:['#ff5fa2','#6f8bff','#2fe0c4','#ffb347'],a:['#ff5fa2','#7b6cff'],p:['#ff6fae','#ffb347','#ffe066','#5eead4','#69a7ff','#a78bfa','#fb7185','#4ade80'],skin:'soft'},
+ paper:{n:'Paper',b:['#ff5470','#4a7fb5','#2f9e6a','#e8a33d'],a:['#e0553f','#24406b'],p:['#ff5470','#e8a33d','#24406b','#2f9e6a','#7b6cff','#d9cdb4','#d64545','#4a7fb5'],skin:'paper'},
  berry:{n:'Berry',b:['#c026d3','#7c3aed','#f472b6','#38bdf8'],a:['#c026d3','#7c3aed'],p:['#e879f9','#a78bfa','#f472b6','#c084fc','#818cf8','#fb7185','#f0abfc','#67e8f9']}};
-function applyTheme(k){const t=TH[k]||TH.aurora,s=document.documentElement.style;t.b.forEach((c,i)=>s.setProperty('--b'+(i+1),c));s.setProperty('--a1',t.a[0]);s.setProperty('--a2',t.a[1]);PAL.splice(0,8,...t.p);store.set('d.theme',k);tickF={aurora:1300,ocean:950,sunset:1500,berry:1150}[k]||1300;$$('#themes .chip').forEach(c=>c.classList.toggle('on',c.dataset.k===k));renderOpts();renderBottle();draw()}
+function applyTheme(k){const t=TH[k]||TH.aurora,s=document.documentElement.style;t.b.forEach((c,i)=>s.setProperty('--b'+(i+1),c));s.setProperty('--a1',t.a[0]);s.setProperty('--a2',t.a[1]);PAL.splice(0,8,...t.p);document.documentElement.dataset.skin=t.skin||'classic';if(window.DKIT&&DKIT.invalidate)DKIT.invalidate();store.set('d.theme',k);tickF={aurora:1300,ocean:950,sunset:1500,berry:1150,soft:1200,paper:1600}[k]||1300;$$('#themes .chip').forEach(c=>c.classList.toggle('on',c.dataset.k===k));renderOpts();renderBottle();draw()}
 $('#themes').innerHTML=Object.keys(TH).map(k=>`<button class="chip" data-k="${k}">${TH[k].n}</button>`).join('');
 $$('#themes .chip').forEach(c=>c.onclick=()=>{applyTheme(c.dataset.k);tone(600,.1,.06,'sine',900)});
 applyTheme(store.get('d.theme','aurora'));renderSaved();

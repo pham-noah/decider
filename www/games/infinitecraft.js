@@ -2,6 +2,8 @@
  * local: a curated table of pairs plus a deterministic word-rule fallback, so a
  * combination never fails. Hold a chip to make it the decision. */
 (function () {
+  /* white ink flips to ink-black on the paper skin */
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT, TAU = Math.PI * 2; const cv = () => document.getElementById('icCv');
   const resEl = () => document.getElementById('icRes');
 
@@ -143,14 +145,13 @@
     if (press && press.chip === c && !press.moved && !press.done) {
       const p = Math.min(1, (performance.now() - press.t0) / 520); x.beginPath();
       x.arc(c.x + CW / 2, c.y + CHH / 2, 24, -Math.PI / 2, -Math.PI / 2 + TAU * p);
-      x.strokeStyle = 'rgba(255,255,255,.9)'; x.lineWidth = 2.2; x.lineCap = 'round'; x.stroke();
+      x.strokeStyle = INK(.9); x.lineWidth = 2.2; x.lineCap = 'round'; x.stroke();
     }
   }
 
   function draw() {
-    const x = g.x, w = g.w, h = g.h; const bg = x.createLinearGradient(0, 0, 0, h);
-    bg.addColorStop(0, '#251b58'); bg.addColorStop(1, '#140e34'); x.fillStyle = bg; x.fillRect(0, 0, w, h);
-    const step = 26, off = ((-pan % step) + step) % step; x.fillStyle = 'rgba(255,255,255,.05)';
+    const x = g.x, w = g.w, h = g.h; K.surf(x, w, h);
+    const step = 26, off = ((-pan % step) + step) % step; x.fillStyle = K.inkColor(.05);
     for (let yy = off; yy < h; yy += step) {
       for (let xx = 13; xx < w; xx += step) { x.beginPath(); x.arc(xx, yy, 1.1, 0, TAU); x.fill(); }
     }
@@ -159,7 +160,7 @@
     if (maxPan() > 0 && pan < maxPan() - 2) {
       const fg = x.createLinearGradient(0, h - 46, 0, h);
       fg.addColorStop(0, 'rgba(20,14,52,0)'); fg.addColorStop(1, 'rgba(20,14,52,.9)');
-      x.fillStyle = fg; x.fillRect(0, h - 46, w, 46); x.fillStyle = 'rgba(255,255,255,.45)';
+      x.fillStyle = fg; x.fillRect(0, h - 46, w, 46); x.fillStyle = INK(.45);
       x.font = '700 10px "Bricolage Grotesque",system-ui,sans-serif';
       x.textAlign = 'center'; x.textBaseline = 'alphabetic'; x.fillText('drag the board to scroll', w / 2, h - 10);
     }
