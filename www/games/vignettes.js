@@ -33,7 +33,7 @@
   ]; const N = SHAPES.length;
 
   let L = null, g = null, idx = 0, prev = 0, m = 1, ang = 0, vAng = 0;
-  let dragging = false, lastX = 0, bounce = 1, bv = 0, flashes = [], t = 0, pendingFlip = 0; let found = SHAPES.map((_, i) => i === 0);
+  let dragging = false, lastX = 0, bounce = 1, bv = 0, flashes = [], t = 0, pendingFlip = 0; let found = SHAPES.map((_, i) => i === 0); let allBeaten = false;
 
   const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); } catch (e) {} };
   const hap = (n) => { try { buzz(n); } catch (e) {} };
@@ -133,10 +133,10 @@
     x.scale(R * bounce * Math.max(.07, Math.cos(ang)), R * bounce);
 
     const col = mix(A.col, B.col, m), dep = .09 + Math.sin(ang) * .34;
-    const dark = mix(col, '#150f2e', .42 + .1 * m);
+    /* step the side faces so the extrusion reads as a bevel instead of one slab */
     for (let i = 6; i >= 1; i--) {
       x.save(); x.translate(-dep * i / 6, dep * .34 * i / 6);
-      path(x, lobes); x.fillStyle = dark; x.fill(); x.restore();
+      path(x, lobes); x.fillStyle = mix(col, '#150f2e', .30 + .11 * (i / 6)); x.fill(); x.restore();
     }
 
     path(x, lobes); const grd = x.createLinearGradient(0, -1.1, 0, 1.1);
@@ -170,6 +170,13 @@
     x.fillStyle = INK(.4); x.font = '700 10px "Bricolage Grotesque",system-ui,sans-serif';
     x.textAlign = 'right'; x.textBaseline = 'bottom';
     x.fillText(found.filter(Boolean).length + ' / ' + N + ' found', w - 14, h - 14); x.restore();
+    /* nothing happened at 6/6: the collection just read the same number */
+    if (!allBeaten && found.every(Boolean)) {
+      allBeaten = true;
+      try { confetti(); } catch (e) {}
+      try { tone(523, .12, .05, 'triangle', 660); tone(659, .14, .05, 'triangle', 780); tone(784, .18, .05, 'triangle', 920); } catch (e) {}
+      try { hap([10, 20, 10]); } catch (e) {}
+    }
   }
 
   /* K.loop stops re-arming the moment a frame throws, so a single bad frame

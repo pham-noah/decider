@@ -164,6 +164,16 @@
     if (netT > 0) netT = Math.max(0, netT - dt * .04);
     if (phase === 'fly') physics(dt);
     if (phase === 'pause') { pause -= dt; if (pause <= 0) { if (shots >= 3) finish(); else resetBall(); } }
+    /* a floor plane and a stand, so the hoop is not floating in a dark rectangle */
+    const fy = h * 0.855;
+    const fl = x.createLinearGradient(0, fy, 0, h);
+    fl.addColorStop(0, K.mat().flat ? 'rgba(36,26,58,.10)' : 'rgba(255,255,255,.10)');
+    fl.addColorStop(1, K.mat().flat ? 'rgba(36,26,58,.03)' : 'rgba(255,255,255,.02)');
+    x.fillStyle = fl; x.fillRect(0, fy, w, h - fy);
+    x.strokeStyle = INK(.35); x.lineWidth = 1.5;
+    x.beginPath(); x.moveTo(0, fy); x.lineTo(w, fy); x.stroke();
+    x.strokeStyle = INK(.45); x.lineWidth = 4;
+    x.beginPath(); x.moveTo(geo.cx + geo.rimW * 0.2, geo.rimY - 34); x.lineTo(geo.cx + geo.rimW * 0.2, fy); x.stroke();
     drawHoop(x);
     drawTally(x, h);
     drawZone(x, w, h);

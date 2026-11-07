@@ -71,7 +71,12 @@
         if (!p.hit && py < p.top && ring.y >= p.top && Math.abs(ring.x - p.x) < 14) { capture(p); return; }
       }
     }
-    if (ring.vy > 0 && ring.y > geo.baseY - 5) miss();
+    if (ring.vy > 0 && ring.y > geo.baseY - 5) {
+      if (ring.falling) return;
+      /* let it drop past the shelf instead of snapping onto it */
+      ring.falling = true; ring.vy = Math.max(ring.vy, 6); ring.vx *= .4;
+    }
+    if (ring.falling && ring.y > geo.h + 30) miss();
   }
 
   function pill(x, px, py, t, max, size, bg, fg) {
@@ -87,7 +92,8 @@
   function drawScene(x, g) {
     const { baseY, cx } = geo; x.fillStyle = INK(.55);
     for (let i = 0; i < 9; i++) {
-      const bx = 14 + i * (g.w - 22) / 8; x.beginPath(); x.moveTo(bx - 8, 10); x.lineTo(bx + 8, 10); x.lineTo(bx, 26); x.closePath(); x.fillStyle = PAL[i % PAL.length] + 'bb'; x.fill();
+      /* the ninth pennant sat at w-8 with a 16px triangle: half of it was off-canvas */
+      const bx = 20 + i * (g.w - 40) / 8; x.beginPath(); x.moveTo(bx - 8, 10); x.lineTo(bx + 8, 10); x.lineTo(bx, 26); x.closePath(); x.fillStyle = PAL[i % PAL.length] + 'bb'; x.fill();
     }
     K.rr(x, 8, baseY - 7, g.w - 16, 15, 7); x.fillStyle = 'rgba(36,26,85,.82)'; x.fill();
     K.rr(x, 8, baseY + 5, g.w - 16, 52, 12); x.fillStyle = INK(.42); x.fill();

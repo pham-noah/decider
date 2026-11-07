@@ -31,7 +31,7 @@
         r: g.cr, vx: (Math.random() - 0.5) * 0.5, vy: 0, rot: Math.random() * 6.28,
         ci: Math.floor(Math.random() * labels.length), pop: 1, fall: -1 });
     }
-    coins.forEach(c => { if (c.fall < 0) c.y += 0.8; });
+    /* the feed used to teleport the whole pile forward: insert, and let gravity do it */
     if (!quiet) try { tone(480 + Math.random() * 220, .05, .035, 'triangle'); } catch (e) {}
   }
 
@@ -56,6 +56,19 @@
       // the plate shoves hardest up close; the pile ahead compresses against the lip
       if (df > 0 && c.y > f) c.y += df * 0.7 * Math.max(0.16, 1 - (c.y - f) / (g.lip - g.back));
       if (c.y - c.r < f) c.y = f + c.r;
+      /* settle: a coin unsupported from below falls, and stops on the lip or on the
+         next coin down. Without this the pile floated mid-air and never stacked. */
+      if (c.y + c.r < g.lip) {
+        let floorYv = g.lip - c.r;
+        for (let j = 0; j < coins.length; j++) {
+          const o = coins[j];
+          if (o === c || o.fall >= 0) continue;
+          if (Math.abs(o.x - c.x) < c.r * 1.5 && o.y > c.y) floorYv = Math.min(floorYv, o.y - c.r * 1.7);
+        }
+        c.vy += 0.30 * dt;
+        c.y = Math.min(floorYv, c.y + Math.max(0, c.vy) * dt);
+        if (c.y >= floorYv) { c.vy *= 0.2; }
+      }
       c.x += c.vx * dt; c.y += Math.max(0, c.vy) * dt;
       c.vx *= 0.9; c.vy *= 0.6;
       if (c.pop > 0) c.pop = Math.max(0, c.pop - 0.09 * dt);

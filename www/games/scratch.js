@@ -23,6 +23,36 @@
     paintBase(); paintFoil();
   }
 
+  /* the twelve trinkets all rendered as the same 46px word; five primitives cover them */
+  function trinket(b, cx, cy, r, name) {
+    b.save(); b.translate(cx, cy); b.lineWidth = Math.max(2, r * 0.10);
+    b.strokeStyle = '#241a55'; b.fillStyle = '#fffdf8';
+    const n = name.toLowerCase();
+    if (/star|moon/.test(n)) {
+      b.beginPath();
+      for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .42 : r; b[i ? 'lineTo' : 'moveTo'](Math.cos(a) * rr, Math.sin(a) * rr); }
+      b.closePath(); b.fill(); b.stroke();
+    } else if (/coin|bell|cherry|shell/.test(n)) {
+      b.beginPath(); b.arc(0, 0, r * .78, 0, TAU); b.fill(); b.stroke();
+      b.beginPath(); b.arc(0, 0, r * .34, 0, TAU); b.fillStyle = PAL[1 % PAL.length]; b.fill();
+    } else if (/crown/.test(n)) {
+      b.beginPath(); b.moveTo(-r * .8, r * .45); b.lineTo(-r * .8, -r * .35); b.lineTo(-r * .35, r * .05);
+      b.lineTo(0, -r * .55); b.lineTo(r * .35, r * .05); b.lineTo(r * .8, -r * .35); b.lineTo(r * .8, r * .45);
+      b.closePath(); b.fill(); b.stroke();
+    } else if (/fish|dinosaur/.test(n)) {
+      b.beginPath(); b.ellipse(-r * .12, 0, r * .65, r * .42, 0, 0, TAU); b.fill(); b.stroke();
+      b.beginPath(); b.moveTo(r * .5, 0); b.lineTo(r * .92, -r * .35); b.lineTo(r * .92, r * .35); b.closePath(); b.fill(); b.stroke();
+    } else if (/key/.test(n)) {
+      b.beginPath(); b.arc(-r * .45, 0, r * .3, 0, TAU); b.fill(); b.stroke();
+      b.beginPath(); b.moveTo(-r * .15, 0); b.lineTo(r * .8, 0); b.moveTo(r * .5, 0); b.lineTo(r * .5, r * .28); b.stroke();
+    } else {
+      b.beginPath(); b.arc(0, 0, r * .7, 0, TAU); b.fill(); b.stroke();
+      b.beginPath(); b.moveTo(-r * .2, -r * .35); b.lineTo(r * .2, -r * .35); b.lineTo(r * .2, r * .45);
+      b.lineTo(0, r * .2); b.lineTo(-r * .2, r * .45); b.closePath(); b.fill(); b.stroke();
+    }
+    b.restore();
+  }
+
   function wrap(b, text, maxW) {
     const out = []; let cur = '';
     String(text).split(/\s+/).forEach(w => {
@@ -61,6 +91,7 @@
       size -= 3; b.font = font(size);
     }
     b.fillStyle = '#241a55';
+    trinket(b, g.w / 2, B.y + B.h * 0.30, Math.min(30, B.w * 0.11), label);
     const lh = size * 1.14, y0 = B.y + B.h * 0.47 - (lines.length - 1) * lh / 2;
     lines.forEach((t, i) => b.fillText(t, g.w / 2, y0 + i * lh + size * 0.34));
 
