@@ -191,7 +191,7 @@
       x.globalAlpha = 1;
     }
 
-    const barY = B.y + B.h - 18;
+    const barY = Math.max(26, B.y - 10);   // above the card, never over the trinket
     K.rr(x, B.x + 14, barY, B.w - 28, 6, 3); x.fillStyle = INK(.28); x.fill();
     K.rr(x, B.x + 14, barY, Math.max(6, (B.w - 28) * frac), 6, 3);
     x.fillStyle = revealed ? '#8fffc9' : INK(1); x.fill();

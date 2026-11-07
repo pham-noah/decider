@@ -138,7 +138,7 @@
       /* angle is driven by the finger */
     } else if (Math.abs(v) > 0.012) {
       a += v * dt;
-      v *= Math.pow(0.986, dt);
+      v *= Math.pow(0.955, dt);   // ~1.2s to settle instead of 4-5
       if (Math.abs(v) < 0.02 && touched && !done) {
         const k = nearest();
         const base = -Math.PI / 2 - (k * TAU) / arms;

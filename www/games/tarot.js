@@ -16,7 +16,9 @@
   function layout() {
     const c = cv(); if (!c) return;
     g = K.fit(c);
-    const cw = Math.min(104, g.w * 0.33), ch = cw * 1.55;
+    /* scale the hand with the canvas: 104px caps left a wide card with three small
+       cards huddled in the middle and a dead fifth of height below them */
+    const cw = Math.min(g.w * 0.30, g.h * 0.36), ch = cw * 1.45;
     spots = [0, 1, 2].map(i => ({
       x: g.w * [0.25, 0.5, 0.75][i], y: g.h * 0.55, rot: [-0.2, 0, 0.2][i], w: cw, h: ch
     }));

@@ -9,7 +9,7 @@
   const TAU = Math.PI * 2;
   let L = null, g = null, pool = [], reels = [], spinning = false, spinStart = 0, power = 0.5;
   let LM = null;                       // lever metrics, refreshed every frame
-  let pull = 0, pulling = false, armed = false, startX = 0, startY = 0;
+  let pull = 0, pulling = false, armed = false, startX = 0, startY = 0, winFlash = null;
 
   const PULL_PX = 92;                  // finger travel for a full pull
 
@@ -31,7 +31,7 @@
   function start(p) {
     if (spinning || !reels.length) return;
     power = Math.max(0, Math.min(1, p == null ? 0.5 : p));
-    spinning = true;
+    spinning = true; winFlash = null;
     spinStart = performance.now();
     const base = 520 + power * 1050;                        // harder pull = longer run
     reels.forEach((r, i) => {
@@ -59,6 +59,8 @@
       return;
     }
     const label = pool[best];
+    winFlash = { label: best, t: 0, bn };
+    try { buzz(bn === 3 ? [12, 40, 12] : [8, 24]); } catch (e) {}
     K.setResult(res, bn === 3 ? label + ' ×3' : label + ' ×2');
     K.decide(label, 'Slots', bn === 3 ? 'Three of a kind' : 'Two of a kind');
   }
@@ -132,11 +134,22 @@
 
     const bob = spinning ? 0 : Math.sin(now / 700) * 2;
 
+    const wf = winFlash && !spinning ? winFlash : null;
+    if (wf) { wf.t += 1; }
     reels.forEach((r, i) => {
       const cx = m + i * (rw + gap) + rw / 2;
+      const won = wf && (((Math.round(r.pos) % pool.length) + pool.length) % pool.length) === wf.label;
       K.rr(x, cx - rw / 2, top, rw, wh, 15);
       x.fillStyle = 'rgba(9,4,26,.78)'; x.fill();
-      x.strokeStyle = INK(.22); x.lineWidth = 1.4; x.stroke();
+      if (won) {
+        /* the reels that matched used to look exactly like the ones that did not */
+        const pulse = 0.55 + 0.45 * Math.sin(wf.t / 6);
+        x.save(); x.shadowColor = 'rgba(255,215,106,' + (.5 + .5 * pulse) + ')'; x.shadowBlur = 18;
+        x.strokeStyle = 'rgba(255,215,106,' + (.6 + .35 * pulse) + ')'; x.lineWidth = 3; x.stroke();
+        x.restore();
+      } else {
+        x.strokeStyle = INK(.22); x.lineWidth = 1.4; x.stroke();
+      }
 
       x.save();
       K.rr(x, cx - rw / 2, top, rw, wh, 15); x.clip();

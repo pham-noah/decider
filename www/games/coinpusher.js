@@ -13,7 +13,7 @@
     const slotH = Math.min(42, Math.max(30, f.h * 0.1));
     const slotW = Math.min(150, Math.max(96, f.w * 0.52));
     const slotCy = Math.max(slotH / 2 + 6, (f.h * 0.28 - 40) / 2);
-    return { x: f.x, w: f.w, h: f.h, l: 12, r: f.w - 12, back: f.h * 0.28, lip: f.h * 0.80,
+    return { x: f.x, w: f.w, h: f.h, l: 12, r: f.w - 12, back: f.h * 0.30, lip: f.h * 0.62,
       travel: f.h * 0.17, cr: Math.max(6, f.w * 0.028), face: f.h * 0.28,
       slot: { x: f.w / 2, y: slotCy, w: slotW, h: slotH } };
   }

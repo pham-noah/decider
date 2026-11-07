@@ -6,7 +6,7 @@
   const cv = () => document.getElementById('rtCv');
   const res = () => document.getElementById('rtRes');
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-  const HS = [.125, .09, .14, .085, .115];
+  const HS = [.30, .22, .34, .20, .27];   // peg heights: the top third used to be empty
   let L = null, labels = [], geo = null, pegs = [], drag = null;
   let ring = null, state = 'ready', settle = 0, ringsLeft = 3, lastX = 0, winner = null;
 

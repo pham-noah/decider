@@ -75,13 +75,14 @@
       x.fillText(t === s.l ? t : t + '…', s.x, slotY + (g.h - slotY) / 2);
     });
 
-    // pegs
+    // pegs — a struck peg flashes, so the cascade is visible as well as audible
     pegs.forEach(p => {
+      if (p.flash) p.flash = Math.max(0, p.flash - 0.07);
       x.beginPath();
-      x.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      x.fillStyle = INK(.95);
+      x.arc(p.x, p.y, p.r * (1 + (p.flash || 0) * 0.5), 0, Math.PI * 2);
+      x.fillStyle = p.flash ? 'rgba(255,215,106,' + (.5 + p.flash * .5) + ')' : INK(.95);
       x.fill();
-      x.strokeStyle = 'rgba(111,139,255,.5)';
+      x.strokeStyle = p.flash ? 'rgba(255,215,106,.9)' : 'rgba(111,139,255,.5)';
       x.lineWidth = 1.5;
       x.stroke();
     });
@@ -119,6 +120,14 @@
           b.vy = (b.vy - 2 * vn * ny) * 0.66;
           // a hair of asymmetry so a dead-centre hit still rolls off a peg
           b.vx += Math.abs(ny) < 0.08 ? Math.sign(dx || 1) * 0.12 : 0;
+          /* the cascade is the toy's signature and it was completely silent */
+          const nowP = performance.now();
+          if (nowP - (b.ping || 0) > 55) {
+            b.ping = nowP;
+            try { tone(480 + Math.random() * 320, .03, .02, 'triangle'); } catch (e) {}
+            if (!b.buzzed) { b.buzzed = true; try { buzz(5); } catch (e) {} }
+            p.flash = 1;
+          }
         }
       });
       if (b.x < b.r + 2) { b.x = b.r + 2; b.vx = Math.abs(b.vx) * 0.6; }
