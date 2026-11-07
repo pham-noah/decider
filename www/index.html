@@ -125,9 +125,31 @@ input[type=text]:focus-visible,button:focus-visible{box-shadow:0 0 0 3px rgba(12
 .cshadow{position:absolute;bottom:4px;width:130px;height:22px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.35),transparent)}
 .pair{display:flex;gap:10px;width:min(100%,420px)}
 .lbl{font-size:13px;color:var(--ink2);margin-bottom:6px;text-align:center}
-.tiles{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;min-height:120px}
-.tile{width:104px;height:104px;border-radius:28px;display:grid;place-items:center;font-size:44px;font-weight:800;letter-spacing:-.03em}
-.tile span{position:relative;z-index:1}
+.tiles{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center;min-height:120px}
+/* Each tile is a stage, not a card: the die itself is the object. The scene
+   perspective lives on the tile, the hop on .dsh, a fixed three-quarter tilt on
+   .dview (so a settled die still reads as a cube) and the tumble on .cube. Only
+   .cube's transform decides which face is to the front, so it stays exact. */
+.tile{--ds:88px;width:104px;height:104px;position:relative;display:grid;place-items:center;perspective:520px;perspective-origin:50% 46%}
+.dsh,.dview,.cube{transform-style:preserve-3d}
+.dsh{will-change:transform}
+.dview{transform:rotateX(-16deg) rotateY(-22deg)}
+.cube{position:relative;width:var(--ds);height:var(--ds);transform:rotateX(0deg) rotateY(0deg);will-change:transform}
+.dface{position:absolute;inset:0;box-sizing:border-box;border-radius:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:9%;
+ background:linear-gradient(148deg,#fffdf8,#f6f0e5 55%,#e9dfcf);color:#241a3a;
+ box-shadow:inset 0 0 0 1.5px rgba(96,74,44,.20),inset 0 -8px 14px rgba(120,96,60,.10),inset 0 8px 12px rgba(255,255,255,.85);
+ -webkit-backface-visibility:hidden;backface-visibility:hidden}
+.dface i{width:76%;aspect-ratio:1;border-radius:50%;justify-self:center;align-self:center;
+ background:radial-gradient(circle at 34% 30%,#5d5573,#241a3a 72%);box-shadow:inset 0 -1px 2px rgba(0,0,0,.4),0 1px 0 rgba(255,255,255,.5)}
+.dface b{grid-area:1/1/4/4;place-self:center;font-weight:800;font-size:calc(var(--ds)*.36);line-height:1;letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.f-pz{transform:translateZ(calc(var(--ds)/2))}
+.f-nz{transform:rotateY(180deg) translateZ(calc(var(--ds)/2))}
+.f-px{transform:rotateY(90deg) translateZ(calc(var(--ds)/2))}
+.f-nx{transform:rotateY(-90deg) translateZ(calc(var(--ds)/2))}
+.f-ny{transform:rotateX(90deg) translateZ(calc(var(--ds)/2))}
+.f-py{transform:rotateX(-90deg) translateZ(calc(var(--ds)/2))}
+.dshadow{position:absolute;left:50%;bottom:3px;width:calc(var(--ds)*.8);height:calc(var(--ds)*.17);margin-left:calc(var(--ds)*-.4);border-radius:50%;pointer-events:none;
+ background:radial-gradient(closest-side,rgba(24,12,48,.32),rgba(24,12,48,0))}
 .stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:18px}
 .stat div{padding:14px;border-radius:20px;background:var(--field);border:1px solid var(--edge)}
 .stat b{display:block;font-size:28px;font-weight:800;letter-spacing:-.03em}
@@ -344,7 +366,7 @@ h2{font-size:calc(20px*var(--fs,1))}
  .res{min-height:42px}
  .bst{width:min(100%,236px)}
  .pad{height:min(52vh,330px);min-height:240px}
- .tile{width:88px;height:88px;border-radius:24px;font-size:38px}
+ .tile{--ds:74px;width:88px;height:88px}
 }
 :root[data-contrast="high"]{--g1:#fff;--g2:#fff;--edge:#1d1340;--field:#fff;--ink:#000;--ink2:#1d1340;--sh:rgba(0,0,0,.35);--tgOff:#1d1340}
 @media(prefers-color-scheme:dark){:root[data-contrast="high"]:not([data-theme="light"]){--g1:#150f38;--g2:#150f38;--edge:#fff;--field:#241a55;--ink:#fff;--ink2:#fff;--base:#000;--tgOff:rgba(255,255,255,.35)}}
@@ -737,28 +759,90 @@ function coinLand(){if(calm)return;const r=$('#cn').getBoundingClientRect(),cx=r
  $('.cwrap').animate([{transform:'scale(1,1)'},{transform:'scale(1.08,.88)',offset:.3},{transform:'scale(.98,1.04)',offset:.6},{transform:'scale(1,1)'}],{duration:440,easing:'ease-out'});
  tone(2300,.45,.07,'sine');setTimeout(()=>tone(3450,.3,.04,'sine'),70);tone(120,.12,.12,'sine',60)}
 
-/* dice */
-let sides=6,cnt=2,rolling=false;
-function renderDice(){$('#tiles').innerHTML=Array.from({length:cnt},()=>'<div class="glass tile"><span>?</span></div>').join('');
+/* dice — real 3D cubes.
+   Geometry: six .dface panels on ±X/±Y/±Z, opposite pairs summing to seven like a
+   real die. A face is "to the front" when its outward normal, rotated by the cube's
+   rotateX/rotateY, points at +Z. DIE_FACES below is the exact inverse of the .f-*
+   transforms in the CSS, so landing on a face is a lookup, not a guess. */
+let sides=6,cnt=2,rolling=false,rollSeq=0;
+const PIPS={1:[[2,2]],2:[[1,1],[3,3]],3:[[1,1],[2,2],[3,3]],4:[[1,1],[1,3],[3,1],[3,3]],5:[[1,1],[1,3],[2,2],[3,1],[3,3]],6:[[1,1],[1,3],[2,1],[2,3],[3,1],[3,3]]};
+const DIE_FACES=[[1,'f-pz',0,0],[6,'f-nz',0,180],[2,'f-px',0,-90],[5,'f-nx',0,90],[3,'f-ny',-90,0],[4,'f-py',90,0]];
+/* which of the six panels carries a rolled value: d6 uses the panel with that pip
+   count; other dice borrow a panel by value and print the numeral on it */
+function faceFor(v){return sides===6?v:(v-1)%6+1}
+function dieFaceHTML([val,cls]){return `<div class="dface ${cls}" data-v="${val}">${sides===6?PIPS[val].map(([r,c])=>`<i style="grid-area:${r}/${c}"></i>`).join(''):`<b>${val}</b>`}</div>`}
+function renderDice(){rollSeq++;rolling=false;$('#roll').disabled=false;
+ $('#tiles').innerHTML=Array.from({length:cnt},()=>`<div class="tile"><i class="dshadow"></i><div class="dsh"><div class="dview"><div class="cube">${DIE_FACES.map(dieFaceHTML).join('')}</div></div></div></div>`).join('');
  $('#dsides').innerHTML=[4,6,8,10,12,20,100].map(n=>`<button class="chip${n===sides?' on':''}">d${n}</button>`).join('');
  $('#dcnt').innerHTML=[1,2,3,4].map(n=>`<button class="chip${n===cnt?' on':''}">${n} ${n>1?'dice':'die'}</button>`).join('');
  $$('#dsides .chip').forEach(b=>b.onclick=()=>{sides=+b.textContent.slice(1);renderDice()});
  $$('#dcnt .chip').forEach(b=>b.onclick=()=>{cnt=parseInt(b.textContent);renderDice()})}
 renderDice();
 $('#roll').onclick=()=>{if(rolling)return;rolling=true;$('#roll').disabled=true;
- const T=$$('.tile'),fin=T.map(()=>1+Math.floor(rnd()*sides)),base=calm?3:15,stop=T.map((_,i)=>base+(calm?0:i*3)),landed=T.map(()=>false);let n=0,left=T.length;$('#dres').innerHTML='<span class="muted">…</span>';
- T.forEach((t,i)=>{const s=i%2?-1:1,d=(calm?300:1050)+(calm?0:i*3*68);t.animate([{transform:'rotate(0) translateY(0) scale(1)'},{transform:`rotate(${s*190}deg) translateY(-46px) scale(1.14)`,offset:.45},{transform:`rotate(${s*360}deg) translateY(0) scale(1)`}],{duration:d,easing:'cubic-bezier(.3,.8,.3,1)'})});
+ const seq=++rollSeq,T=$$('.tile'),fin=T.map(()=>1+Math.floor(rnd()*sides));let left=T.length;
+ $('#dres').innerHTML='<span class="muted">…</span>';
  if(!calm){tone(260,.3,.05,'triangle',520);buzz(10)}
- const iv=setInterval(()=>{if(cur!=='dice'){clearInterval(iv);rolling=false;$('#roll').disabled=false;return}n++;T.forEach((t,i)=>{if(landed[i])return;if(n<=stop[i])t.firstChild.textContent=1+Math.floor(Math.random()*sides);else{landed[i]=true;left--;landDie(t,fin[i],i)}});
-  if(n<=stop[T.length-1])tone(260+Math.random()*260,.04,.05,'square');
-  if(!left){clearInterval(iv);const sum=fin.reduce((a,b)=>a+b,0),allMax=sides>2&&fin.every(v=>v===sides);
+ T.forEach((t,i)=>{
+  const delay=calm?0:i*150,dur=calm?240:1020+i*40+Math.round(rnd()*80);
+  spinDie(t,fin[i],i,delay,dur);
+  setTimeout(()=>{
+   if(seq!==rollSeq)return;
+   if(cur!=='dice'){rolling=false;$('#roll').disabled=false;return}
+   landDie(t,fin[i],i);
+   if(--left)return;
+   const sum=fin.reduce((a,b)=>a+b,0),allMax=sides>2&&fin.every(v=>v===sides);
    show($('#dres'),cnt>1?sum+'  ('+fin.join(' + ')+')':String(sum));chime();buzz([20,30,20]);log('Dice',`${cnt}d${sides} = ${sum}`);if(allMax)confetti();
-   later(()=>moment(String(sum),`${cnt}d${sides}`+(cnt>1?': '+fin.join(' + '):'')+(allMax?' — max roll!':'')));rolling=false;$('#roll').disabled=false}},68)};
-function landDie(t,v,i){t.firstChild.textContent=v;t.animate([{transform:'scale(1.3,.8)'},{transform:'scale(.94,1.1)',offset:.4},{transform:'scale(1)'}],{duration:480,easing:'cubic-bezier(.2,1.6,.4,1)'});
+   later(()=>moment(String(sum),`${cnt}d${sides}`+(cnt>1?': '+fin.join(' + '):'')+(allMax?' — max roll!':'')));rolling=false;$('#roll').disabled=false;
+  },delay+dur+20);
+ });
+};
+/* Tumble: the cube spins about X and Y while a wrapper hops it. Rotation is the
+   only thing that decides the face, so the last two keyframes settle exactly on
+   the target angles (a 9° overshoot and back, like a die rocking to rest). */
+function spinDie(t,v,i,delay,dur){
+ const cube=t.querySelector('.cube'),sh=t.querySelector('.dsh'),sd=t.querySelector('.dshadow');
+ const F=DIE_FACES.find(f=>f[0]===faceFor(v)),bx=F[2],by=F[3],st=t._rot||{x:0,y:0},sx=st.x,sy=st.y;
+ cube.style.transform=`rotateX(${sx}deg) rotateY(${sy}deg)`;t._rot={x:bx,y:by};
+ if(calm){
+  t._anims=[cube.animate([{transform:`rotateX(${sx}deg) rotateY(${sy}deg)`},{transform:`rotateX(${bx}deg) rotateY(${by}deg)`}],{duration:dur,easing:'cubic-bezier(.4,0,.2,1)',fill:'both'})];
+  return;
+ }
+ const dx=i%2?-1:1,dy=-dx;let ex=bx,ey=by;
+ while(dx>0?ex<sx+720:ex>sx-720)ex+=360*dx;
+ while(dy>0?ey<sy+720:ey>sy-720)ey+=360*dy;
+ const ca=cube.animate([
+  {transform:`rotateX(${sx}deg) rotateY(${sy}deg)`,offset:0,easing:'cubic-bezier(.36,0,.6,.26)'},
+  {transform:`rotateX(${(sx+(ex-sx)*.6).toFixed(2)}deg) rotateY(${(sy+(ey-sy)*.56).toFixed(2)}deg)`,offset:.4,easing:'cubic-bezier(.42,0,.62,.4)'},
+  {transform:`rotateX(${(sx+(ex-sx)*.92).toFixed(2)}deg) rotateY(${(sy+(ey-sy)*.9).toFixed(2)}deg)`,offset:.74,easing:'cubic-bezier(.2,.6,.42,1)'},
+  {transform:`rotateX(${ex+9*dx}deg) rotateY(${ey+9*dy}deg)`,offset:.91,easing:'cubic-bezier(.3,0,.5,1)'},
+  {transform:`rotateX(${ex}deg) rotateY(${ey}deg)`,offset:1}
+ ],{duration:dur,delay:delay,fill:'both'});
+ const ha=sh.animate([
+  {transform:'translateY(0) scale(1,1)',offset:0,easing:'cubic-bezier(.22,.68,.55,1)'},
+  {transform:'translateY(-40px) scale(.97,1.05)',offset:.28,easing:'cubic-bezier(.4,0,.82,.5)'},
+  {transform:'translateY(0) scale(1.06,.92)',offset:.68,easing:'cubic-bezier(.2,.7,.4,1)'},
+  {transform:'translateY(-11px) scale(.99,1.02)',offset:.79,easing:'cubic-bezier(.4,0,.8,.5)'},
+  {transform:'translateY(0) scale(1.03,.97)',offset:.9,easing:'ease-out'},
+  {transform:'translateY(0) scale(1,1)',offset:1}
+ ],{duration:dur,delay:delay,fill:'both'});
+ if(sd)sd.animate([{transform:'scale(1)',opacity:.9,offset:0},{transform:'scale(.6)',opacity:.45,offset:.3},{transform:'scale(1.08)',opacity:1,offset:.7},{transform:'scale(1)',opacity:.9,offset:1}],{duration:dur,delay:delay});
+ t._anims=[ca,ha];
+}
+function landDie(t,v,i){
+ const cube=t.querySelector('.cube'),sh=t.querySelector('.dsh');
+ if(t._anims){t._anims.forEach(a=>a.cancel());t._anims=null}
+ const F=DIE_FACES.find(f=>f[0]===faceFor(v)),bx=F[2],by=F[3];
+ t._rot={x:bx,y:by};cube.style.transform=`rotateX(${bx}deg) rotateY(${by}deg)`;
+ if(sides!==6){[...t.querySelectorAll('.dface')].forEach((f,k)=>{const b=f.querySelector('b');if(b)b.textContent=DIE_FACES[k][0]});
+  const b=t.querySelector('.dface.'+F[1]+' b');if(b)b.textContent=v}
+ if(!calm)sh.animate([{transform:'translateY(0) scale(1.07,.91)'},{transform:'translateY(-7px) scale(.985,1.02)',offset:.35},{transform:'translateY(0) scale(1.02,.98)',offset:.7},{transform:'translateY(0) scale(1,1)'}],{duration:360,easing:'ease-out'});
+ diceClick(i);
  if(calm)return;const r=t.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,big=v===sides&&sides>2;
- tone(120+i*35,.14,.18,'sine',55);buzz(12);ringAt(cx,cy,big?'#ffd36a':'#ffffff',150);sparks(cx,cy,big?'#ffd36a':PAL[i%8],big?18:8,big?10:7);
- if(big)t.animate([{boxShadow:'0 0 0 rgba(255,214,106,0)'},{boxShadow:'0 0 46px rgba(255,214,106,.95)',offset:.3},{boxShadow:'0 0 0 rgba(255,214,106,0)'}],{duration:900});
+ ringAt(cx,cy,big?'#ffd36a':'#ffffff',big?230:150);sparks(cx,cy,big?'#ffd36a':PAL[i%8],big?18:8,big?10:7);buzz(12);
+ if(big)setTimeout(()=>ringAt(cx,cy,'#ffd36a',300),70);
  else if(v===1&&sides>2)shakeEl(t,5,420)}
+/* a woodblock: a bright transient over a short body, never a beep */
+function diceClick(i){tone(520+i*40,.045,.075,'triangle',210);tone(190+i*18,.09,.10,'sine',72)}
 
 /* fingers */
 const pad=$('#pad'),FM={win:'Winner',two:'2 winners',ord:'Order',team:'2 teams'};
