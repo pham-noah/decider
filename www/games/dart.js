@@ -104,7 +104,6 @@
     aim = null; busy = false;
     K.setResult(res(), labels[hit]);
     try { tone(680, .13, .05, 'sine', 1020); } catch (e) {}
-    K.decide(labels[hit], 'Dart', 'Board · sector ' + (hit + 1));
   }
 
   function frame(dt) {
@@ -148,7 +147,7 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'dart', name: 'Dart', short: 'Dart', label: 'Board', button: false,
+    id: 'dart', name: 'Dart', short: 'Dart', label: 'Board', noResult: true, button: false,
     body: `<canvas class="toy" id="dtCv"></canvas><div class="res" id="dtRes" aria-live="polite"><span class="muted">Drag to aim, let go to throw</span></div><button class="btn" id="dtGo">Throw</button>`,
     init(card) {
       /* one label per sector, and as many sectors as divide evenly: 6 stays a

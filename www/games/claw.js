@@ -47,7 +47,6 @@
   }
   function win(cap) {
     state = 'refill'; K.setResult(document.getElementById('clRes'), cap.label);
-    K.decide(cap.label, 'Claw', 'Grabbed from the machine');
     setTimeout(refill, 700);
   }
   function refill() {
@@ -169,7 +168,7 @@
     return Math.max(g.w * 0.13, Math.min(g.w * 0.88, e.clientX - r.left));
   }
   K && window.DECIDER_GAMES.push({
-    id: 'claw', name: 'Claw', short: 'Claw', label: 'Prizes', button: false,
+    id: 'claw', name: 'Claw', short: 'Claw', label: 'Prizes', noResult: true, button: false,
     body: `<canvas class="toy" id="clCv" style="max-height:min(62vh,max(240px,calc(100svh - 530px)))"></canvas>
       <div class="res" id="clRes" aria-live="polite" style="min-height:40px;font-size:calc(clamp(22px,5.2vw,30px)*var(--fs,1))"><span class="muted">Tap a capsule to drop the claw — or drag to aim, then let go</span></div>`,
     tune: `<div class="lbl">Every capsule hides one of your options. Drag, grab, hope.</div>`,

@@ -151,7 +151,6 @@
         busy = false;
         const label = slots[i].l;
         K.setResult(document.getElementById('pkRes'), label);
-        K.decide(label, 'Plinko', 'Aim ' + Math.round(aim * 100) + '% · ' + Math.round(power * 100) + '% flick');
       }
     });
     balls = balls.filter(b => !b.done);
@@ -161,7 +160,7 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'plinko', name: 'Plinko', short: 'Plinko', label: 'Pegs', button: false,
+    id: 'plinko', name: 'Plinko', short: 'Plinko', label: 'Pegs', noResult: true, button: false,
     body: `<canvas class="toy" id="pkCv"></canvas>
       <div class="res" id="pkRes" aria-live="polite"><span class="muted">Drop a ball and let the pegs decide</span></div>
       <button class="btn" id="pkGo">Drop</button>`,

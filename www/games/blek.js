@@ -285,7 +285,7 @@
   };
 
   K && window.DECIDER_GAMES.push({
-    id: 'blek', name: 'Blek', short: 'Blek', label: 'Line', button: false,
+    id: 'blek', name: 'Blek', short: 'Blek', label: 'Line', noResult: true, button: false,
     body: `<div class="chips" id="bkBar" style="margin:0 0 10px;gap:8px">
         <button class="chip" id="bkReset">↺ Reset</button>
         <span class="muted" style="font-size:calc(12.5px*var(--fs,1));align-self:center">draw once — it loops</span>

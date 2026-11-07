@@ -216,7 +216,7 @@
   }
   const at = (e) => { const r = cv().getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
   K && window.DECIDER_GAMES.push({
-    id: 'antistress', name: 'Antistress', short: 'Antistress', label: 'Fidgets', button: false,
+    id: 'antistress', name: 'Antistress', short: 'Antistress', label: 'Fidgets', noResult: true, button: false,
     body: `<canvas class="toy" id="antsCv"></canvas>
       <div class="res" id="antsRes" aria-live="polite"><span class="muted">Pop, turn, flip, press, stretch, squeeze</span></div>`,
     init(card) {

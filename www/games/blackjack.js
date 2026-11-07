@@ -25,17 +25,21 @@
   }
 
   function cardHTML(c, hidden) {
-    if (hidden) return `<div class="cardface down" style="width:clamp(46px,12.6vw,60px);height:clamp(66px,18vw,86px);border-radius:9px"></div>`;
+    if (hidden) return `<div class="cardface down" style="width:clamp(46px,12.6vw,60px);height:clamp(66px,18vw,86px)"></div>`;
     const red = c.s === '♥' || c.s === '♦';
-    return `<div class="cardface${red ? ' red' : ''}" style="width:clamp(46px,12.6vw,60px);height:clamp(66px,18vw,86px);border-radius:9px;font-size:0;animation:pop .32s cubic-bezier(.2,1.8,.4,1)">
+    return `<div class="cardface${red ? ' red' : ''}" style="width:clamp(46px,12.6vw,60px);height:clamp(66px,18vw,86px);font-size:0;animation:pop .32s cubic-bezier(.2,1.8,.4,1)">
       <span style="display:grid;justify-items:center;line-height:1"><b style="font-size:clamp(17px,4.4vw,22px)">${c.r}</b><i style="font-style:normal;font-size:clamp(13px,3.2vw,16px);line-height:1.1">${c.s}</i></span></div>`;
   }
 
   function render(showDealer) {
     $('bjDC').innerHTML = dealer.map((c, i) => cardHTML(c, !showDealer && i === 1)).join('');
     $('bjPC').innerHTML = you.map(c => cardHTML(c, false)).join('');
-    $('bjDl').textContent = showDealer ? 'Dealer · ' + total(dealer) : 'Dealer';
-    $('bjPl').textContent = 'You · ' + total(you);
+    /* the option names live on the hands, in full: the CSS ellipsis is the only
+       thing allowed to clip them, at the row's real width */
+    $('bjDl').textContent = (showDealer ? 'Dealer · ' + total(dealer) : 'Dealer') + ' · ' + loseLabel;
+    $('bjPl').textContent = 'You · ' + total(you) + ' · ' + winLabel;
+    $('bjDl').title = $('bjDl').textContent;
+    $('bjPl').title = $('bjPl').textContent;
   }
 
   function buttons(play) {
@@ -64,9 +68,10 @@
   function end(won, note) {
     gen++; state = 'over';
     render(true); buttons(false);
-    K.setResult($('bjRes'), (won ? winLabel : loseLabel) + ' — ' + note);   // the option was only in a dead K.decide
+    /* the verdict line leads with the option it picked, in full words.
+       noResult: this toy never calls K.decide — no card, confetti or history. */
+    K.setResult($('bjRes'), (won ? winLabel : loseLabel) + ' — ' + note);
     try { tone(won ? 720 : 170, 0.3, 0.06, won ? 'sine' : 'sawtooth', won ? 940 : 90); } catch (e) {}
-    K.decide(won ? winLabel : loseLabel, 'Blackjack', note);
   }
 
   function hit() {
@@ -75,7 +80,7 @@
     render(false);
     try { tone(540, 0.08, 0.05, 'square'); } catch (e) {}
     const t = total(you);
-    if (t > 21) end(false, 'Bust — ' + t);
+    if (t > 21) end(false, 'bust at ' + t);
     else if (t === 21) setTimeout(() => { if (state === 'play') stand(); }, 460);
   }
 
@@ -95,7 +100,9 @@
         return;
       }
       const p = total(you), d = total(dealer);
-      const note = d > 21 ? `Dealer busts · You ${p}` : `You ${p} · Dealer ${d}`;
+      const note = d > 21 ? 'you win · dealer busts · You ' + p
+        : p > d ? 'you win · You ' + p + ' · Dealer ' + d
+        : 'dealer wins · You ' + p + ' · Dealer ' + d;
       if (p !== d) return end(d > 21 || p > d, note);
       state = 'over';
       K.setResult($('bjRes'), 'Push — re-dealing');
@@ -110,10 +117,10 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'blackjack', name: 'Blackjack', short: '21', label: 'Rules',
-    body: `<div class="lbl" id="bjDl">Dealer</div>
+    id: 'blackjack', name: 'Blackjack', short: '21', label: 'Rules', noResult: true,
+    body: `<div class="lbl" id="bjDl" style="max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Dealer</div>
       <div class="cards3" id="bjDC" style="gap:6px;min-height:86px"></div>
-      <div class="lbl" id="bjPl">You</div>
+      <div class="lbl" id="bjPl" style="max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">You</div>
       <div class="cards3" id="bjPC" style="gap:6px;min-height:86px"></div>
       <div class="res" id="bjRes" aria-live="polite" style="font-size:calc(clamp(18px,4.8vw,25px)*var(--fs,1));min-height:44px"><span class="muted">Get closer to 21 than the dealer</span></div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">

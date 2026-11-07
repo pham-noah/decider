@@ -53,7 +53,6 @@
   function decide(p) {
     state = 'done'; const i = pegs.indexOf(p);
     K.setResult(res(), p.l);
-    K.decide(p.l, 'Ring Toss', 'Peg ' + (i + 1) + (p.hit ? ' ringed' : ' nearest'));
   }
 
   function nearest() {
@@ -141,7 +140,7 @@
   const at = (e) => { const r = cv().getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
 
   K && window.DECIDER_GAMES.push({
-    id: 'ringtoss', name: 'Ring Toss', short: 'Rings', label: 'Pegs', button: false,
+    id: 'ringtoss', name: 'Ring Toss', short: 'Rings', label: 'Pegs', noResult: true, button: false,
     body: `<canvas class="toy" id="rtCv"></canvas><div class="res" id="rtRes" aria-live="polite"><span class="muted">Flick a ring at a peg — three rings</span></div><button class="btn" id="rtGo">Toss</button>`,
     init(card) {
       /* Yes/No over five pegs read Yes/No/Yes/No/Yes — a 3:2 bias on a coin flip */

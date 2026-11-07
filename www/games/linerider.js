@@ -338,7 +338,7 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'linerider', name: 'Line Rider', short: 'Line Rider', label: 'Track', button: false,
+    id: 'linerider', name: 'Line Rider', short: 'Line Rider', label: 'Track', noResult: true, button: false,
     body: `<div class="chips" id="lrBar" style="margin:0 0 10px;gap:8px">
         <button class="chip" id="lrGo">▶ Go</button>
         <button class="chip" id="lrClear">↺ Clear</button>

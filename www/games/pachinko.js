@@ -55,7 +55,6 @@
     const i = Math.max(0, Math.min(slots.length - 1, Math.floor((b.x - 6) / slots[0].w)));
     landed = i;
     K.setResult(out(), slots[i].l);
-    K.decide(slots[i].l, 'Pachinko', 'Power ' + Math.round(b.power * 100) + '%');
   }
 
   function step(b, dt, g) {
@@ -176,7 +175,7 @@
   }
 
   window.DECIDER_GAMES.push({
-    id: 'pachinko', name: 'Pachinko', short: 'Pachinko', label: 'Power', button: false,
+    id: 'pachinko', name: 'Pachinko', short: 'Pachinko', label: 'Power', noResult: true, button: false,
     body: `<canvas class="toy" id="paCv"></canvas>
       <div class="res" id="paRes" aria-live="polite"><span class="muted">Hold to charge, release to fire</span></div>
       <button class="btn" id="paGo">Hold to fire</button>`,

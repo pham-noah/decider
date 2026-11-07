@@ -6,6 +6,12 @@
   const val = c => c.r === 'A' ? 14 : c.r === 'K' ? 13 : c.r === 'Q' ? 12 : c.r === 'J' ? 11 : +c.r;
   const $ = id => document.getElementById(id);
   let deck = [], hand = [], labels = [], slots = [], state = 'idle', busy = false, gen = 0;
+  /* labels are option names, never cut to a character budget: the slot clips with
+     CSS ellipsis at its real pixel width and keeps the full text in `title` */
+  const fitLabel = (el, text) => {
+    el.textContent = text;
+    el.title = text;
+  };
 
   function fresh() {
     deck = [];
@@ -31,7 +37,7 @@
       slot.innerHTML = `<div class="hcFlip" style="position:relative;width:96px;height:138px;transform-style:preserve-3d;transition:transform .72s cubic-bezier(.3,1.35,.4,1)">
           <div class="cardface down" style="position:absolute;inset:0;width:100%;height:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden"></div>
         </div>
-        <div class="lbl" style="margin:0;max-width:126px;line-height:1.15;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">—</div>`;
+        <div class="lbl hcLab" style="margin:0;width:100%;max-width:100%;line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere">—</div>`;
       host.appendChild(slot);
       return slot;
     });
@@ -50,12 +56,12 @@
       if (old) old.remove();
       flip.insertAdjacentHTML('beforeend', face(hand[i]));
       const front = flip.querySelector('.cardface:not(.down)');
-      if (front) { front.style.opacity = '1'; front.style.boxShadow = ''; }
+      if (front) { front.style.opacity = '1'; front.classList.remove('win'); }
       flip.style.transition = 'none';
       flip.style.transform = 'rotateY(0deg)';
       void flip.offsetWidth;
       flip.style.transition = 'transform .72s cubic-bezier(.3,1.35,.4,1)';
-      slot.querySelector('.lbl').textContent = labels[i];
+      fitLabel(slot.querySelector('.lbl'), labels[i]);
     });
     state = 'down'; busy = false;
     $('hcDeck').textContent = deck.length + ' cards left in the deck';
@@ -86,12 +92,12 @@
     slots.forEach((slot, k) => {
       const f = slot.querySelector('.cardface:not(.down)');
       if (!f) return;
-      if (k === i) f.style.boxShadow = '0 0 0 3px #ffd76a, 0 14px 34px rgba(255,180,60,.55)';
+      f.classList.toggle('win', k === i);
       f.style.opacity = k === i ? '1' : '.62';
     });
-    K.setResult($('hcRes'), labels[i]);
+    /* names the winning option in full; this toy never hands out a verdict card */
+    K.setResult($('hcRes'), `${labels[i]} — ${hand[i].r}${hand[i].s} beats ${hand[j].r}${hand[j].s}`);
     try { tone(660, 0.28, 0.06, 'sine', 880); } catch (e) {}
-    K.decide(labels[i], 'High card', `${hand[i].r}${hand[i].s} beats ${hand[j].r}${hand[j].s}`);
   }
 
   function action() {

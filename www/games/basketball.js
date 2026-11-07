@@ -61,7 +61,6 @@
     phase = 'done';
     ball.x = geo.cx; ball.y = geo.h - 46; ball.vx = 0; ball.vy = 0; trail = [];
     K.setResult(res(), label);
-    K.decide(label, 'Basketball', makes + ' of 3 makes');
   }
 
   function physics(dt) {

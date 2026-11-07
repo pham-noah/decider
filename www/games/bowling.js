@@ -75,7 +75,6 @@
     rolling = false; done = true; const label = win ? win.l : labels[0];
     K.setResult(res(), label);
     try { tone(560, .12, .05, 'sine', 840); } catch (e) {}
-    K.decide(label, 'Bowling', (10 - standing.length) + ' down · ' + label);
   }
 
   function drawLane(x, g) {
@@ -150,7 +149,7 @@
   const at = (e) => { const r = cv().getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
 
   K && window.DECIDER_GAMES.push({
-    id: 'bowling', name: 'Bowling', short: 'Bowling', label: 'Lane', button: false,
+    id: 'bowling', name: 'Bowling', short: 'Bowling', label: 'Lane', noResult: true, button: false,
     body: `<canvas class="toy" id="bwCv"></canvas><div class="res" id="bwRes" aria-live="polite"><span class="muted">Swipe up the lane to roll</span></div><button class="btn" id="bwGo">Roll</button>`,
     init(card) {
       labels = pick(5);

@@ -123,7 +123,6 @@
       if (q.t > 16) {
         pending.splice(i, 1);
         K.setResult(document.getElementById('blRes'), q.b.label);
-        K.decide(q.b.label, 'Balloons', 'The balloon you popped');
       }
     }
   }
@@ -141,7 +140,7 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'balloons', name: 'Balloons', short: 'Balloons', label: 'Grid',
+    id: 'balloons', name: 'Balloons', short: 'Balloons', label: 'Grid', noResult: true,
     body: `<canvas class="toy" id="blCv"></canvas>
       <div class="res" id="blRes" aria-live="polite"><span class="muted">Pop one</span></div>
       <button class="btn" id="blGo">Reset</button>`,

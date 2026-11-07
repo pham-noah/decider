@@ -189,7 +189,7 @@
   const at = (e) => { const r = cv().getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
 
   K && window.DECIDER_GAMES.push({
-    id: 'vignettes', name: 'Vignettes', short: 'Vignettes', label: 'Object', button: false,
+    id: 'vignettes', name: 'Vignettes', short: 'Vignettes', label: 'Object', noResult: true, button: false,
     body: `<canvas class="toy" id="vgCv"></canvas>
       <div class="res" id="vgRes" aria-live="polite"><span class="muted">Drag left or right — the shape becomes something else</span></div>`,
     init(card) {

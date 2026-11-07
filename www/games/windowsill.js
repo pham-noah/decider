@@ -231,7 +231,7 @@
   }
   const at = (e) => { const r = cv().getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
   K && window.DECIDER_GAMES.push({
-    id: 'windowsill', name: 'Windowsill', short: 'Windowsill', label: 'Sill', button: false,
+    id: 'windowsill', name: 'Windowsill', short: 'Windowsill', label: 'Sill', noResult: true, button: false,
     body: `<canvas class="toy" id="wsCv"></canvas>
       <div class="res" id="wsRes" aria-live="polite"><span class="muted">Poke anything on the sill — nothing to win</span></div>`,
     init(card) {

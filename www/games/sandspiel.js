@@ -291,7 +291,7 @@
   }
 
   window.DECIDER_GAMES.push({
-    id: 'sandspiel', name: 'Sandspiel', short: 'Sand', label: 'Materials', button: false,
+    id: 'sandspiel', name: 'Sandspiel', short: 'Sand', label: 'Materials', noResult: true, button: false,
     body: `<div class="chips" id="ssMat" style="margin:0 0 10px;gap:6px"></div>
       <canvas class="toy" id="ssCv"></canvas>
       <div class="res" id="ssRes" aria-live="polite" style="min-height:26px;font-size:calc(clamp(14px,3.3vw,17px)*var(--fs,1))"><span class="muted">Sand — drag to pour</span></div>`,

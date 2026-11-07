@@ -3,13 +3,12 @@
  * and how hard they stop — the last reel overshoots its mark and rolls back.
  * A tap anywhere on the machine spins with an average pull. */
 (function () {
-  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   const cv = () => document.getElementById('slCv');
   const TAU = Math.PI * 2;
   let L = null, g = null, pool = [], reels = [], spinning = false, spinStart = 0, power = 0.5;
   let LM = null;                       // lever metrics, refreshed every frame
-  let pull = 0, pulling = false, armed = false, startX = 0, startY = 0, winFlash = null;
+  let pull = 0, pulling = false, armed = false, startX = 0, startY = 0, winFlash = null, queued = false;
 
   const PULL_PX = 92;                  // finger travel for a full pull
 
@@ -31,7 +30,7 @@
   function start(p) {
     if (spinning || !reels.length) return;
     power = Math.max(0, Math.min(1, p == null ? 0.5 : p));
-    spinning = true; winFlash = null;
+    spinning = true; winFlash = null; queued = false;
     spinStart = performance.now();
     const base = 520 + power * 1050;                        // harder pull = longer run
     reels.forEach((r, i) => {
@@ -66,7 +65,8 @@
   }
 
   function tick(dt, now) {
-    if (!g && cv()) g = K.fit(cv());
+    const f = K.fit(cv());
+    if (!g || f.w !== g.w || f.h !== g.h) { g = f; LM = layout(); }   // width AND height
     if (!g) return;
 
     if (spinning) {
@@ -76,7 +76,8 @@
           r.pos += r.vel * dt;
           if (now - spinStart > r.stopAt) {
             r.phase = 'ease'; r.t0 = now; r.p0 = r.pos;
-            r.target = Math.ceil(r.pos) + 2 + (i === 2 && power > 0.6 ? 1 : 0);
+            /* without the rnd a full-power pull landed on the same three labels every time */
+            r.target = Math.ceil(r.pos) + 2 + (i === 2 && power > 0.6 ? 1 : 0) + Math.floor(rnd() * 2);
             try { tone(520 - i * 70, .06, .04, 'square', 300); } catch (e) {}
           }
         } else if (r.phase === 'ease') {
@@ -89,7 +90,11 @@
         }
         r.spd = (r.pos - prev) / Math.max(.001, dt);
       });
-      if (reels.every(r => r.settled)) { spinning = false; finish(); }
+      if (reels.every(r => r.settled)) {
+        spinning = false; finish();
+        /* a pull that arrived during the spin is played, not dropped */
+        if (queued) { queued = false; setTimeout(() => { if (!spinning) start(0.5); }, 560); }
+      }
     } else if (reels.length === 3) {
       // idle: a soft wobble so the reels never sit dead still
       reels.forEach((r, i) => { r.spd = 0; r.pos += Math.sin(now / 900 + i * 2) * 0.0004 * dt; });
@@ -104,56 +109,105 @@
     draw(now);
   }
 
-  function draw(now) {
-    const x = g.x, w = g.w, h = g.h;
-    x.clearRect(0, 0, w, h);
-    const M = LM = layout();
-    const { m, gap, rw, top, wh, reelRight } = M;
+  /* one symbol face: cream stock, tinted and barred in its own colour, dark type.
+     Keyed to pool.indexOf(label) so a pair always reads as a pair. */
+  function symbol(x, cx, cy, tw, th, label, li, m) {
+    const col = PAL[((li % PAL.length) + PAL.length) % PAL.length];
+    K.rr(x, cx - tw / 2, cy - th / 2, tw, th, Math.min(11, th * 0.24));
+    x.fillStyle = '#fffdf8'; x.fill();
+    x.save();
+    K.rr(x, cx - tw / 2, cy - th / 2, tw, th, Math.min(11, th * 0.24)); x.clip();
+    x.globalAlpha = m.flat ? .20 : .26; x.fillStyle = col;
+    x.fillRect(cx - tw / 2, cy - th / 2, tw, th);
+    x.globalAlpha = 1;
+    x.fillStyle = col;
+    x.fillRect(cx - tw / 2, cy - th / 2, tw, Math.max(3, Math.min(5, th * 0.10)));
+    x.restore();
+    x.lineWidth = m.flat ? 1.2 : 1;
+    x.strokeStyle = m.flat ? (m.outline || '#241a3a') : 'rgba(36,26,85,.22)';
+    K.rr(x, cx - tw / 2, cy - th / 2, tw, th, Math.min(11, th * 0.24)); x.stroke();
 
-    K.rr(x, 6, 4, w - 12, h - 10, 26);
-    const bg = x.createLinearGradient(0, 0, w, h);
-    const flatCab = K.mat().flat;
-    bg.addColorStop(0, flatCab ? '#f1ebda' : 'rgba(64,32,128,.93)');
-    bg.addColorStop(.55, 'rgba(38,20,80,.95)');
-    bg.addColorStop(1, flatCab ? '#e6dfcc' : 'rgba(20,10,46,.96)');
-    x.fillStyle = bg; x.fill();
-    x.strokeStyle = INK(.4); x.lineWidth = 1.5; x.stroke();
+    let fs = Math.round(th * 0.30);
+    x.font = '800 ' + fs + 'px "Bricolage Grotesque",system-ui,sans-serif';
+    const maxW = tw - 10;
+    while (fs > 12 && x.measureText(label).width > maxW) {
+      fs -= 1; x.font = '800 ' + fs + 'px "Bricolage Grotesque",system-ui,sans-serif';
+    }
+    let txt = label;
+    if (x.measureText(txt).width > maxW) {
+      while (txt.length > 2 && x.measureText(txt).width > maxW - 8) txt = txt.slice(0, -1);
+      txt = txt.slice(0, -1) + '…';
+    }
+    x.fillStyle = '#241a3a'; x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.fillText(txt, cx, cy + th * 0.10);
+  }
+
+  function draw(now) {
+    const w = g.w, h = g.h, m = K.surf(g.x, w, h), x = g.x;
+    if (m.flat) {
+      K.rr(x, 0.9, 0.9, w - 1.8, h - 1.8, Math.max(2, m.radius - 1));
+      x.strokeStyle = m.outline || '#241a3a'; x.lineWidth = 1.5; x.stroke();
+    }
+    const M = LM = layout();
+    const { m: mx, gap, rw, top, wh, reelRight } = M;
+
+    /* the cabinet body: one panel, ink edge and hard offset on paper */
+    if (m.flat) {
+      x.fillStyle = '#1d1340';
+      K.rr(x, 12, 12, w - 24, h - 24, 22); x.fill();
+      K.panel(x, 8, 8, w - 16, h - 16, { r: 22, face: '#efe8d8' });
+    } else {
+      x.save();
+      x.shadowColor = 'rgba(8,3,26,.5)'; x.shadowBlur = 16; x.shadowOffsetY = 6;
+      K.panel(x, 8, 8, w - 16, h - 16, { r: 22 });
+      x.restore();
+    }
 
     // marquee bulbs
     for (let i = 0; i < 9; i++) {
       const lx = 30 + (i * (w - 60)) / 8;
-      const on = 0.45 + 0.55 * Math.max(0, Math.sin(now / 240 + i * 0.9));
-      x.beginPath(); x.arc(lx, 30, 4, 0, TAU);
-      x.fillStyle = `rgba(255,${Math.round(190 + 40 * on)},130,${(0.22 + 0.7 * on).toFixed(2)})`;
-      x.fill();
+      if (m.flat) {
+        x.beginPath(); x.arc(lx, 26, 3.6, 0, TAU);
+        x.fillStyle = PAL[i % PAL.length]; x.fill();
+        x.strokeStyle = m.outline || '#241a3a'; x.lineWidth = 1; x.stroke();
+      } else {
+        const on = 0.45 + 0.55 * Math.max(0, Math.sin(now / 240 + i * 0.9));
+        x.beginPath(); x.arc(lx, 26, 4, 0, TAU);
+        x.fillStyle = 'rgba(255,' + Math.round(190 + 40 * on) + ',130,' + (0.22 + 0.7 * on).toFixed(2) + ')';
+        x.fill();
+      }
     }
-    x.fillStyle = INK(.55);
-    x.font = '700 10px "Bricolage Grotesque",system-ui,sans-serif';
-    x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.fillText('PULL THE LEVER', (m + reelRight) / 2, 48);
+    K.label(x, 'PULL THE LEVER', (mx + reelRight) / 2, 46, 10);
 
     const bob = spinning ? 0 : Math.sin(now / 700) * 2;
-
     const wf = winFlash && !spinning ? winFlash : null;
-    if (wf) { wf.t += 1; }
+    if (wf) wf.t += 1;
+
     reels.forEach((r, i) => {
-      const cx = m + i * (rw + gap) + rw / 2;
-      const won = wf && (((Math.round(r.pos) % pool.length) + pool.length) % pool.length) === wf.label;
+      const cx = mx + i * (rw + gap) + rw / 2;
+      const li = ((Math.round(r.pos) % pool.length) + pool.length) % pool.length;
+      const won = wf && li === wf.label;
+
+      /* the window: a dark pit on the violet skins, a printed plate on paper */
       K.rr(x, cx - rw / 2, top, rw, wh, 15);
-      x.fillStyle = 'rgba(9,4,26,.78)'; x.fill();
+      x.fillStyle = m.flat ? '#e6dfcc' : 'rgba(9,4,26,.72)'; x.fill();
       if (won) {
-        /* the reels that matched used to look exactly like the ones that did not */
         const pulse = 0.55 + 0.45 * Math.sin(wf.t / 6);
-        x.save(); x.shadowColor = 'rgba(255,215,106,' + (.5 + .5 * pulse) + ')'; x.shadowBlur = 18;
-        x.strokeStyle = 'rgba(255,215,106,' + (.6 + .35 * pulse) + ')'; x.lineWidth = 3; x.stroke();
-        x.restore();
+        if (m.flat) {
+          x.strokeStyle = PAL[li % PAL.length]; x.lineWidth = 3.4; x.stroke();
+        } else {
+          x.save(); x.shadowColor = 'rgba(255,215,106,' + (.5 + .5 * pulse) + ')'; x.shadowBlur = 18;
+          x.strokeStyle = 'rgba(255,215,106,' + (.6 + .35 * pulse) + ')'; x.lineWidth = 3; x.stroke();
+          x.restore();
+        }
       } else {
-        x.strokeStyle = INK(.22); x.lineWidth = 1.4; x.stroke();
+        x.strokeStyle = m.flat ? (m.outline || '#241a3a') : K.light(.20);
+        x.lineWidth = m.flat ? 1.4 : 1.2; x.stroke();
       }
 
       x.save();
       K.rr(x, cx - rw / 2, top, rw, wh, 15); x.clip();
-      const cell = wh * 0.94;
+      const cell = wh * 0.58;
       const strip = (off, alpha) => {
         x.save(); x.globalAlpha = alpha; x.translate(0, off + bob);
         const base = Math.floor(r.pos);
@@ -161,35 +215,9 @@
           const y = top + wh / 2 + (k - r.pos) * cell;
           if (y < top - cell || y > top + wh + cell) continue;
           const label = pool[((k % pool.length) + pool.length) % pool.length];
-          const tw = rw - 13, th = cell * 0.80;
-          K.rr(x, cx - tw / 2, y - th / 2, tw, th, 12);
-          /* colour by identity: bound to the strip index, the same label turned pink
+          /* colour by identity: bound to the cell index, the same label turned pink
              in one spin and blue in the next, and two labels could read as a pair */
-          const li = pool.indexOf(label);
-          x.fillStyle = PAL[(((li < 0 ? k : li) % PAL.length) + PAL.length) % PAL.length];
-          x.fill();
-          x.save();
-          K.rr(x, cx - tw / 2, y - th / 2, tw, th, 12); x.clip();
-          const gl = x.createLinearGradient(0, y - th / 2, 0, y + th / 2);
-          gl.addColorStop(0, INK(.35)); gl.addColorStop(.55, INK(.02));
-          x.fillStyle = gl; x.fillRect(cx - tw / 2, y - th / 2, tw, th);
-          x.restore();
-
-          let fs = Math.round(wh * 0.17);
-          x.font = `800 ${fs}px "Bricolage Grotesque",system-ui,sans-serif`;
-          const maxW = tw - 12;
-          while (fs > 13 && x.measureText(label).width > maxW) {
-            fs -= 1; x.font = `800 ${fs}px "Bricolage Grotesque",system-ui,sans-serif`;
-          }
-          let txt = label;
-          if (x.measureText(txt).width > maxW) {
-            while (txt.length > 2 && x.measureText(txt).width > maxW - 8) txt = txt.slice(0, -1);
-            txt = txt.slice(0, -1) + '…';
-          }
-          x.fillStyle = INK(1); x.textAlign = 'center'; x.textBaseline = 'middle';
-          x.shadowColor = 'rgba(20,8,50,.45)'; x.shadowBlur = 4;
-          x.fillText(txt, cx, y + 1);
-          x.shadowColor = 'transparent';
+          symbol(x, cx, y, rw - 13, cell * 0.80, label, pool.indexOf(label), m);
         }
         x.restore();
       };
@@ -199,61 +227,69 @@
         strip((r.spd || 0) * cell * 0.30, 0.22);
       }
       strip(0, 1);
-      // glass
-      const gg = x.createLinearGradient(0, top, 0, top + wh);
-      gg.addColorStop(0, INK(.22)); gg.addColorStop(.4, INK(0));
-      x.fillStyle = gg; x.fillRect(cx - rw / 2, top, rw, wh);
+      // glass: a specular, so light — never ink
+      if (!m.flat) {
+        const gg = x.createLinearGradient(0, top, 0, top + wh);
+        gg.addColorStop(0, K.light(.20)); gg.addColorStop(.4, K.light(0));
+        x.fillStyle = gg; x.fillRect(cx - rw / 2, top, rw, wh);
+      }
       x.restore();
     });
 
     // payline
     const ly = top + wh / 2;
     x.save();
-    x.strokeStyle = INK(.5); x.lineWidth = 1; x.setLineDash([4, 6]);
-    x.beginPath(); x.moveTo(m - 6, ly); x.lineTo(reelRight + 4, ly); x.stroke();
+    x.strokeStyle = m.flat ? 'rgba(36,26,58,.55)' : K.light(.5);
+    x.lineWidth = 1; x.setLineDash([4, 6]);
+    x.beginPath(); x.moveTo(mx - 6, ly); x.lineTo(reelRight + 4, ly); x.stroke();
     x.setLineDash([]);
     [-1, 1].forEach(s => {
-      const px = s < 0 ? m - 8 : reelRight + 6;
+      const px = s < 0 ? mx - 8 : reelRight + 6;
       x.beginPath(); x.moveTo(px, ly); x.lineTo(px - s * 8, ly - 6); x.lineTo(px - s * 8, ly + 6);
-      x.closePath(); x.fillStyle = INK(.8); x.fill();
+      x.closePath(); x.fillStyle = m.flat ? (m.outline || '#241a3a') : K.light(.75); x.fill();
     });
     x.restore();
 
     // coin tray
-    const trayY = top + wh + 16, trayH = h * 0.14;
-    K.rr(x, m, trayY, reelRight - m, trayH, 14);
-    x.fillStyle = 'rgba(0,0,0,.26)'; x.fill();
-    x.strokeStyle = INK(.16); x.lineWidth = 1; x.stroke();
+    const trayY = top + wh + 16, trayH = Math.max(34, h * 0.14);
+    K.rr(x, mx, trayY, reelRight - mx, trayH, 14);
+    x.fillStyle = m.flat ? '#e6dfcc' : 'rgba(0,0,0,.26)'; x.fill();
+    x.strokeStyle = m.flat ? (m.outline || '#241a3a') : K.light(.14);
+    x.lineWidth = m.flat ? 1.2 : 1; x.stroke();
     for (let i = 0; i < 3; i++) {
-      const cx2 = (m + reelRight) / 2 + (i - 1) * 26, cy2 = trayY + trayH * 0.40;
+      const cx2 = (mx + reelRight) / 2 + (i - 1) * 26, cy2 = trayY + trayH * 0.36;
       x.beginPath(); x.ellipse(cx2, cy2, 9, 7.4, 0, 0, TAU);
-      const cg = x.createRadialGradient(cx2 - 3, cy2 - 3, 1, cx2, cy2, 10);
-      cg.addColorStop(0, '#fff3c4'); cg.addColorStop(1, '#b8861c');
-      x.fillStyle = cg; x.fill();
+      if (m.flat) {
+        x.fillStyle = '#fffdf8'; x.fill();
+        x.strokeStyle = m.outline || '#241a3a'; x.lineWidth = 1.2; x.stroke();
+        x.beginPath(); x.arc(cx2, cy2, 2.4, 0, TAU); x.fillStyle = m.outline || '#241a3a'; x.fill();
+      } else {
+        const cg = x.createRadialGradient(cx2 - 3, cy2 - 3, 1, cx2, cy2, 10);
+        cg.addColorStop(0, '#fff3c4'); cg.addColorStop(1, '#b8861c');
+        x.fillStyle = cg; x.fill();
+      }
     }
-    x.fillStyle = INK(.5);
-    x.font = '700 10px "Bricolage Grotesque",system-ui,sans-serif';
-    x.textAlign = 'center';
-    x.fillText('PAIR ×2 · TRIPLE ×3', (m + reelRight) / 2, trayY + trayH * 0.82);
+    K.label(x, 'PAIR ×2 · TRIPLE ×3', (mx + reelRight) / 2, trayY + trayH * 0.76, 10);
 
-    drawLever(x, now, M);
+    drawLever(x, now, M, m);
   }
 
-  function drawLever(x, now, M) {
+  function drawLever(x, now, M, m) {
     const { leverX: lx, leverW, pivotY, restY, travel, maxY } = M;
     const p = Math.max(0, Math.min(1, pull));
     const ky = restY + travel * p;
     const kr = Math.max(10, leverW * 0.36);
     const live = spinning ? 0.55 : 1;
+    const ink = m.flat ? (m.outline || '#241a3a') : K.light(.2);
 
     // the slot it runs in
     K.rr(x, lx - 5.5, pivotY + 6, 11, maxY - pivotY + 4, 5.5);
-    x.fillStyle = 'rgba(4,2,14,.62)'; x.fill();
-    x.strokeStyle = INK(.16); x.lineWidth = 1; x.stroke();
+    x.fillStyle = m.flat ? '#e6dfcc' : 'rgba(4,2,14,.62)'; x.fill();
+    x.strokeStyle = ink; x.lineWidth = 1; x.stroke();
 
     // depth ticks beside the slot
     x.save();
-    x.strokeStyle = INK(.20); x.lineWidth = 1;
+    x.strokeStyle = m.flat ? 'rgba(36,26,58,.35)' : K.light(.20); x.lineWidth = 1;
     for (let i = 1; i <= 3; i++) {
       const ty = restY + travel * i / 4;
       x.beginPath(); x.moveTo(lx - 13, ty); x.lineTo(lx - 8, ty); x.stroke();
@@ -265,44 +301,54 @@
     x.globalAlpha = live;
     x.lineCap = 'round';
     x.lineWidth = Math.max(6, leverW * 0.17);
-    const rod = x.createLinearGradient(lx - 6, 0, lx + 6, 0);
-    rod.addColorStop(0, '#6f779b'); rod.addColorStop(.42, INK(1));
-    rod.addColorStop(.62, '#cfd6ea'); rod.addColorStop(1, '#6a7295');
-    x.strokeStyle = rod;
+    if (m.flat) x.strokeStyle = m.outline || '#241a3a';
+    else {
+      const rod = x.createLinearGradient(lx - 6, 0, lx + 6, 0);
+      rod.addColorStop(0, '#6f779b'); rod.addColorStop(.42, K.light(1));
+      rod.addColorStop(.62, '#cfd6ea'); rod.addColorStop(1, '#6a7295');
+      x.strokeStyle = rod;
+    }
     x.beginPath(); x.moveTo(lx, pivotY + 6); x.lineTo(lx, ky); x.stroke();
     // collar where it leaves the case
-    x.fillStyle = '#4a3a78';
+    x.fillStyle = m.flat ? '#cfc4ab' : '#4a3a78';
     K.rr(x, lx - 7, pivotY + 2, 14, 7, 3.5); x.fill();
+    if (m.flat) { x.strokeStyle = m.outline || '#241a3a'; x.lineWidth = 1; x.stroke(); }
     x.restore();
 
     // shadow the knob drops into the case
     x.save();
     x.globalAlpha = .3 * live;
     x.beginPath(); x.ellipse(lx + 3, ky + 9, kr * .9, kr * .42, 0, 0, TAU);
-    x.fillStyle = '#07031a'; x.fill();
+    x.fillStyle = m.flat ? 'rgba(36,26,58,.35)' : '#07031a'; x.fill();
     x.restore();
 
     // knob
     x.save();
     x.globalAlpha = live;
-    if (!spinning) {
+    if (!spinning && !m.flat) {
       const glow = 0.16 + 0.10 * Math.sin(now / 380);
       x.beginPath(); x.arc(lx, ky, kr * 1.5, 0, TAU);
       x.fillStyle = 'rgba(255,120,90,' + glow.toFixed(3) + ')'; x.fill();   // "pull me" halo
     }
     x.beginPath(); x.arc(lx, ky, kr, 0, TAU);
-    const kg = x.createRadialGradient(lx - kr * .35, ky - kr * .40, kr * .12, lx, ky, kr * 1.05);
-    kg.addColorStop(0, '#ffe2d6'); kg.addColorStop(.42, '#ff6b57'); kg.addColorStop(1, '#a2153c');
-    x.fillStyle = kg; x.fill();
-    x.strokeStyle = INK(.55); x.lineWidth = 1.2; x.stroke();
-    x.beginPath(); x.arc(lx - kr * .28, ky - kr * .34, kr * .26, 0, TAU);
-    x.fillStyle = INK(.72); x.fill();
+    if (m.flat) {
+      x.fillStyle = '#e0553f'; x.fill();
+      x.strokeStyle = m.outline || '#241a3a'; x.lineWidth = 1.4; x.stroke();
+    } else {
+      const kg = x.createRadialGradient(lx - kr * .35, ky - kr * .40, kr * .12, lx, ky, kr * 1.05);
+      kg.addColorStop(0, '#ffe2d6'); kg.addColorStop(.42, '#ff6b57'); kg.addColorStop(1, '#a2153c');
+      x.fillStyle = kg; x.fill();
+      x.strokeStyle = K.light(.5); x.lineWidth = 1.2; x.stroke();
+      x.beginPath(); x.arc(lx - kr * .28, ky - kr * .34, kr * .26, 0, TAU);
+      x.fillStyle = K.light(.7); x.fill();
+    }
     x.restore();
 
     // chevrons under the knob: pull down
     x.save();
     x.globalAlpha = (spinning ? .12 : .34) * (1 - p * .8);
-    x.strokeStyle = INK(1); x.lineWidth = 1.6; x.lineCap = 'round';
+    x.strokeStyle = m.flat ? (m.outline || '#241a3a') : K.light(1);
+    x.lineWidth = 1.6; x.lineCap = 'round';
     for (let i = 0; i < 2; i++) {
       const cy = Math.min(maxY + 12, ky + kr + 8) + i * 6;
       x.beginPath(); x.moveTo(lx - 4, cy); x.lineTo(lx, cy + 4); x.lineTo(lx + 4, cy); x.stroke();
@@ -329,9 +375,9 @@
         try { c.setPointerCapture(e.pointerId); } catch (err) {}
         const p = at(e);
         armed = true; pulling = false; startX = p.x; startY = p.y;
-        /* a touch during a spin used to be swallowed in silence */
-        if (spinning) { try { tone(150, .05, .03, 'square', 90); } catch (err) {} try { buzz(6); } catch (err) {} return; }
-        try { buzz(8); } catch (err) {}
+        /* a touch during a spin is acknowledged and queued, never swallowed */
+        if (spinning) { queued = true; try { K.press(150); } catch (err) {} return; }
+        try { K.press(320); } catch (err) {}
       });
       c.addEventListener('pointermove', e => {
         if (!armed) return;
@@ -360,10 +406,11 @@
       if (c.clientWidth > 2) { g = K.fit(c); LM = layout(); tick(1, performance.now()); L.start(); }
     },
     enter() {
-      if (!g || Math.abs(g.w - cv().clientWidth) > 1) g = K.fit(cv());
+      const f = K.fit(cv());
+      if (!g || f.w !== g.w || f.h !== g.h) { g = f; LM = layout(); }
       L.start();
     },
-    leave() { armed = false; pulling = false; L.stop(); },
-    action() { if (!spinning) start(0.5); }
+    leave() { armed = false; pulling = false; queued = false; L.stop(); },
+    action() { if (!spinning) start(0.5); else queued = true; }
   });
 })();

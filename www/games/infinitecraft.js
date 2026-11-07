@@ -118,7 +118,7 @@
   function useChip(c) {
     const sub = c.src ? 'Forged from ' + c.src[0] + ' + ' + c.src[1] : 'One of the first four';
     say(c.name + ' — that is the call');
-    try { K.decide(c.name, 'Infinite Craft', sub); } catch (e) {}
+    try { void 0 && K.decide(c.name, 'Infinite Craft', sub); } catch (e) {}
   }
 
   function at(e) { const r = cv().getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
@@ -180,7 +180,7 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'infinitecraft', name: 'Infinite Craft', short: 'Craft', label: 'Elements', button: false,
+    id: 'infinitecraft', name: 'Infinite Craft', short: 'Craft', label: 'Elements', noResult: true, button: false,
     body: `<canvas class="toy" id="icCv"></canvas>
       <div class="res" id="icRes" aria-live="polite"><span class="muted">Drag two chips together — hold one to decide</span></div>`,
     init(card) {

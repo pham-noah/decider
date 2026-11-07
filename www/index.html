@@ -229,7 +229,7 @@ main{height:100%;overflow:hidden;display:flex;flex-direction:column}
 .allgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px;margin-top:14px}
 .gtile{position:relative;display:grid;place-items:center;gap:6px;padding:18px 26px 14px 12px;border-radius:20px;border:1px solid var(--edge);background:var(--field);font-weight:700;font-size:clamp(12.5px,3.3vw,15px);line-height:1.2;color:inherit;text-align:center;overflow-wrap:anywhere}
 .gtile.on{background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;border-color:rgba(255,255,255,.6);text-shadow:0 1px 2px rgba(0,0,0,.25)}
-.gtile .pin{position:absolute;top:5px;right:5px;width:28px;height:28px;border:0;border-radius:50%;background:none;font-size:15px;line-height:1;opacity:.45}
+.gtile .pin{position:absolute;top:-2px;right:-2px;width:40px;height:40px;display:grid;place-items:center;font-size:17px;border:0;border-radius:50%;background:none;font-size:15px;line-height:1;opacity:.45}
 .gtile .pin:hover,.gtile .pin[aria-pressed="true"]{opacity:1}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]) #all{background:linear-gradient(140deg,rgba(38,30,84,.97),rgba(20,15,52,.97))}}
 :root[data-theme="dark"] #all{background:linear-gradient(140deg,rgba(38,30,84,.97),rgba(20,15,52,.97))}
@@ -358,6 +358,23 @@ h2{font-size:calc(20px*var(--fs,1))}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 :root[data-motion="reduce"] *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 @media(prefers-reduced-motion:reduce){.bg i,.orb{animation:none}.view.on,.view.on>.glass,.orow{animation:none}}
+
+/* ---------- DOM card toys on the material system (blackjack, high card) ----------
+   These two draw their faces as .cardface divs, so every skin rule that scopes to
+   .toy missed them. This block owns the stock, the ink edge, the shadow, the corner
+   and the card back for both toys: classic keeps the violet back, paper is flat bone
+   with a hard offset edge, soft is the chunky plastic bevel. Type stays dark on the
+   cream stock on every skin — light ink on a light face is unreadable. */
+:root[data-skin] .cards3{--cf-r:10px;--cf-stock:#fffdf8;--cf-ink:#241a3a;--cf-edge:transparent;--cf-shadow:0 10px 24px var(--sh);--cf-back:repeating-linear-gradient(45deg,#3b2b7a,#3b2b7a 6px,#4a3a90 6px,#4a3a90 12px)}
+:root[data-skin] .cards3 .cardface{border-radius:var(--cf-r);border:1.6px solid var(--cf-edge);background:var(--cf-stock);color:var(--cf-ink);box-shadow:var(--cf-shadow)}
+:root[data-skin] .cards3 .cardface.red{color:#d6215b}
+:root[data-skin] .cards3 .cardface.down{background:var(--cf-back);border-color:var(--cf-edge);color:transparent}
+:root[data-skin] .cards3 .cardface.win{box-shadow:var(--cf-shadow),0 0 0 3px #ffd76a}
+:root[data-skin] .cards3 .hcFlip{border-radius:var(--cf-r)}
+/* paper: bone stock, ink edge, one hard offset shadow, no gradient, no blur */
+:root[data-skin="paper"] .cards3{--cf-r:7px;--cf-edge:#241a3a;--cf-shadow:3px 3px 0 #1d1340;--cf-back:repeating-linear-gradient(45deg,#e6dfcc,#e6dfcc 6px,#cdbfa4 6px,#cdbfa4 12px)}
+/* soft: fat corners, a white rim and a long soft drop, the same plastic as .toy */
+:root[data-skin="soft"] .cards3{--cf-r:13px;--cf-edge:rgba(255,255,255,.55);--cf-shadow:inset 0 2px 0 rgba(255,255,255,.7),0 12px 26px rgba(20,10,50,.34);--cf-back:repeating-linear-gradient(45deg,#3b2b7a,#3b2b7a 7px,#5a49a8 7px,#5a49a8 14px)}
 </style>
 <style id="juice">
 @keyframes mpop2{0%{opacity:0;scale:.2;rotate:-10deg}55%{opacity:1;scale:1.16;rotate:3deg}75%{scale:.96;rotate:-1deg}100%{opacity:1;scale:1;rotate:0deg}}
@@ -532,7 +549,7 @@ h2{font-size:calc(20px*var(--fs,1))}
  <div class="allgrid" id="allgrid"></div>
  <p class="muted" style="margin-top:12px;font-size:13px">Tap a game to open it. The star keeps four of them on the bar.</p>
 </div>
-<nav class="dock glass" id="dock"><span id="pill"></span><button data-v="hist" data-slot="gear" id="gear" data-label="More settings" aria-label="More: settings, history and about"><svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.11a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.11A1.7 1.7 0 0 0 4.6 8.87a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.11a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.11A1.7 1.7 0 0 0 19.4 15z"/></svg></button>
+<nav class="dock glass" id="dock"><span id="pill"></span><button id="fav" data-label="Favourite this toy" aria-label="Favourite this toy" aria-pressed="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.2 1 5.9-5.2-2.9-5.2 2.9 1-5.9L3.5 9.7l5.9-.8z"/></svg></button><button data-v="hist" data-slot="gear" id="gear" data-label="More settings" aria-label="More: settings, history and about"><svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.11a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.11A1.7 1.7 0 0 0 4.6 8.87a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.11a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.11A1.7 1.7 0 0 0 19.4 15z"/></svg></button>
 </nav>
 
 <script>
@@ -1094,8 +1111,9 @@ const GAMES=[{v:'wheel',n:'Wheel'},{v:'coin',n:'Coin'},{v:'dice',n:'Dice'},{v:'f
  window.__gameShake=function(info){const g=by[cur];if(g&&g.shake){g.shake(info||{});return true}return false};
  window.__shakeReady=function(){const g=by[cur];return !!(g&&g.shake)};
 })();
-const MAXPIN=4;
+const MAXPIN=8;
 let pin=store.get('d.pin',['wheel','coin','dice','bottle']).filter(v=>GAMES.some(g=>g.v===v)).slice(0,MAXPIN);
+store.set('d.pin',pin);   // first boot keeps the defaults
 if(!pin.length)pin=['wheel'];
 const GRID='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>';
 function closeAll(){$('#all').classList.remove('open')}
@@ -1107,7 +1125,7 @@ function goTo(v){
  $$('.view').forEach(x=>x.classList.toggle('on',x.id===v));
  $$('.dock button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
  $('#allbtn').classList.toggle('on',v!=='hist'&&!pin.includes(v));
- pill();tip(v);tone(700,.08,.05,'sine',900);draw();if(window.__viewHook)try{window.__viewHook(v)}catch(e){}
+ pill();tip(v);renderFav();tone(700,.08,.05,'sine',900);draw();if(window.__viewHook)try{window.__viewHook(v)}catch(e){}
 }
 function renderDock(){
  const d=$('#dock'),gear=$('#gear');
@@ -1137,14 +1155,24 @@ function renderAll(){
 }
 function togglePin(v){
  if(pin.includes(v)){
-  if(pin.length<2)return toast('Keep at least one game on the bar');
+  if(pin.length<2)return toast('Keep at least one on the bar');
   pin=pin.filter(x=>x!==v);
  }else{
-  if(pin.length>=MAXPIN)return toast('The bar holds '+MAXPIN+' games — unpin one first');
   pin=pin.concat(v);
+  if(pin.length>MAXPIN)pin=pin.slice(-MAXPIN);   // make room rather than refuse
  }
- store.set('d.pin',pin);renderDock();renderAll();goTo(cur);
+ store.set('d.pin',pin);renderDock();renderAll();renderFav();goTo(cur);
+ try{buzz(12);tone(680,.06,.05,'sine',900)}catch(e){}
 }
+function renderFav(){
+ const b=$('#fav');if(!b)return;
+ const on=GAMES.some(g=>g.v===cur)&&pin.includes(cur);
+ b.setAttribute('aria-pressed',String(on));
+ b.setAttribute('aria-label',(on?'Remove ':'Add ')+(GAMES.find(g=>g.v===cur)||{}).n+' from favourites');
+ b.classList.toggle('on',on);
+ b.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="'+(on?'currentColor':'none')+'" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.2 1 5.9-5.2-2.9-5.2 2.9 1-5.9L3.5 9.7l5.9-.8z"/></svg>';
+}
+$('#fav').onclick=()=>{if(GAMES.some(g=>g.v===cur))togglePin(cur)};
 $('#allclose').onclick=closeAll;
 function closeSheets(except){$$('.tune.open').forEach(x=>{if(x!==except)x.classList.remove('open')})}
 function buildSheets(){

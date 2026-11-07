@@ -42,7 +42,6 @@
     try { tone(560, .1, .06, 'triangle', 820); } catch (e) {}
     try { buzz([14, 36, 20]); } catch (e) {}
     K.setResult(out(), label);
-    K.decide(label, 'Coin Pusher', 'Pushed off the shelf');
   }
 
   function update(dt) {
