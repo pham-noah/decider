@@ -139,7 +139,7 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'domino', name: 'Dominoes', short: 'Domino', label: 'Tiles', noResult: true, button: false,
+    id: 'domino', name: 'Dominoes', short: 'Domino', label: 'Tiles', button: false,
     body: `<canvas class="toy" id="dmCv"></canvas>
       <div class="res" id="dmRes" aria-live="polite"><span class="muted">Tip the row</span></div>
       <button class="btn" id="dmGo">Tip</button>`,

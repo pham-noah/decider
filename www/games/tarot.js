@@ -174,7 +174,7 @@
     else if (state === 'idle') choose((rnd() * 3) | 0);
   }
   K && window.DECIDER_GAMES.push({
-    id: 'tarot', name: 'Tarot', short: 'Tarot', label: 'Deck', noResult: true, button: false,
+    id: 'tarot', name: 'Tarot', short: 'Tarot', label: 'Deck', button: false,
     body: `<canvas class="toy" id="trCv" style="max-height:min(62vh,max(140px,calc(100svh - 530px)))"></canvas>
       <div class="res" id="trRes" aria-live="polite" style="font-size:calc(clamp(22px,5.4vw,30px)*var(--fs,1));min-height:40px"><span class="muted">Tap to deal</span></div>`,
     tune: `<div class="lbl">Twelve cards, twelve messages. Turn one and let it answer.</div>`,

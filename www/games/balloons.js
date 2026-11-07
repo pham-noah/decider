@@ -141,7 +141,7 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'balloons', name: 'Balloons', short: 'Balloons', label: 'Grid', noResult: true,
+    id: 'balloons', name: 'Balloons', short: 'Balloons', label: 'Grid',
     body: `<canvas class="toy" id="blCv"></canvas>
       <div class="res" id="blRes" aria-live="polite"><span class="muted">Pop one</span></div>
       <button class="btn" id="blGo">Reset</button>`,

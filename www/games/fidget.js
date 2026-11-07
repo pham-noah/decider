@@ -10,9 +10,13 @@
   const geo = () => ({ cx: g.w / 2, cy: g.h * 0.46, R: g.w * 0.31, lobe: Math.max(15, g.w * 0.085), tagR: g.w * 0.31 * 1.30 });
 
   function pick() {
-    pool = K.options(Math.max(3, arms));
+    /* labels[i % pool.length] repeated the pool over the arms: 5 options on 3 arms
+       dropped two answers, and 2 options on 3 arms was a 2:1 bias */
+    pool = K.options(arms);
+    while (pool.length < arms) pool.push('…');
     labels = [];
-    for (let i = 0; i < arms; i++) labels.push(pool[i % pool.length] || 'Yes');
+    /* one distinct option per arm — no repeat, no bias; a spare arm reads '…' */
+    for (let i = 0; i < arms; i++) labels.push(pool[i] || '…');
   }
 
   function wrap(t) { while (t > Math.PI) t -= TAU; while (t < -Math.PI) t += TAU; return t; }
@@ -143,7 +147,7 @@
       }
     } else {
       v = 0;
-      if (!touched) a += 0.0016 * dt;   // lazy idle drift
+      if (!touched || done) a += 0.0016 * dt;   // breathe before the first touch and after every answer
     }
     draw();
   }
@@ -154,7 +158,7 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'fidget', name: 'Fidget spinner', short: 'Fidget', label: 'Arms', noResult: true, button: false,
+    id: 'fidget', name: 'Fidget spinner', short: 'Fidget', label: 'Arms', button: false,
     body: `<canvas class="toy" id="fgCv"></canvas>
       <div class="res" id="fgRes" aria-live="polite"><span class="muted">Flick it</span></div>
       <button class="btn" id="fgGo">Flick</button>`,

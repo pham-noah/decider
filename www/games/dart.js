@@ -72,8 +72,10 @@
     if (!aim) aim = { x: geo.cx, y: geo.cy };
     // a hard throw flies straight; a soft one wanders with the hand's tremor
     const slop = 1 - Math.min(1, Math.max(0, power == null ? .55 : power)) * .85;
-    let tx = aim.x + wob.x * 1.6 * slop + (wob.x * R * .06) * slop;
-    let ty = aim.y + wob.y * 1.6 * slop + (wob.y * R * .06) * slop;
+    /* wob is already in px: multiplying it by R made the error scale with R², so at
+       tablet size the board landed 200px from the crosshair the player was watching */
+    let tx = aim.x + wob.x * slop;
+    let ty = aim.y + wob.y * slop;
     const dx = tx - geo.cx, dy = ty - geo.cy, d = Math.hypot(dx, dy) || 1;
     if (d > R * .92) { tx = geo.cx + dx / d * R * .92; ty = geo.cy + dy / d * R * .92; }
     stuck = null; hit = -1; busy = true;
@@ -138,7 +140,11 @@
     id: 'dart', name: 'Dart', short: 'Dart', label: 'Board', button: false,
     body: `<canvas class="toy" id="dtCv"></canvas><div class="res" id="dtRes" aria-live="polite"><span class="muted">Drag to aim, let go to throw</span></div><button class="btn" id="dtGo">Throw</button>`,
     init(card) {
-      labels = pick(6);
+      /* one label per sector, and as many sectors as divide evenly: 6 stays a
+         dartboard, 4/5 options get their own sectors instead of a 1.2x bias */
+      const opts = K.options(6);
+      const sectors = opts.length && 6 % opts.length === 0 ? 6 : opts.length;
+      labels = Array.from({ length: sectors }, (_, i) => opts[i % opts.length]);
       L = K.loop(frame);
       layout();
       card.querySelector('#dtGo').onclick = () => fire(0.55);
@@ -159,7 +165,8 @@
     enter() { layout(); L.start(); },
     leave() { aiming = false; L.stop(); },
     action() {
-      if (!aim && geo) aim = { x: geo.cx, y: geo.cy };
+      /* aiming at dead centre made Space throw the same sector every time */
+      if (geo) aim = { x: geo.cx + (Math.random() - .5) * geo.R * 1.1, y: geo.cy + (Math.random() - .5) * geo.R * 1.1 };
       fire();
     }
   });

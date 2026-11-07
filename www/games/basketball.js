@@ -32,7 +32,10 @@
     if (phase === 'done') startRound();
     if (phase !== 'aim') return;
     // dy is how far you dragged up (negative), dx how far across: that is the throw
-    const vy = clamp(dy * .16, -23, -5.5);            // weak flicks fall short, hard ones overshoot
+    /* cap the launch by the court it has to fit in: the old ceiling put the apex
+       ~290px above the canvas, so the ball was invisible for most of the flight */
+    const hcap = Math.min(1, (geo.h * .62) / 260);
+    const vy = clamp(dy * .16, -23, -5.5) * hcap;
     const vx = clamp(dx * .055, -9.5, 9.5);           // aim, no jitter
     power = clamp(Math.abs(dy) / 150, 0, 1);
     ball.vx = vx; ball.vy = vy; ball.py = ball.y; ball.scored = false;
@@ -52,7 +55,9 @@
   }
 
   function finish() {
-    const pair = K.options(2); const yes = pair[0] || 'Yes', no = pair[1] || 'No'; const label = makes >= 2 ? yes : no;
+    /* two outcomes for five options meant three answers could never win */
+    const opts = K.options(4);
+    const label = opts[Math.min(opts.length - 1, 3 - makes)] || 'Miss';
     phase = 'done';
     ball.x = geo.cx; ball.y = geo.h - 46; ball.vx = 0; ball.vy = 0; trail = [];
     K.setResult(res(), label);
@@ -74,8 +79,8 @@
         try { tone(310, .06, .03, 'square'); } catch (e) {}
       }
     });
-    if (!b.scored && b.vy > 0 && b.py < geo.rimY && b.y >= geo.rimY &&
-        Math.abs(b.x - geo.cx) < geo.rimW * .72) {
+    if (!b.scored && b.vy > 0 && b.py < geo.rimY - 2 && b.y >= geo.rimY &&
+        Math.abs(b.x - geo.cx) < geo.rimW * .52) {
       b.scored = true;
     }
     if (b.y > geo.h + 40 || air > 180) endShot();
@@ -183,8 +188,6 @@
       cv().addEventListener('pointerdown', (e) => {
         if (!geo || phase === 'fly' || phase === 'pause') return;
         const p = at(e);
-        // the whole lower 40% of the court is the flick surface, the ball included
-        if (p.y < geo.h * 0.6) return;
         drag = { x: p.x, y: p.y, x0: p.x, y0: p.y };
         try { cv().setPointerCapture(e.pointerId); } catch (err) {}
       });
@@ -200,6 +203,6 @@
     },
     enter() { layout(); if (phase === 'done') startRound(); L.start(); },
     leave() { drag = null; L.stop(); },
-    action() { shoot(0, -105); }
+    action() { shoot((Math.random() - .5) * 90, -95 - Math.random() * 35); }
   });
 })();

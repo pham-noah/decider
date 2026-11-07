@@ -296,7 +296,7 @@
   const at = (e) => { const r = cv().getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
 
   K && window.DECIDER_GAMES.push({
-    id: 'slots', name: 'Slot machine', short: 'Slots', label: 'Reels', noResult: true, button: false,
+    id: 'slots', name: 'Slot machine', short: 'Slots', label: 'Reels', button: false,
     body: `<canvas class="toy" id="slCv"></canvas>
       <div class="res" id="slRes" aria-live="polite"><span class="muted">Pull the lever</span></div>`,
     init() {

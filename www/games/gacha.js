@@ -39,6 +39,7 @@
     if (st !== 'idle') return;
     pending = Math.max(0, Math.min(1, typeof power === 'number' ? power : 0.6));
     one = null; st = 'spin'; spin = 0; spinGoal = Math.PI * 2 * (0.6 + pending * 2.4);
+    try { K.setResult(out(), '…'); } catch (e) {}
     try { tone(300, .06, .04, 'triangle'); } catch (e) {}
   }
 
@@ -177,7 +178,7 @@
   }
 
   window.DECIDER_GAMES.push({
-    id: 'gacha', name: 'Gacha', short: 'Gacha', label: 'Capsules', noResult: true, button: false,
+    id: 'gacha', name: 'Gacha', short: 'Gacha', label: 'Capsules', button: false,
     body: `<canvas class="toy" id="gaCv"></canvas>
       <div class="res" id="gaRes" aria-live="polite"><span class="muted">Turn the knob for a capsule</span></div>
       <button class="btn" id="gaGo">Turn</button>`,
@@ -208,7 +209,13 @@
           drag = null; one = null; st = 'spin'; spin = 0; spinGoal = Math.PI * 2 * (0.6 + pending * 2.4);
         }
       });
-      c.addEventListener('pointerup', () => { drag = null; });
+      c.addEventListener('pointerup', () => {
+        if (!drag) return;
+        /* tapping the knob — the only control the hint names — used to do nothing */
+        if (drag.turned < 0.25) { angle = 0; spinNow(0.6); }
+        else if (drag.turned < 1.1) { angle = 0; try { tone(240, .05, .03, 'sine', 300); } catch (e) {} }
+        drag = null;
+      });
       c.addEventListener('pointercancel', () => { drag = null; });
       const chips = card.querySelector('#gaCount');
       const render = () => {
