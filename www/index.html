@@ -261,13 +261,13 @@ body.focus main{padding-top:calc(4px + env(safe-area-inset-top,0px))}
 #bt svg{width:100%;height:100%;display:block}
 .bd{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#2a1450;border:2px solid rgba(255,255,255,.85);box-shadow:inset 0 2px 0 rgba(255,255,255,.7),0 6px 14px var(--sh);transition:transform .7s cubic-bezier(.3,1.7,.5,1),box-shadow .5s}
 .bd.hit{transform:scale(1.55);box-shadow:0 0 40px #fff,0 0 0 6px rgba(255,255,255,.5);z-index:1}
-.flood{position:fixed;inset:0;z-index:8;pointer-events:none;overflow:hidden}
+.flood{position:fixed;inset:0;z-index:31;pointer-events:none;overflow:hidden}
 .floodc{position:absolute;border-radius:50%;will-change:transform}
 .flood::after{content:"";position:absolute;inset:0;background:radial-gradient(70% 55% at 28% 12%,rgba(255,255,255,.5),transparent 70%),radial-gradient(60% 50% at 80% 100%,rgba(255,255,255,.25),transparent 70%)}
 .fstar{position:absolute;z-index:1;transform:translate(-50%,-50%);font-size:min(34vmin,220px);line-height:1;color:#fff;text-shadow:0 8px 44px rgba(0,0,0,.25);animation:starpop .9s .45s both cubic-bezier(.2,1.8,.4,1)}
 @keyframes starpop{from{transform:translate(-50%,-50%) scale(.15);opacity:0}}
 .grab{display:none}
-.moment{position:fixed;inset:0;z-index:8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;padding:24px;text-align:center;cursor:pointer;background:linear-gradient(135deg,var(--a1),var(--a2));animation:mom .55s cubic-bezier(.2,1,.3,1)}
+.moment{position:fixed;inset:0;z-index:34;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;padding:24px;text-align:center;cursor:pointer;background:linear-gradient(135deg,var(--a1),var(--a2));animation:mom .55s cubic-bezier(.2,1,.3,1)}
 .moment::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(70% 55% at 28% 12%,rgba(255,255,255,.5),transparent 70%)}
 .moment>*{position:relative;z-index:1}
 .mt{font-size:clamp(44px,14vw,150px);font-weight:800;letter-spacing:-.04em;line-height:1.02;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.22),0 14px 38px rgba(0,0,0,.18);max-width:100%;overflow-wrap:anywhere;animation:mpop .8s .1s both cubic-bezier(.2,1.8,.4,1)}
