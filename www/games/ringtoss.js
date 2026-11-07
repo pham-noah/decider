@@ -1,5 +1,6 @@
 /* Ring Toss — flick a ring at five pegs; the first one ringed decides. */
 (function () {
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   const TAU = Math.PI * 2;
   const cv = () => document.getElementById('rtCv');
@@ -83,24 +84,24 @@
   }
 
   function drawScene(x, g) {
-    const { baseY, cx } = geo; x.fillStyle = 'rgba(255,255,255,.55)';
+    const { baseY, cx } = geo; x.fillStyle = INK(.55);
     for (let i = 0; i < 9; i++) {
       const bx = 14 + i * (g.w - 22) / 8; x.beginPath(); x.moveTo(bx - 8, 10); x.lineTo(bx + 8, 10); x.lineTo(bx, 26); x.closePath(); x.fillStyle = PAL[i % PAL.length] + 'bb'; x.fill();
     }
     K.rr(x, 8, baseY - 7, g.w - 16, 15, 7); x.fillStyle = 'rgba(36,26,85,.82)'; x.fill();
-    K.rr(x, 8, baseY + 5, g.w - 16, 52, 12); x.fillStyle = 'rgba(255,255,255,.42)'; x.fill();
-    K.rr(x, 8, baseY + 5, g.w - 16, 52, 12); x.strokeStyle = 'rgba(255,255,255,.7)'; x.lineWidth = 1.5; x.stroke();
+    K.rr(x, 8, baseY + 5, g.w - 16, 52, 12); x.fillStyle = INK(.42); x.fill();
+    K.rr(x, 8, baseY + 5, g.w - 16, 52, 12); x.strokeStyle = INK(.7); x.lineWidth = 1.5; x.stroke();
     pegs.forEach((p) => {
-      x.beginPath(); x.moveTo(p.x - 4, baseY - 4); x.lineTo(p.x - 3, p.top + 4); x.lineTo(p.x + 3, p.top + 4); x.lineTo(p.x + 4, baseY - 4); x.closePath(); x.fillStyle = 'rgba(255,255,255,.96)'; x.fill();
-      x.strokeStyle = 'rgba(36,26,85,.16)'; x.lineWidth = 1; x.stroke(); x.beginPath(); x.arc(p.x, p.top, 6.5, 0, TAU); x.fillStyle = p.c; x.fill(); x.strokeStyle = 'rgba(255,255,255,.9)'; x.lineWidth = 1.5; x.stroke();
-      pill(x, p.x, baseY + 31, p.l, geo.stepX * .9, 10, p.hit ? p.c : 'rgba(255,255,255,.95)', '#241a55');
-    }); x.strokeStyle = 'rgba(255,255,255,.45)'; x.lineWidth = 2; x.beginPath(); x.moveTo(cx - 60, g.h - 30); x.lineTo(cx + 60, g.h - 30); x.stroke();
+      x.beginPath(); x.moveTo(p.x - 4, baseY - 4); x.lineTo(p.x - 3, p.top + 4); x.lineTo(p.x + 3, p.top + 4); x.lineTo(p.x + 4, baseY - 4); x.closePath(); x.fillStyle = INK(.96); x.fill();
+      x.strokeStyle = 'rgba(36,26,85,.16)'; x.lineWidth = 1; x.stroke(); x.beginPath(); x.arc(p.x, p.top, 6.5, 0, TAU); x.fillStyle = p.c; x.fill(); x.strokeStyle = INK(.9); x.lineWidth = 1.5; x.stroke();
+      pill(x, p.x, baseY + 31, p.l, geo.stepX * .9, 10, p.hit ? p.c : INK(.95), '#241a55');
+    }); x.strokeStyle = INK(.45); x.lineWidth = 2; x.beginPath(); x.moveTo(cx - 60, g.h - 30); x.lineTo(cx + 60, g.h - 30); x.stroke();
   }
 
   function drawRing(x) {
     const r = Math.min(17, geo.w * .046); const ry = state === 'fly' ? .22 + .6 * Math.abs(Math.cos(ring.rot)) : (ring.on ? .30 : .34); x.save(); x.translate(ring.x, ring.y);
     x.beginPath(); x.ellipse(0, 0, r, r * ry, 0, 0, TAU); x.strokeStyle = 'rgba(36,26,85,.18)'; x.lineWidth = 7; x.stroke(); x.beginPath(); x.ellipse(0, 0, r, r * ry, 0, 0, TAU);
-    x.strokeStyle = '#ff6fae'; x.lineWidth = 5; x.stroke(); x.beginPath(); x.ellipse(0, 0, r, r * ry, 0, 0, TAU); x.strokeStyle = 'rgba(255,255,255,.75)'; x.lineWidth = 1.5; x.stroke(); x.restore();
+    x.strokeStyle = '#ff6fae'; x.lineWidth = 5; x.stroke(); x.beginPath(); x.ellipse(0, 0, r, r * ry, 0, 0, TAU); x.strokeStyle = INK(.75); x.lineWidth = 1.5; x.stroke(); x.restore();
   }
 
   function frame(dt) {
@@ -108,7 +109,7 @@
     if (!geo || Math.abs(geo.w - g.w) > .5) layout();
     if (!geo) return;
     const x = g.x, w = g.w, h = g.h; x.clearRect(0, 0, w, h);
-    K.rr(x, 0, 0, w, h, 18); x.fillStyle = 'rgba(255,255,255,.28)'; x.fill();
+    K.rr(x, 0, 0, w, h, 18); x.fillStyle = INK(.28); x.fill();
     if (state === 'fly') physics(dt);
     if (state === 'settle' && (settle -= dt) <= 0) {
       if (winner) decide(winner);
@@ -124,8 +125,8 @@
       x.beginPath(); x.ellipse(px, py, 7, 3, 0, 0, TAU); x.strokeStyle = i < ringsLeft ? '#ff6fae' : 'rgba(36,26,85,.18)'; x.lineWidth = 2.5; x.stroke(); });
     if (drag && state === 'ready') {
       const dx = drag.x - drag.x0, dy = drag.y - drag.y0; const len = Math.min(96, Math.hypot(dx, dy)), ux = dx / (Math.hypot(dx, dy) || 1), uy = dy / (Math.hypot(dx, dy) || 1);
-      const ex = ring.x + ux * len, ey = ring.y + uy * len; x.save(); x.setLineDash([5, 6]); x.strokeStyle = 'rgba(255,255,255,.9)'; x.lineWidth = 3; x.beginPath(); x.moveTo(ring.x, ring.y); x.lineTo(ex, ey); x.stroke();
-      x.setLineDash([]); x.beginPath(); x.moveTo(ex + ux * 9, ey + uy * 9); x.lineTo(ex - uy * 6, ey + ux * 6); x.lineTo(ex + uy * 6, ey - ux * 6); x.closePath(); x.fillStyle = 'rgba(255,255,255,.9)'; x.fill();
+      const ex = ring.x + ux * len, ey = ring.y + uy * len; x.save(); x.setLineDash([5, 6]); x.strokeStyle = INK(.9); x.lineWidth = 3; x.beginPath(); x.moveTo(ring.x, ring.y); x.lineTo(ex, ey); x.stroke();
+      x.setLineDash([]); x.beginPath(); x.moveTo(ex + ux * 9, ey + uy * 9); x.lineTo(ex - uy * 6, ey + ux * 6); x.lineTo(ex + uy * 6, ey - ux * 6); x.closePath(); x.fillStyle = INK(.9); x.fill();
       x.restore();
     }
   }

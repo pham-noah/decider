@@ -1,5 +1,6 @@
 /* Scratch card — rub the foil off; once enough is gone the card decides. */
 (function () {
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   const $ = (id) => document.getElementById(id);
   const cv = () => $('scCv');
@@ -81,11 +82,11 @@
     grd.addColorStop(0, '#6d5bff'); grd.addColorStop(.4, '#a94bff');
     grd.addColorStop(.68, '#ff5ea8'); grd.addColorStop(1, '#57cdfd');
     m.fillStyle = grd; m.fillRect(B.x, B.y, B.w, B.h);
-    m.globalAlpha = .15; m.strokeStyle = '#fff'; m.lineWidth = 1;
+    m.globalAlpha = .15; m.strokeStyle = INK(1); m.lineWidth = 1;
     for (let i = -B.h; i < B.w + B.h; i += 7) {
       m.beginPath(); m.moveTo(B.x + i, B.y); m.lineTo(B.x + i + B.h, B.y + B.h); m.stroke();
     }
-    m.globalAlpha = .5; m.fillStyle = '#fff';
+    m.globalAlpha = .5; m.fillStyle = INK(1);
     for (let i = 0; i < 70; i++) {
       m.beginPath(); m.arc(B.x + Math.random() * B.w, B.y + Math.random() * B.h, Math.random() * 1.3, 0, TAU); m.fill();
     }
@@ -96,7 +97,7 @@
     m.globalAlpha = .5; m.font = '600 10px system-ui,sans-serif';
     m.fillText('rub here', g.w / 2, B.y + B.h * 0.5 + 26);
     m.globalAlpha = .45; m.lineWidth = 2; m.setLineDash([5, 6]);
-    K.rr(m, B.x + 8, B.y + 8, B.w - 16, B.h - 16, 15); m.strokeStyle = '#fff'; m.stroke();
+    K.rr(m, B.x + 8, B.y + 8, B.w - 16, B.h - 16, 15); m.strokeStyle = INK(1); m.stroke();
     m.restore();
   }
 
@@ -173,16 +174,16 @@
       K.rr(x, B.x, B.y, B.w, B.h, 22); x.clip();
       const gx = B.x - B.w * 0.5 + p * B.w * 2;
       const lg = x.createLinearGradient(gx - 70, 0, gx + 70, 0);
-      lg.addColorStop(0, 'rgba(255,255,255,0)');
-      lg.addColorStop(.5, 'rgba(255,255,255,.22)');
-      lg.addColorStop(1, 'rgba(255,255,255,0)');
+      lg.addColorStop(0, INK(0));
+      lg.addColorStop(.5, INK(.22));
+      lg.addColorStop(1, INK(0));
       x.globalCompositeOperation = 'lighter'; x.fillStyle = lg;
       x.fillRect(B.x, B.y, B.w, B.h);
       x.globalCompositeOperation = 'source-over';
       const tt = now / 1000;
       specks.forEach(s => {
         x.globalAlpha = .35 + .35 * Math.sin(tt * 2 + s.p);
-        x.fillStyle = '#fff';
+        x.fillStyle = INK(1);
         x.beginPath(); x.arc(B.x + s.x * B.w, B.y + s.y * B.h, s.r, 0, TAU); x.fill();
       });
       x.restore();
@@ -190,11 +191,11 @@
     }
 
     const barY = B.y + B.h - 18;
-    K.rr(x, B.x + 14, barY, B.w - 28, 6, 3); x.fillStyle = 'rgba(255,255,255,.28)'; x.fill();
+    K.rr(x, B.x + 14, barY, B.w - 28, 6, 3); x.fillStyle = INK(.28); x.fill();
     K.rr(x, B.x + 14, barY, Math.max(6, (B.w - 28) * frac), 6, 3);
-    x.fillStyle = revealed ? '#8fffc9' : '#fff'; x.fill();
+    x.fillStyle = revealed ? '#8fffc9' : INK(1); x.fill();
     K.tag(x, B.x + 62, barY - 13, revealed ? 'revealed' : Math.round(frac * 100) + '% scratched',
-      'rgba(255,255,255,.82)', '#241a55', 10);
+      INK(.82), '#241a55', 10);
   }
 
   function pos(e) {

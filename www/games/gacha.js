@@ -1,5 +1,6 @@
 /* Gacha — turn the knob, one capsule drops into the tray, its colour decides. */
 (function () {
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   if (!K) return;
   const cv = () => document.getElementById('gaCv'), out = () => document.getElementById('gaRes');
@@ -95,7 +96,7 @@
     x.beginPath(); x.moveTo(-r, 0); x.lineTo(r, 0);
     x.strokeStyle = 'rgba(20,10,50,.22)'; x.lineWidth = Math.max(1, r * 0.1); x.stroke();
     x.beginPath(); x.arc(-r * 0.34, -r * 0.36, r * 0.24, 0, Math.PI * 2);
-    x.fillStyle = 'rgba(255,255,255,.8)'; x.fill();
+    x.fillStyle = INK(.8); x.fill();
     x.restore();
   }
 
@@ -112,23 +113,23 @@
     const bg = x.createLinearGradient(0, g.bodyTop, 0, g.bodyBot);
     bg.addColorStop(0, '#9481ff'); bg.addColorStop(.55, '#6d5bd8'); bg.addColorStop(1, '#46359f');
     x.fillStyle = bg; x.fill();
-    x.strokeStyle = 'rgba(255,255,255,.55)'; x.lineWidth = 2; x.stroke();
+    x.strokeStyle = INK(.55); x.lineWidth = 2; x.stroke();
     x.restore();
 
     x.save();
     K.rr(x, tr.x - tr.w / 2, tr.y - tr.h * 0.3, tr.w, tr.h * 1.2, 16);
-    x.fillStyle = 'rgba(255,255,255,.45)'; x.fill();
+    x.fillStyle = INK(.45); x.fill();
     x.strokeStyle = 'rgba(36,26,85,.25)'; x.lineWidth = 2; x.stroke();
     x.restore();
 
     x.save();
     K.rr(x, g.flap.x - 26, g.flap.y - 6, 52, 28, 13);
     x.fillStyle = 'rgba(24,16,52,.62)'; x.fill();
-    x.strokeStyle = 'rgba(255,255,255,.3)'; x.lineWidth = 1.5; x.stroke();
+    x.strokeStyle = INK(.3); x.lineWidth = 1.5; x.stroke();
     x.restore();
 
     x.save(); x.beginPath(); x.arc(kn.x, kn.y, kn.r, 0, Math.PI * 2);
-    x.fillStyle = 'rgba(255,255,255,.9)'; x.fill();
+    x.fillStyle = INK(.9); x.fill();
     x.strokeStyle = 'rgba(36,26,85,.35)'; x.lineWidth = 2; x.stroke();
     x.translate(kn.x, kn.y); x.rotate(angle);
     x.beginPath(); x.moveTo(0, 0); x.lineTo(kn.r * 0.8, 0);
@@ -138,7 +139,7 @@
     x.restore();
 
     x.save(); x.beginPath(); x.arc(g.cx, g.domeCy, g.domeR, 0, Math.PI * 2);
-    x.fillStyle = 'rgba(255,255,255,.26)'; x.fill();
+    x.fillStyle = INK(.26); x.fill();
     x.clip();
     const amp = st === 'spin' ? 3.6 : 1.4;
     caps.forEach(c => {
@@ -149,10 +150,10 @@
     x.restore();
 
     x.save(); x.beginPath(); x.arc(g.cx, g.domeCy, g.domeR, 0, Math.PI * 2);
-    x.strokeStyle = 'rgba(255,255,255,.8)'; x.lineWidth = 3; x.stroke();
+    x.strokeStyle = INK(.8); x.lineWidth = 3; x.stroke();
     x.beginPath();
     x.arc(g.cx - g.domeR * 0.28, g.domeCy - g.domeR * 0.3, g.domeR * 0.55, Math.PI * 1.05, Math.PI * 1.52);
-    x.strokeStyle = 'rgba(255,255,255,.55)'; x.lineWidth = 5; x.lineCap = 'round'; x.stroke();
+    x.strokeStyle = INK(.55); x.lineWidth = 5; x.lineCap = 'round'; x.stroke();
     x.beginPath(); x.ellipse(g.cx, g.bodyTop + 2, g.domeR * 0.6, 11, 0, 0, Math.PI * 2);
     x.fillStyle = 'rgba(36,26,85,.32)'; x.fill();
     x.restore();
@@ -160,7 +161,7 @@
     if (one) {
       if (one.settled) {
         x.save(); x.beginPath(); x.arc(one.x, one.y, one.r * 1.9, 0, Math.PI * 2);
-        x.fillStyle = 'rgba(255,255,255,.22)'; x.fill();
+        x.fillStyle = INK(.22); x.fill();
         x.restore();
       }
       cap(x, one.x, one.y, one.r, one.rot, one.ci);

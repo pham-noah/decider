@@ -1,5 +1,6 @@
 /* Dart — drag to aim, release to throw; the sector the dart sticks in decides. */
 (function () {
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT, TAU = Math.PI * 2;
   const cv = () => document.getElementById('dtCv');
   const res = () => document.getElementById('dtRes');
@@ -35,12 +36,12 @@
     }
     if (hit >= 0) {
       const a0 = -Math.PI / 2 + hit * st;
-      x.beginPath(); x.moveTo(cx, cy); x.arc(cx, cy, R * .865, a0, a0 + st); x.closePath(); x.fillStyle = 'rgba(255,255,255,.26)'; x.fill();
-      x.strokeStyle = 'rgba(255,255,255,.95)'; x.lineWidth = 3; x.stroke();
+      x.beginPath(); x.moveTo(cx, cy); x.arc(cx, cy, R * .865, a0, a0 + st); x.closePath(); x.fillStyle = INK(.26); x.fill();
+      x.strokeStyle = INK(.95); x.lineWidth = 3; x.stroke();
     }
     /* score ring with sector numbers */
     x.beginPath(); x.arc(cx, cy, R * .865, 0, TAU); x.arc(cx, cy, R, 0, TAU, true); x.fillStyle = 'rgba(38,28,86,.94)'; x.fill();
-    x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.fillStyle = INK(1); x.textAlign = 'center'; x.textBaseline = 'middle';
     x.font = `800 ${Math.max(7, R * .058)}px "Bricolage Grotesque",system-ui,sans-serif`;
     for (let i = 0; i < n; i++) {
       const a = -Math.PI / 2 + (i + .5) * st;
@@ -50,7 +51,7 @@
     for (let i = 0; i < n; i++) {
       const a = -Math.PI / 2 + (i + .5) * st;
       pill(x, cx + Math.cos(a) * R * .60, cy + Math.sin(a) * R * .60, labels[i],
-        Math.min(86, chord * .92), Math.max(8, Math.min(11, R * .075)), 'rgba(255,255,255,.95)', '#241a55');
+        Math.min(86, chord * .92), Math.max(8, Math.min(11, R * .075)), INK(.95), '#241a55');
     }
     x.beginPath(); x.arc(cx, cy, R * .10, 0, TAU); x.fillStyle = '#fffdf8'; x.fill();
     x.strokeStyle = 'rgba(38,28,86,.65)'; x.lineWidth = 2; x.stroke();
@@ -99,7 +100,7 @@
     if (!geo) return;
     const x = g.x, w = g.w, h = g.h, R = geo.R;
     x.clearRect(0, 0, w, h);
-    K.rr(x, 0, 0, w, h, 18); x.fillStyle = 'rgba(255,255,255,.32)'; x.fill();
+    K.rr(x, 0, 0, w, h, 18); x.fillStyle = INK(.32); x.fill();
     if (aiming) {
       tAim += dt * .55;
       wob = { x: Math.sin(tAim) * R * .035, y: Math.cos(tAim * 1.4) * R * .032 };
@@ -107,12 +108,12 @@
     drawBoard(x);
     if (aim) {
       const p = { x: aim.x + wob.x, y: aim.y + wob.y };
-      x.save(); x.setLineDash([4, 6]); x.strokeStyle = 'rgba(255,255,255,.55)'; x.lineWidth = 1.5;
+      x.save(); x.setLineDash([4, 6]); x.strokeStyle = INK(.55); x.lineWidth = 1.5;
       x.beginPath(); x.moveTo(w / 2, h + 4); x.lineTo(p.x, p.y); x.stroke();
-      x.setLineDash([]); x.strokeStyle = 'rgba(255,255,255,.95)'; x.lineWidth = 2; x.beginPath(); x.arc(p.x, p.y, R * .115, 0, TAU); x.stroke();
+      x.setLineDash([]); x.strokeStyle = INK(.95); x.lineWidth = 2; x.beginPath(); x.arc(p.x, p.y, R * .115, 0, TAU); x.stroke();
       x.beginPath(); x.moveTo(p.x - 24, p.y); x.lineTo(p.x - 8, p.y); x.moveTo(p.x + 8, p.y); x.lineTo(p.x + 24, p.y);
       x.moveTo(p.x, p.y - 24); x.lineTo(p.x, p.y - 8); x.moveTo(p.x, p.y + 8); x.lineTo(p.x, p.y + 24); x.stroke();
-      x.beginPath(); x.arc(p.x, p.y, 2.5, 0, TAU); x.fillStyle = '#fff'; x.fill(); x.restore();
+      x.beginPath(); x.arc(p.x, p.y, 2.5, 0, TAU); x.fillStyle = INK(1); x.fill(); x.restore();
     }
     if (stuck) drawDart(x, stuck.x, stuck.y, stuck.a, .9);
     if (dart) {

@@ -1,5 +1,6 @@
 /* Pachinko — charge the spring, fire the ball up the chute, let the pins decide. */
 (function () {
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   if (!K) return;
   const cv = () => document.getElementById('paCv'), out = () => document.getElementById('paRes');
@@ -82,14 +83,14 @@
   function paint(g) {
     const x = g.x;
     x.clearRect(0, 0, g.w, g.h);
-    x.save(); K.rr(x, 0, 0, g.w, g.h, 18); x.fillStyle = 'rgba(255,255,255,.34)'; x.fill(); x.restore();
+    x.save(); K.rr(x, 0, 0, g.w, g.h, 18); x.fillStyle = INK(.34); x.fill(); x.restore();
 
     slots.forEach((s, i) => {
       x.save();
       K.rr(x, s.x + 2, g.shelfY - 2, s.w - 4, g.h - g.shelfY - 2, 9);
-      x.fillStyle = landed === i ? 'rgba(255,255,255,.98)' : PAL[i % PAL.length] + 'cc';
+      x.fillStyle = landed === i ? INK(.98) : PAL[i % PAL.length] + 'cc';
       x.fill(); x.restore();
-      x.fillStyle = landed === i ? '#241a55' : '#fff';
+      x.fillStyle = landed === i ? '#241a55' : INK(1);
       x.font = `700 ${Math.max(9, Math.min(12, s.w / 5.2))}px "Bricolage Grotesque",system-ui,sans-serif`;
       x.textAlign = 'center'; x.textBaseline = 'middle';
       let t = s.l;
@@ -99,23 +100,23 @@
 
     pegs.forEach(p => {
       x.beginPath(); x.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      x.fillStyle = 'rgba(255,255,255,.95)'; x.fill();
+      x.fillStyle = INK(.95); x.fill();
       x.strokeStyle = 'rgba(111,139,255,.5)'; x.lineWidth = 1.5; x.stroke();
     });
 
     x.save();
     K.rr(x, g.laneX, g.topY, g.w - g.laneX - 4, g.shelfY - g.topY, 12);
     x.fillStyle = 'rgba(36,26,85,.10)'; x.fill();
-    x.strokeStyle = 'rgba(255,255,255,.6)'; x.lineWidth = 2; x.stroke();
+    x.strokeStyle = INK(.6); x.lineWidth = 2; x.stroke();
     x.restore();
 
     x.save(); x.beginPath();
     x.moveTo(g.laneCx + 9, g.topY + 44);
     x.quadraticCurveTo(g.laneCx + 9, g.topY + 8, g.laneX - 14, g.topY + 6);
-    x.strokeStyle = 'rgba(255,255,255,.5)'; x.lineWidth = 3; x.lineCap = 'round'; x.stroke();
+    x.strokeStyle = INK(.5); x.lineWidth = 3; x.lineCap = 'round'; x.stroke();
     x.beginPath();
     x.moveTo(g.laneX - 23, g.topY + 1); x.lineTo(g.laneX - 12, g.topY + 6); x.lineTo(g.laneX - 22, g.topY + 14);
-    x.fillStyle = 'rgba(255,255,255,.5)'; x.fill();
+    x.fillStyle = INK(.5); x.fill();
     x.restore();
 
     const barTop = g.topY + 34, barH = g.shelfY - 40 - barTop;
@@ -134,14 +135,14 @@
       const yy = sy - sh + (sh / 6) * i, xx = g.laneCx + (i % 2 ? 8 : -8);
       i ? x.lineTo(xx, yy) : x.moveTo(xx, yy);
     }
-    x.strokeStyle = 'rgba(255,255,255,.8)'; x.lineWidth = 2; x.stroke();
+    x.strokeStyle = INK(.8); x.lineWidth = 2; x.stroke();
 
     const ball = (bx, by, r) => {
       x.beginPath(); x.arc(bx, by, r, 0, Math.PI * 2);
       const gr = x.createRadialGradient(bx - r * .3, by - r * .3, 1, bx, by, r);
-      gr.addColorStop(0, '#fff'); gr.addColorStop(1, '#7b6cff');
+      gr.addColorStop(0, INK(1)); gr.addColorStop(1, '#7b6cff');
       x.fillStyle = gr; x.fill();
-      x.strokeStyle = 'rgba(255,255,255,.9)'; x.lineWidth = 1.2; x.stroke();
+      x.strokeStyle = INK(.9); x.lineWidth = 1.2; x.stroke();
     };
     if (!balls.length) ball(g.laneCx, sy - sh - g.ballR - 1 - charge * 4, g.ballR);
     balls.forEach(b => ball(b.x, b.y, b.r));

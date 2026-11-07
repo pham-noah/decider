@@ -1,5 +1,6 @@
 /* Spin the coin — flick it, watch it wobble down onto one face. */
 (function () {
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   const cv = () => document.getElementById('snCv');
   const TAU = Math.PI * 2;
@@ -45,9 +46,9 @@
 
     // table glow
     const tg = x.createRadialGradient(cx, cy + 18, 6, cx, cy + 18, R * 2.1);
-    tg.addColorStop(0, 'rgba(255,255,255,.30)');
-    tg.addColorStop(.55, 'rgba(255,255,255,.06)');
-    tg.addColorStop(1, 'rgba(255,255,255,0)');
+    tg.addColorStop(0, INK(.30));
+    tg.addColorStop(.55, INK(.06));
+    tg.addColorStop(1, INK(0));
     x.fillStyle = tg;
     x.beginPath(); x.ellipse(cx, cy + 18, R * 2.1, R * 0.95, 0, 0, TAU); x.fill();
 
@@ -108,15 +109,15 @@
       x.beginPath(); x.ellipse(0, 0, rx, ry, 0, 0, TAU); x.clip();
       const gx = -rx + ((now / 26) % (rx * 2.6));
       const gl = x.createLinearGradient(gx - ry * .5, -ry, gx + ry * .5, ry);
-      gl.addColorStop(0, 'rgba(255,255,255,0)');
-      gl.addColorStop(.5, 'rgba(255,255,255,.55)');
-      gl.addColorStop(1, 'rgba(255,255,255,0)');
+      gl.addColorStop(0, INK(0));
+      gl.addColorStop(.5, INK(.55));
+      gl.addColorStop(1, INK(0));
       x.globalCompositeOperation = 'lighter';
       x.fillStyle = gl; x.fillRect(-rx, -ry, rx * 2, ry * 2);
       x.restore();
     } else {
       // edge-on: just the milled rim
-      x.strokeStyle = 'rgba(255,255,255,.5)'; x.lineWidth = 1;
+      x.strokeStyle = INK(.5); x.lineWidth = 1;
       x.beginPath(); x.moveTo(0, -ry * 0.85); x.lineTo(0, ry * 0.85); x.stroke();
     }
     x.restore();
@@ -124,25 +125,25 @@
     // readout
     x.textAlign = 'center'; x.textBaseline = 'alphabetic';
     const rpm = Math.round(Math.abs(vel) * 573);
-    x.fillStyle = 'rgba(255,255,255,.92)';
+    x.fillStyle = INK(.92);
     x.font = '800 30px "Bricolage Grotesque",system-ui,sans-serif';
     x.fillText(state === 'rest' || state === 'die' ? '0' : String(rpm), cx, h - 30);
     if (state === 'spin' || state === 'die') {
       x.save();
       x.font = '800 22px "Bricolage Grotesque",system-ui,sans-serif';
       x.textAlign = 'center'; x.textBaseline = 'middle';
-      x.fillStyle = 'rgba(255,255,255,.92)';
+      x.fillStyle = INK(.92);
       x.fillText(spinT.toFixed(1) + 's', cx, h * 0.14);
       x.font = '700 10px "Bricolage Grotesque",system-ui,sans-serif';
-      x.fillStyle = 'rgba(255,255,255,.55)';
+      x.fillStyle = INK(.55);
       x.fillText(best > 0 ? 'best ' + best.toFixed(1) + 's' : 'flick it hard', cx, h * 0.14 - 22);
       x.restore();
     }
     x.font = '700 11px "Bricolage Grotesque",system-ui,sans-serif';
-    x.fillStyle = 'rgba(255,255,255,.5)';
+    x.fillStyle = INK(.5);
     x.fillText('RPM', cx, h - 14);
     if (state === 'rest') {
-      x.fillStyle = 'rgba(255,255,255,.85)';
+      x.fillStyle = INK(.85);
       x.font = '700 12px "Bricolage Grotesque",system-ui,sans-serif';
       x.fillText('flick to spin', cx, h * 0.14);
     }

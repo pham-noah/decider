@@ -1,5 +1,6 @@
 /* Balloons — a bobbing grid, each balloon hides a label; pop one to decide. */
 (function () {
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   const cv = () => document.getElementById('blCv');
   const TAU = Math.PI * 2;
@@ -36,30 +37,30 @@
     x.beginPath();
     x.moveTo(bx, by + b.r * 1.12);
     x.bezierCurveTo(bx + 9, by + b.r * 1.6, bx - 11, by + b.r * 1.95, bx + 4, by + b.r * 2.35);
-    x.strokeStyle = 'rgba(255,255,255,.5)'; x.lineWidth = 1.2; x.stroke();
+    x.strokeStyle = INK(.5); x.lineWidth = 1.2; x.stroke();
 
     x.save();
     x.beginPath(); x.ellipse(bx, by, b.r, b.r * 1.16, 0, 0, TAU);
     const gr = x.createRadialGradient(bx - b.r * .35, by - b.r * .45, 2, bx, by, b.r * 1.25);
-    gr.addColorStop(0, 'rgba(255,255,255,.95)');
+    gr.addColorStop(0, INK(.95));
     gr.addColorStop(.32, b.col);
     gr.addColorStop(1, b.col);
     x.fillStyle = gr; x.fill();
     x.save(); x.clip();
     const sh = x.createLinearGradient(0, by - b.r, 0, by + b.r * 1.2);
-    sh.addColorStop(0, 'rgba(255,255,255,.25)');
-    sh.addColorStop(.55, 'rgba(255,255,255,0)');
+    sh.addColorStop(0, INK(.25));
+    sh.addColorStop(.55, INK(0));
     sh.addColorStop(1, 'rgba(20,8,50,.35)');
     x.fillStyle = sh; x.fillRect(bx - b.r, by - b.r * 1.2, b.r * 2, b.r * 2.4);
     x.beginPath(); x.ellipse(bx - b.r * .34, by - b.r * .5, b.r * .26, b.r * .34, -.5, 0, TAU);
-    x.fillStyle = 'rgba(255,255,255,.6)'; x.fill();
+    x.fillStyle = INK(.6); x.fill();
     x.restore();
 
     x.beginPath(); x.moveTo(bx - 5, by + b.r * 1.06); x.lineTo(bx + 5, by + b.r * 1.06); x.lineTo(bx, by + b.r * 1.22);
     x.closePath(); x.fillStyle = b.col; x.fill();
 
     x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.fillStyle = 'rgba(255,255,255,.45)';
+    x.fillStyle = INK(.45);
     x.font = `800 ${Math.round(b.r * 0.85)}px "Bricolage Grotesque",system-ui,sans-serif`;
     x.fillText('?', bx, by + 1);
     x.restore();
@@ -87,7 +88,7 @@
     const x = g.x;
     x.clearRect(0, 0, g.w, g.h);
 
-    x.fillStyle = 'rgba(255,255,255,.62)';
+    x.fillStyle = INK(.62);
     x.font = '700 12px "Bricolage Grotesque",system-ui,sans-serif';
     x.textAlign = 'center'; x.textBaseline = 'middle';
     x.fillText(popped ? 'one popped — reset for a fresh grid' : 'tap a balloon', g.w / 2, 20);

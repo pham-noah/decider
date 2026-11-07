@@ -1,5 +1,6 @@
 /* Basketball — three flicks at the hoop; two or more makes decides. */
 (function () {
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   const TAU = Math.PI * 2;
   const cv = () => document.getElementById('bbCv');
@@ -82,20 +83,20 @@
 
   function drawHoop(x) {
     const { cx, rimY, rimW } = geo; x.save(); x.shadowColor = 'rgba(36,26,85,.14)'; x.shadowBlur = 18; x.shadowOffsetY = 8;
-    K.rr(x, cx - rimW - 20, 18, (rimW + 20) * 2, rimY - 36, 12); x.fillStyle = 'rgba(255,255,255,.34)'; x.fill(); x.restore();
-    K.rr(x, cx - rimW - 20, 18, (rimW + 20) * 2, rimY - 36, 12); x.strokeStyle = 'rgba(255,255,255,.75)'; x.lineWidth = 2; x.stroke();
+    K.rr(x, cx - rimW - 20, 18, (rimW + 20) * 2, rimY - 36, 12); x.fillStyle = INK(.34); x.fill(); x.restore();
+    K.rr(x, cx - rimW - 20, 18, (rimW + 20) * 2, rimY - 36, 12); x.strokeStyle = INK(.75); x.lineWidth = 2; x.stroke();
     K.rr(x, cx - 26, rimY - 58, 52, 34, 4); x.strokeStyle = 'rgba(255,111,174,.55)'; x.lineWidth = 2; x.stroke(); const sway = netT * 5;
-    x.strokeStyle = 'rgba(255,255,255,.9)'; x.lineWidth = 1.3;
+    x.strokeStyle = INK(.9); x.lineWidth = 1.3;
     for (let i = 0; i <= 6; i++) {
       const t = i / 6, nx = cx - rimW + t * rimW * 2; x.beginPath(); x.moveTo(nx, rimY); x.lineTo(cx + (nx - cx) * .45 + Math.sin(t * 7 + netT * 10) * sway, rimY + 34);
       x.stroke();
     }
-    x.strokeStyle = 'rgba(255,255,255,.55)'; x.lineWidth = 1;
+    x.strokeStyle = INK(.55); x.lineWidth = 1;
     for (let i = 1; i <= 2; i++) {
       const yy = rimY + i * 11; x.beginPath(); x.moveTo(cx - rimW + (rimW * .5 * i / 2), yy); x.lineTo(cx + rimW - (rimW * .5 * i / 2), yy); x.stroke();
     }
     x.lineCap = 'round'; x.beginPath(); x.ellipse(cx, rimY, rimW, 8, 0, 0, TAU); x.strokeStyle = '#ff6a3d'; x.lineWidth = 5; x.stroke();
-    x.beginPath(); x.ellipse(cx, rimY, rimW, 8, 0, Math.PI, TAU); x.strokeStyle = 'rgba(255,255,255,.65)'; x.lineWidth = 1.6; x.stroke();
+    x.beginPath(); x.ellipse(cx, rimY, rimW, 8, 0, Math.PI, TAU); x.strokeStyle = INK(.65); x.lineWidth = 1.6; x.stroke();
   }
 
   function drawPower(x, g) {
@@ -113,7 +114,7 @@
   function drawZone(x, w, h) {
     if (phase !== 'aim' || drag) return;
     x.save();
-    x.setLineDash([3, 8]); x.strokeStyle = 'rgba(255,255,255,.4)'; x.lineWidth = 1.4;
+    x.setLineDash([3, 8]); x.strokeStyle = INK(.4); x.lineWidth = 1.4;
     x.beginPath(); x.moveTo(18, h * 0.6); x.lineTo(w - 18, h * 0.6); x.stroke();
     x.setLineDash([]);
     x.fillStyle = 'rgba(36,26,85,.42)'; x.font = '700 9px "Bricolage Grotesque",system-ui,sans-serif';
@@ -125,7 +126,7 @@
   function drawTally(x, h) {
     for (let i = 0; i < 3; i++) {
       const px = 18 + i * 17, py = h - 22; x.beginPath(); x.arc(px, py, 5.5, 0, TAU);
-      x.fillStyle = i < tally.length ? (tally[i] ? '#4ade80' : 'rgba(36,26,85,.26)') : 'rgba(255,255,255,.85)'; x.fill();
+      x.fillStyle = i < tally.length ? (tally[i] ? '#4ade80' : 'rgba(36,26,85,.26)') : INK(.85); x.fill();
       x.strokeStyle = 'rgba(36,26,85,.28)'; x.lineWidth = 1; x.stroke();
     }
     x.fillStyle = 'rgba(36,26,85,.6)'; x.font = '700 9px "Bricolage Grotesque",system-ui,sans-serif'; x.textAlign = 'left'; x.textBaseline = 'middle';
@@ -149,8 +150,8 @@
     if (!geo || Math.abs(geo.w - g.w) > .5) layout();
     if (!geo) return;
     const x = g.x, w = g.w, h = g.h; x.clearRect(0, 0, w, h);
-    K.rr(x, 0, 0, w, h, 18); x.fillStyle = 'rgba(255,255,255,.28)'; x.fill(); const grd = x.createLinearGradient(0, 0, 0, h);
-    grd.addColorStop(0, 'rgba(255,255,255,0)'); grd.addColorStop(1, 'rgba(255,179,71,.16)'); x.fillStyle = grd; x.fillRect(0, 0, w, h);
+    K.rr(x, 0, 0, w, h, 18); x.fillStyle = INK(.28); x.fill(); const grd = x.createLinearGradient(0, 0, 0, h);
+    grd.addColorStop(0, INK(0)); grd.addColorStop(1, 'rgba(255,179,71,.16)'); x.fillStyle = grd; x.fillRect(0, 0, w, h);
     if (netT > 0) netT = Math.max(0, netT - dt * .04);
     if (phase === 'fly') physics(dt);
     if (phase === 'pause') { pause -= dt; if (pause <= 0) { if (shots >= 3) finish(); else resetBall(); } }
@@ -166,7 +167,7 @@
     }
     drawBall(x);
     if (drag) {
-      x.save(); x.setLineDash([4, 6]); x.strokeStyle = 'rgba(255,255,255,.8)'; x.lineWidth = 2; x.beginPath(); x.moveTo(ball.x, ball.y); x.lineTo(drag.x, drag.y); x.stroke();
+      x.save(); x.setLineDash([4, 6]); x.strokeStyle = INK(.8); x.lineWidth = 2; x.beginPath(); x.moveTo(ball.x, ball.y); x.lineTo(drag.x, drag.y); x.stroke();
       x.restore();
     }
   }

@@ -2,6 +2,7 @@
  * Your input decides: drag sideways to place the ball, flick to give it speed.
  * Nothing is randomised except the pegs' tiny asymmetry. */
 (function () {
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   const cv = () => document.getElementById('pkCv');
   let L = null, rows = 7, pegs = [], slots = [], balls = [], busy = false, landed = null;
@@ -50,7 +51,7 @@
     // board
     x.save();
     K.rr(x, 0, 0, g.w, g.h, 18);
-    x.fillStyle = 'rgba(255,255,255,.35)';
+    x.fillStyle = INK(.35);
     x.fill();
     x.restore();
 
@@ -59,10 +60,10 @@
     slots.forEach((s, i) => {
       x.save();
       K.rr(x, s.x - s.w / 2 + 3, slotY - 2, s.w - 6, g.h - slotY + 2, 10);
-      x.fillStyle = landed === i ? 'rgba(255,255,255,.98)' : PAL[i % PAL.length] + 'cc';
+      x.fillStyle = landed === i ? INK(.98) : PAL[i % PAL.length] + 'cc';
       x.fill();
       x.restore();
-      x.fillStyle = landed === i ? '#241a55' : '#fff';
+      x.fillStyle = landed === i ? '#241a55' : INK(1);
       x.font = `700 ${Math.max(9, Math.min(12, s.w / 6))}px "Bricolage Grotesque",system-ui,sans-serif`;
       x.textAlign = 'center'; x.textBaseline = 'middle';
       let t = s.l;
@@ -74,7 +75,7 @@
     pegs.forEach(p => {
       x.beginPath();
       x.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      x.fillStyle = 'rgba(255,255,255,.95)';
+      x.fillStyle = INK(.95);
       x.fill();
       x.strokeStyle = 'rgba(111,139,255,.5)';
       x.lineWidth = 1.5;
@@ -86,12 +87,12 @@
       const ax = aim * g.w;
       x.save();
       x.setLineDash([5, 7]);
-      x.strokeStyle = 'rgba(255,255,255,.5)';
+      x.strokeStyle = INK(.5);
       x.lineWidth = 1.5;
       x.beginPath(); x.moveTo(ax, 16); x.lineTo(ax, slotY - 8); x.stroke();
       x.restore();
       x.beginPath(); x.arc(ax, 15, 7, 0, Math.PI * 2);
-      x.fillStyle = '#fff'; x.fill();
+      x.fillStyle = INK(1); x.fill();
       x.beginPath(); x.arc(ax, 15, 3.4, 0, Math.PI * 2);
       x.fillStyle = '#7b6cff'; x.fill();
     }
@@ -126,7 +127,7 @@
       x.beginPath();
       x.arc(b.x, b.y, b.r, 0, Math.PI * 2);
       const grd = x.createRadialGradient(b.x - b.r * 0.3, b.y - b.r * 0.3, 1, b.x, b.y, b.r);
-      grd.addColorStop(0, '#fff'); grd.addColorStop(1, '#7b6cff');
+      grd.addColorStop(0, INK(1)); grd.addColorStop(1, '#7b6cff');
       x.fillStyle = grd;
       x.fill();
 

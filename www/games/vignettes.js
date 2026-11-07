@@ -1,6 +1,7 @@
 /* Vignettes — one extruded shape, turned by hand. Every half-turn it becomes a
  * different thing: key, bottle, boot, teapot, fish, bird. Drag left or right. */
 (function () {
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT, TAU = Math.PI * 2, HALF = Math.PI / 2; const cv = () => document.getElementById('vgCv');
   const resEl = () => document.getElementById('vgRes');
 
@@ -79,7 +80,7 @@
     if (a < .02) return; x.save(); x.globalAlpha = a; x.fillStyle = 'rgba(26,18,50,.55)'; x.strokeStyle = col;
     if (kind === 'hole') { x.beginPath(); x.ellipse(0, -.55, .07, .07, 0, 0, TAU); x.fill(); }
     else if (kind === 'band') {
-      x.globalAlpha = a * .35; x.fillStyle = '#ffffff'; x.beginPath(); subRR(x, -.26, .24, .52, .16, .06); x.fill();
+      x.globalAlpha = a * .35; x.fillStyle = INK(1); x.beginPath(); subRR(x, -.26, .24, .52, .16, .06); x.fill();
     } else if (kind === 'sole') {
       x.globalAlpha = a * .45; x.fillStyle = '#2a1c3c'; x.beginPath(); subRR(x, -.44, .53, .88, .09, .045); x.fill();
     } else if (kind === 'handle') {
@@ -136,11 +137,11 @@
     }
 
     path(x, lobes); const grd = x.createLinearGradient(0, -1.1, 0, 1.1);
-    grd.addColorStop(0, mix(col, '#ffffff', .38)); grd.addColorStop(.5, col);
+    grd.addColorStop(0, mix(col, INK(1), .38)); grd.addColorStop(.5, col);
     grd.addColorStop(1, mix(col, '#2a1b46', .45)); x.fillStyle = grd; x.fill();
 
     x.save(); path(x, lobes); x.clip(); const sheen = x.createRadialGradient(-.45, -.75, .05, -.2, -.4, 1.8);
-    sheen.addColorStop(0, 'rgba(255,255,255,.4)'); sheen.addColorStop(1, 'rgba(255,255,255,0)');
+    sheen.addColorStop(0, INK(.4)); sheen.addColorStop(1, INK(0));
     x.fillStyle = sheen; x.fillRect(-1.3, -1.3, 2.6, 2.6); x.restore();
 
     const side = 'rgba(26,18,50,.42)'; if (m < .55) accent(x, A.acc, (1 - m / .55) * .85, side);
@@ -157,13 +158,13 @@
     x.fillText(SHAPES[idx].name.toUpperCase(), cx, h - 52); const step = 20, x0 = cx - (N - 1) * step / 2;
     for (let i = 0; i < N; i++) {
       const dx = x0 + i * step; x.beginPath(); x.arc(dx, h - 26, i === idx ? 4.6 : 3.2, 0, TAU);
-      x.fillStyle = found[i] ? (i === idx ? '#ffffff' : 'rgba(255,255,255,.62)') : 'rgba(255,255,255,.16)'; x.fill();
+      x.fillStyle = found[i] ? (i === idx ? INK(1) : INK(.62)) : INK(.16); x.fill();
       if (i === idx) {
         x.beginPath(); x.arc(dx, h - 26, 7.6, 0, TAU);
-        x.strokeStyle = 'rgba(255,255,255,.45)'; x.lineWidth = 1.2; x.stroke();
+        x.strokeStyle = INK(.45); x.lineWidth = 1.2; x.stroke();
       }
     }
-    x.fillStyle = 'rgba(255,255,255,.4)'; x.font = '700 10px "Bricolage Grotesque",system-ui,sans-serif';
+    x.fillStyle = INK(.4); x.font = '700 10px "Bricolage Grotesque",system-ui,sans-serif';
     x.textAlign = 'right'; x.textBaseline = 'bottom';
     x.fillText(found.filter(Boolean).length + ' / ' + N + ' found', w - 14, h - 14); x.restore();
   }

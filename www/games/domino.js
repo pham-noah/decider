@@ -1,5 +1,6 @@
 /* Dominoes — a curved row; tip them and the last tile to settle decides. */
 (function () {
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   const cv = () => document.getElementById('dmCv');
   const TAU = Math.PI * 2;
@@ -49,8 +50,8 @@
     x.clearRect(0, 0, g.w, g.h);
 
     const gl = x.createRadialGradient(g.w / 2, g.h * 0.52, 10, g.w / 2, g.h * 0.52, g.w * 0.62);
-    gl.addColorStop(0, 'rgba(255,255,255,.08)');
-    gl.addColorStop(1, 'rgba(255,255,255,0)');
+    gl.addColorStop(0, INK(.08));
+    gl.addColorStop(1, INK(0));
     x.fillStyle = gl; x.fillRect(0, 0, g.w, g.h);
 
     if (tiles.length) {
@@ -63,7 +64,7 @@
       x.restore();
     }
 
-    x.fillStyle = 'rgba(255,255,255,.5)';
+    x.fillStyle = INK(.5);
     x.font = '700 11px "Bricolage Grotesque",system-ui,sans-serif';
     x.textAlign = 'center'; x.textBaseline = 'middle';
     x.fillText(state === 'arm' ? 'tip the row' : state === 'down' ? 'all down' : 'cascade…', g.w / 2, 18);
@@ -128,7 +129,7 @@
     }
 
     if (state === 'down') {
-      x.fillStyle = 'rgba(255,255,255,.5)';
+      x.fillStyle = INK(.5);
       x.font = '700 11px "Bricolage Grotesque",system-ui,sans-serif';
       x.textAlign = 'center';
       x.fillText('tap Tip for another run', g.w / 2, g.h - 16);

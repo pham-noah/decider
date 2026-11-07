@@ -1,5 +1,6 @@
 /* Tarot — three cards, one message; the card you turn decides. */
 (function () {
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   const cv = () => document.getElementById('trCv');
   const DECK = [
@@ -111,10 +112,10 @@
     const bg = x.createRadialGradient(w * 0.5, h * 0.34, 8, w * 0.5, h * 0.55, w * 0.85);
     bg.addColorStop(0, 'rgba(96,74,196,.5)'); bg.addColorStop(1, 'rgba(13,8,38,.8)');
     K.rr(x, 2, 2, w - 4, h - 4, 20); x.fillStyle = bg; x.fill();
-    x.fillStyle = '#fff';
+    x.fillStyle = INK(1);
     stars.forEach(s => { x.globalAlpha = s.a; x.beginPath(); x.arc(s.x * w, s.y * h * 0.72, s.r, 0, Math.PI * 2); x.fill(); });
     x.globalAlpha = 1;
-    x.fillStyle = 'rgba(255,255,255,.55)'; x.font = '600 11px "Bricolage Grotesque",system-ui,sans-serif';
+    x.fillStyle = INK(.55); x.font = '600 11px "Bricolage Grotesque",system-ui,sans-serif';
     x.textAlign = 'center'; x.textBaseline = 'middle';
     x.fillText(state === 'deck' ? 'Tap the deck to deal' : state === 'idle' ? 'Tap a card' : state === 'shown' ? 'Tap to deal again' : '', w / 2, h * 0.09);
     // a pulsing halo behind the deck, so the first tap is obvious

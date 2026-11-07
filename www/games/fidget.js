@@ -1,5 +1,6 @@
 /* Fidget spinner — flick it, let friction pick the arm under the pointer. */
 (function () {
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   const cv = () => document.getElementById('fgCv');
   const TAU = Math.PI * 2;
@@ -65,11 +66,11 @@
         const rg = x.createRadialGradient(
           G.cx + Math.cos(th) * G.R - G.lobe * .3, G.cy + Math.sin(th) * G.R - G.lobe * .35, 2,
           G.cx + Math.cos(th) * G.R, G.cy + Math.sin(th) * G.R, G.lobe);
-        rg.addColorStop(0, '#ffffff'); rg.addColorStop(.55, PAL[(i + 2) % PAL.length]); rg.addColorStop(1, PAL[(i + 4) % PAL.length]);
+        rg.addColorStop(0, INK(1)); rg.addColorStop(.55, PAL[(i + 2) % PAL.length]); rg.addColorStop(1, PAL[(i + 4) % PAL.length]);
         x.fillStyle = rg; x.fill();
         x.beginPath();
         x.arc(G.cx + Math.cos(th) * G.R, G.cy + Math.sin(th) * G.R, G.lobe * 0.42, 0, TAU);
-        x.fillStyle = 'rgba(255,255,255,.92)'; x.fill();
+        x.fillStyle = INK(.92); x.fill();
         x.strokeStyle = 'rgba(36,26,85,.22)'; x.lineWidth = 1.5; x.stroke();
       }
       x.restore();
@@ -78,9 +79,9 @@
     // hub
     x.beginPath(); x.arc(G.cx, G.cy, G.R * 0.30, 0, TAU);
     const hg = x.createRadialGradient(G.cx - 6, G.cy - 8, 2, G.cx, G.cy, G.R * 0.3);
-    hg.addColorStop(0, '#fff'); hg.addColorStop(1, 'rgba(255,255,255,.55)');
+    hg.addColorStop(0, INK(1)); hg.addColorStop(1, INK(.55));
     x.fillStyle = hg; x.fill();
-    x.strokeStyle = 'rgba(255,255,255,.9)'; x.lineWidth = 2; x.stroke();
+    x.strokeStyle = INK(.9); x.lineWidth = 2; x.stroke();
     x.beginPath(); x.arc(G.cx, G.cy, G.R * 0.11, 0, TAU);
     x.fillStyle = 'rgba(36,26,85,.18)'; x.fill();
 
@@ -93,25 +94,25 @@
       x.font = `700 ${fs}px "Bricolage Grotesque",system-ui,sans-serif`;
       while (txt.length > 2 && x.measureText(txt).width > 84) txt = txt.slice(0, -1);
       if (txt !== labels[i]) txt = txt.slice(0, -1) + '…';
-      K.tag(x, lx, ly, txt, 'rgba(255,255,255,.94)', '#241a55', fs);
+      K.tag(x, lx, ly, txt, INK(.94), '#241a55', fs);
     }
 
     // fixed pointer at the top
     const py = G.cy - G.tagR - 24;
     x.beginPath(); x.moveTo(G.cx, py + 12); x.lineTo(G.cx - 9, py); x.lineTo(G.cx + 9, py);
-    x.closePath(); x.fillStyle = '#fff'; x.fill();
+    x.closePath(); x.fillStyle = INK(1); x.fill();
     x.strokeStyle = 'rgba(36,26,85,.25)'; x.lineWidth = 1.2; x.stroke();
     x.beginPath(); x.moveTo(G.cx, py + 14); x.lineTo(G.cx, G.cy - G.R - G.lobe - 4);
-    x.setLineDash([3, 5]); x.strokeStyle = 'rgba(255,255,255,.4)'; x.stroke(); x.setLineDash([]);
+    x.setLineDash([3, 5]); x.strokeStyle = INK(.4); x.stroke(); x.setLineDash([]);
 
     // rpm readout
     const rpm = Math.round(Math.abs(v) * 573);
     x.textAlign = 'center'; x.textBaseline = 'alphabetic';
-    x.fillStyle = 'rgba(255,255,255,.92)';
+    x.fillStyle = INK(.92);
     x.font = '800 30px "Bricolage Grotesque",system-ui,sans-serif';
     x.fillText(String(rpm), G.cx, g.h - 30);
     x.font = '700 11px "Bricolage Grotesque",system-ui,sans-serif';
-    x.fillStyle = 'rgba(255,255,255,.5)';
+    x.fillStyle = INK(.5);
     x.fillText('RPM', G.cx, g.h - 14);
   }
 

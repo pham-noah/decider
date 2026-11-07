@@ -3,6 +3,7 @@
  * and how hard they stop — the last reel overshoots its mark and rolls back.
  * A tap anywhere on the machine spins with an average pull. */
 (function () {
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   const cv = () => document.getElementById('slCv');
   const TAU = Math.PI * 2;
@@ -113,7 +114,7 @@
     bg.addColorStop(.55, 'rgba(38,20,80,.95)');
     bg.addColorStop(1, 'rgba(20,10,46,.96)');
     x.fillStyle = bg; x.fill();
-    x.strokeStyle = 'rgba(255,255,255,.4)'; x.lineWidth = 1.5; x.stroke();
+    x.strokeStyle = INK(.4); x.lineWidth = 1.5; x.stroke();
 
     // marquee bulbs
     for (let i = 0; i < 9; i++) {
@@ -123,7 +124,7 @@
       x.fillStyle = `rgba(255,${Math.round(190 + 40 * on)},130,${(0.22 + 0.7 * on).toFixed(2)})`;
       x.fill();
     }
-    x.fillStyle = 'rgba(255,255,255,.55)';
+    x.fillStyle = INK(.55);
     x.font = '700 10px "Bricolage Grotesque",system-ui,sans-serif';
     x.textAlign = 'center'; x.textBaseline = 'middle';
     x.fillText('PULL THE LEVER', (m + reelRight) / 2, 48);
@@ -134,7 +135,7 @@
       const cx = m + i * (rw + gap) + rw / 2;
       K.rr(x, cx - rw / 2, top, rw, wh, 15);
       x.fillStyle = 'rgba(9,4,26,.78)'; x.fill();
-      x.strokeStyle = 'rgba(255,255,255,.22)'; x.lineWidth = 1.4; x.stroke();
+      x.strokeStyle = INK(.22); x.lineWidth = 1.4; x.stroke();
 
       x.save();
       K.rr(x, cx - rw / 2, top, rw, wh, 15); x.clip();
@@ -153,7 +154,7 @@
           x.save();
           K.rr(x, cx - tw / 2, y - th / 2, tw, th, 12); x.clip();
           const gl = x.createLinearGradient(0, y - th / 2, 0, y + th / 2);
-          gl.addColorStop(0, 'rgba(255,255,255,.35)'); gl.addColorStop(.55, 'rgba(255,255,255,.02)');
+          gl.addColorStop(0, INK(.35)); gl.addColorStop(.55, INK(.02));
           x.fillStyle = gl; x.fillRect(cx - tw / 2, y - th / 2, tw, th);
           x.restore();
 
@@ -168,7 +169,7 @@
             while (txt.length > 2 && x.measureText(txt).width > maxW - 8) txt = txt.slice(0, -1);
             txt = txt.slice(0, -1) + '…';
           }
-          x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle';
+          x.fillStyle = INK(1); x.textAlign = 'center'; x.textBaseline = 'middle';
           x.shadowColor = 'rgba(20,8,50,.45)'; x.shadowBlur = 4;
           x.fillText(txt, cx, y + 1);
           x.shadowColor = 'transparent';
@@ -183,7 +184,7 @@
       strip(0, 1);
       // glass
       const gg = x.createLinearGradient(0, top, 0, top + wh);
-      gg.addColorStop(0, 'rgba(255,255,255,.22)'); gg.addColorStop(.4, 'rgba(255,255,255,0)');
+      gg.addColorStop(0, INK(.22)); gg.addColorStop(.4, INK(0));
       x.fillStyle = gg; x.fillRect(cx - rw / 2, top, rw, wh);
       x.restore();
     });
@@ -191,13 +192,13 @@
     // payline
     const ly = top + wh / 2;
     x.save();
-    x.strokeStyle = 'rgba(255,255,255,.5)'; x.lineWidth = 1; x.setLineDash([4, 6]);
+    x.strokeStyle = INK(.5); x.lineWidth = 1; x.setLineDash([4, 6]);
     x.beginPath(); x.moveTo(m - 6, ly); x.lineTo(reelRight + 4, ly); x.stroke();
     x.setLineDash([]);
     [-1, 1].forEach(s => {
       const px = s < 0 ? m - 8 : reelRight + 6;
       x.beginPath(); x.moveTo(px, ly); x.lineTo(px - s * 8, ly - 6); x.lineTo(px - s * 8, ly + 6);
-      x.closePath(); x.fillStyle = 'rgba(255,255,255,.8)'; x.fill();
+      x.closePath(); x.fillStyle = INK(.8); x.fill();
     });
     x.restore();
 
@@ -205,7 +206,7 @@
     const trayY = top + wh + 16, trayH = h * 0.14;
     K.rr(x, m, trayY, reelRight - m, trayH, 14);
     x.fillStyle = 'rgba(0,0,0,.26)'; x.fill();
-    x.strokeStyle = 'rgba(255,255,255,.16)'; x.lineWidth = 1; x.stroke();
+    x.strokeStyle = INK(.16); x.lineWidth = 1; x.stroke();
     for (let i = 0; i < 3; i++) {
       const cx2 = (m + reelRight) / 2 + (i - 1) * 26, cy2 = trayY + trayH * 0.40;
       x.beginPath(); x.ellipse(cx2, cy2, 9, 7.4, 0, 0, TAU);
@@ -213,7 +214,7 @@
       cg.addColorStop(0, '#fff3c4'); cg.addColorStop(1, '#b8861c');
       x.fillStyle = cg; x.fill();
     }
-    x.fillStyle = 'rgba(255,255,255,.5)';
+    x.fillStyle = INK(.5);
     x.font = '700 10px "Bricolage Grotesque",system-ui,sans-serif';
     x.textAlign = 'center';
     x.fillText('PAIR ×2 · TRIPLE ×3', (m + reelRight) / 2, trayY + trayH * 0.82);
@@ -231,11 +232,11 @@
     // the slot it runs in
     K.rr(x, lx - 5.5, pivotY + 6, 11, maxY - pivotY + 4, 5.5);
     x.fillStyle = 'rgba(4,2,14,.62)'; x.fill();
-    x.strokeStyle = 'rgba(255,255,255,.16)'; x.lineWidth = 1; x.stroke();
+    x.strokeStyle = INK(.16); x.lineWidth = 1; x.stroke();
 
     // depth ticks beside the slot
     x.save();
-    x.strokeStyle = 'rgba(255,255,255,.20)'; x.lineWidth = 1;
+    x.strokeStyle = INK(.20); x.lineWidth = 1;
     for (let i = 1; i <= 3; i++) {
       const ty = restY + travel * i / 4;
       x.beginPath(); x.moveTo(lx - 13, ty); x.lineTo(lx - 8, ty); x.stroke();
@@ -248,7 +249,7 @@
     x.lineCap = 'round';
     x.lineWidth = Math.max(6, leverW * 0.17);
     const rod = x.createLinearGradient(lx - 6, 0, lx + 6, 0);
-    rod.addColorStop(0, '#6f779b'); rod.addColorStop(.42, '#ffffff');
+    rod.addColorStop(0, '#6f779b'); rod.addColorStop(.42, INK(1));
     rod.addColorStop(.62, '#cfd6ea'); rod.addColorStop(1, '#6a7295');
     x.strokeStyle = rod;
     x.beginPath(); x.moveTo(lx, pivotY + 6); x.lineTo(lx, ky); x.stroke();
@@ -276,15 +277,15 @@
     const kg = x.createRadialGradient(lx - kr * .35, ky - kr * .40, kr * .12, lx, ky, kr * 1.05);
     kg.addColorStop(0, '#ffe2d6'); kg.addColorStop(.42, '#ff6b57'); kg.addColorStop(1, '#a2153c');
     x.fillStyle = kg; x.fill();
-    x.strokeStyle = 'rgba(255,255,255,.55)'; x.lineWidth = 1.2; x.stroke();
+    x.strokeStyle = INK(.55); x.lineWidth = 1.2; x.stroke();
     x.beginPath(); x.arc(lx - kr * .28, ky - kr * .34, kr * .26, 0, TAU);
-    x.fillStyle = 'rgba(255,255,255,.72)'; x.fill();
+    x.fillStyle = INK(.72); x.fill();
     x.restore();
 
     // chevrons under the knob: pull down
     x.save();
     x.globalAlpha = (spinning ? .12 : .34) * (1 - p * .8);
-    x.strokeStyle = '#fff'; x.lineWidth = 1.6; x.lineCap = 'round';
+    x.strokeStyle = INK(1); x.lineWidth = 1.6; x.lineCap = 'round';
     for (let i = 0; i < 2; i++) {
       const cy = Math.min(maxY + 12, ky + kr + 8) + i * 6;
       x.beginPath(); x.moveTo(lx - 4, cy); x.lineTo(lx, cy + 4); x.lineTo(lx + 4, cy); x.stroke();

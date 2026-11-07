@@ -1,5 +1,6 @@
 /* Coin Pusher — feed coins onto the shelf; whatever the pusher shoves off decides. */
 (function () {
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   if (!K) return;
   const cv = () => document.getElementById('cpCv'), out = () => document.getElementById('cpRes');
@@ -93,12 +94,12 @@
     x.save(); x.globalAlpha = alpha;
     x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2);
     const gr = x.createRadialGradient(cx - r * .35, cy - r * .4, r * .1, cx, cy, r);
-    gr.addColorStop(0, '#fff'); gr.addColorStop(.45, PAL[ci % PAL.length]); gr.addColorStop(1, 'rgba(20,10,50,.45)');
+    gr.addColorStop(0, INK(1)); gr.addColorStop(.45, PAL[ci % PAL.length]); gr.addColorStop(1, 'rgba(20,10,50,.45)');
     x.fillStyle = gr; x.fill();
     x.lineWidth = Math.max(1, r * .16);
-    x.strokeStyle = 'rgba(255,255,255,.85)'; x.stroke();
+    x.strokeStyle = INK(.85); x.stroke();
     x.beginPath(); x.arc(cx, cy, r * .62, 0, Math.PI * 2);
-    x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = 1; x.stroke();
+    x.strokeStyle = INK(.35); x.lineWidth = 1; x.stroke();
     const t = labels[ci] || '';
     if (t && r > 6) {
       x.font = `800 ${Math.max(6, Math.round(r * 0.66))}px "Bricolage Grotesque",system-ui,sans-serif`;
@@ -134,7 +135,7 @@
     const cg = x.createRadialGradient(ccx - cr * .4, s.y - cr * .4, 1, ccx, s.y, cr);
     cg.addColorStop(0, '#fff2c0'); cg.addColorStop(1, '#e8a92c');
     x.fillStyle = cg; x.fill();
-    x.strokeStyle = 'rgba(255,255,255,.8)'; x.lineWidth = 1.2; x.stroke();
+    x.strokeStyle = INK(.8); x.lineWidth = 1.2; x.stroke();
     x.fillStyle = 'rgba(120,70,10,.85)'; x.font = '800 ' + Math.round(cr * 1.15) + 'px system-ui,sans-serif';
     x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('+', ccx, s.y + 0.5);
 
@@ -157,15 +158,15 @@
     x.clearRect(0, 0, g.w, g.h);
 
     x.save(); K.rr(x, trayX, trayY, trayW, trayH, 20);
-    x.fillStyle = 'rgba(255,255,255,.3)'; x.fill();
-    x.strokeStyle = 'rgba(255,255,255,.5)'; x.lineWidth = 1.5; x.stroke();
+    x.fillStyle = INK(.3); x.fill();
+    x.strokeStyle = INK(.5); x.lineWidth = 1.5; x.stroke();
     x.restore();
 
     const sg = x.createLinearGradient(0, trayY, 0, g.lip);
     sg.addColorStop(0, 'rgba(36,26,85,.20)'); sg.addColorStop(1, 'rgba(36,26,85,0)');
     x.save(); K.rr(x, trayX, trayY, trayW, trayH, 20); x.fillStyle = sg; x.fill(); x.restore();
 
-    x.fillStyle = 'rgba(255,255,255,.55)';
+    x.fillStyle = INK(.55);
     x.fillRect(trayX, trayY + 14, 4, g.lip - trayY - 10);
     x.fillRect(trayX + trayW - 4, trayY + 14, 4, g.lip - trayY - 10);
 
@@ -174,7 +175,7 @@
     const pg = x.createLinearGradient(0, topY, 0, f);
     pg.addColorStop(0, '#4b3bb0'); pg.addColorStop(.5, '#8f7dff'); pg.addColorStop(1, '#cfc4ff');
     x.fillStyle = pg; x.fill();
-    x.strokeStyle = 'rgba(255,255,255,.6)'; x.lineWidth = 2; x.stroke();
+    x.strokeStyle = INK(.6); x.lineWidth = 2; x.stroke();
     x.restore();
 
     x.save();
@@ -183,7 +184,7 @@
     lg.addColorStop(0, 'rgba(36,26,85,.82)'); lg.addColorStop(1, 'rgba(36,26,85,.55)');
     x.fillStyle = lg; x.fill();
     x.restore();
-    x.fillStyle = 'rgba(255,255,255,.55)';
+    x.fillStyle = INK(.55);
     x.font = '800 10px "Bricolage Grotesque",system-ui,sans-serif';
     x.textAlign = 'center'; x.textBaseline = 'middle';
     x.fillText('W I N', g.w / 2, g.lip + (g.h - g.lip) / 2 + 2);
@@ -195,7 +196,7 @@
     });
 
     if (hit >= 0 && busy) {
-      x.strokeStyle = 'rgba(255,255,255,.75)'; x.lineWidth = 2;
+      x.strokeStyle = INK(.75); x.lineWidth = 2;
       x.beginPath(); x.arc(g.w / 2, g.lip + (g.h - g.lip) / 2 + 2, 26 + (1 - cool / 62) * 18, 0, Math.PI * 2);
       x.stroke();
     }

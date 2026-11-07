@@ -1,6 +1,7 @@
 /* Windowsill — a small room you can poke at. Seven objects, seven reactions:
  * lamp, plant, cup, radio, drawer, clock, cat. No score, no goal, no ending. */
 (function () {
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT, TAU = Math.PI * 2; const cv = () => document.getElementById('wsCv'), resEl = () => document.getElementById('wsRes');
   let L = null, g = null, hits = [], drag = null, t = 0, ripples = []; const stars = [], lamp = { on: false, glow: 0 }, plant = { bend: 0, v: 0 };
   const cup = { rock: 0, v: 0, drops: [], wait: 0, puddle: 0 }; const radio = { until: 0, notes: [], spawn: 0 }, drawer = { open: 0, v: 0, want: 0 };
@@ -72,7 +73,7 @@
     K.rr(x, W.x - 7, W.y - 7, W.w + 14, W.h + 14, 15); x.fillStyle = '#efe7ff'; x.fill(); x.restore(); const sg = x.createLinearGradient(0, W.y, 0, W.y + W.h);
     sg.addColorStop(0, '#101a44'); sg.addColorStop(.5, '#1e2a5c'); sg.addColorStop(1, '#3b3a70'); x.save(); K.rr(x, W.x, W.y, W.w, W.h, 9); x.fillStyle = sg; x.fill(); x.clip();
     for (const s of stars) {
-      x.globalAlpha = .22 + .55 * (.5 + .5 * Math.sin(t * .03 + s.p)); x.fillStyle = '#fff'; x.fillRect(W.x + s.x * W.w, W.y + s.y * W.h * .7, s.r, s.r);
+      x.globalAlpha = .22 + .55 * (.5 + .5 * Math.sin(t * .03 + s.p)); x.fillStyle = INK(1); x.fillRect(W.x + s.x * W.w, W.y + s.y * W.h * .7, s.r, s.r);
     }
     x.globalAlpha = 1; const mx = W.x + W.w * .7, my = W.y + W.h * .27, mr = W.w * .072; const glow = x.createRadialGradient(mx, my, mr * .4, mx, my, mr * 4);
     glow.addColorStop(0, 'rgba(255,250,230,.3)'); glow.addColorStop(1, 'rgba(255,250,230,0)'); x.fillStyle = glow; x.beginPath(); x.arc(mx, my, mr * 4, 0, TAU); x.fill();
@@ -84,8 +85,8 @@
     x.fillStyle = 'rgba(255,214,120,.75)'; [[.26, .16], [.46, .1], [.62, .2], [.8, .12]].forEach(b => { x.fillRect(W.x + b[0] * W.w, W.y + W.h - b[1] * W.h, 2.5, 3); });
     x.restore(); x.fillStyle = '#efe7ff'; x.fillRect(W.x + W.w / 2 - 2.5, W.y, 5, W.h); x.fillRect(W.x, W.y + W.h * .5 - 2.5, W.w, 5);
     x.save(); K.rr(x, W.x, W.y, W.w, W.h, 9); x.clip(); const sh = x.createLinearGradient(W.x, W.y, W.x + W.w * .8, W.y + W.h);
-    sh.addColorStop(0, 'rgba(255,255,255,.12)'); sh.addColorStop(.55, 'rgba(255,255,255,0)'); x.fillStyle = sh; x.fillRect(W.x, W.y, W.w, W.h); x.restore();
-    x.strokeStyle = 'rgba(255,255,255,.2)'; x.lineWidth = 1; K.rr(x, W.x, W.y, W.w, W.h, 9); x.stroke();
+    sh.addColorStop(0, INK(.12)); sh.addColorStop(.55, INK(0)); x.fillStyle = sh; x.fillRect(W.x, W.y, W.w, W.h); x.restore();
+    x.strokeStyle = INK(.2); x.lineWidth = 1; K.rr(x, W.x, W.y, W.w, W.h, 9); x.stroke();
   }
   function drawClock(x, G) {
     const c = G.clk, r = c.r; x.save(); x.shadowColor = 'rgba(0,0,0,.4)'; x.shadowBlur = 14; x.shadowOffsetY = 6;
@@ -100,30 +101,30 @@
     };
     hand(clock.a * 1.4 + 1.1, r * .68, 2.6, '#3a2b60'); hand(clock.a, r * .44, 3.6, '#241a55');
     x.beginPath(); x.arc(c.x, c.y, 3.2, 0, TAU); x.fillStyle = '#d6215b'; x.fill(); const gl = x.createLinearGradient(c.x - r, c.y - r, c.x + r, c.y + r);
-    gl.addColorStop(0, 'rgba(255,255,255,.26)'); gl.addColorStop(.45, 'rgba(255,255,255,0)'); x.beginPath(); x.arc(c.x, c.y, r - 4, 0, TAU); x.fillStyle = gl; x.fill();
-    x.beginPath(); x.arc(c.x, c.y, r - 2, 0, TAU); x.strokeStyle = 'rgba(255,255,255,.3)'; x.lineWidth = 1.4; x.stroke();
+    gl.addColorStop(0, INK(.26)); gl.addColorStop(.45, INK(0)); x.beginPath(); x.arc(c.x, c.y, r - 4, 0, TAU); x.fillStyle = gl; x.fill();
+    x.beginPath(); x.arc(c.x, c.y, r - 2, 0, TAU); x.strokeStyle = INK(.3); x.lineWidth = 1.4; x.stroke();
   }
   function drawCabinet(x, G) {
     const C = G.cab, d = G.drawer; x.save(); x.shadowColor = 'rgba(0,0,0,.35)'; x.shadowBlur = 18; x.shadowOffsetY = 8; K.rr(x, C.x, C.y, C.w, C.h, 16); x.fillStyle = '#372a5e'; x.fill(); x.restore();
-    K.rr(x, C.x + 5, C.y + 5, C.w - 10, 8, 4); x.fillStyle = 'rgba(255,255,255,.08)'; x.fill(); const off = drawer.open * C.h * .34;
+    K.rr(x, C.x + 5, C.y + 5, C.w - 10, 8, 4); x.fillStyle = INK(.08); x.fill(); const off = drawer.open * C.h * .34;
     x.save(); K.rr(x, d.x, d.y, d.w, d.h, 10); x.clip(); x.fillStyle = '#150f30'; x.fillRect(d.x, d.y, d.w, d.h);
     if (off > 2) {
       x.save(); x.beginPath(); x.rect(d.x, d.y, d.w, off + 2); x.clip(); const bx = d.x + d.w * .24, by = d.y + d.h * .26, mg = x.createRadialGradient(bx - 3, by - 4, 1, bx, by, 10);
       mg.addColorStop(0, '#ff9fc4'); mg.addColorStop(1, '#b52457'); x.beginPath(); x.arc(bx, by, 10, 0, TAU); x.fillStyle = mg; x.fill();
-      x.beginPath(); x.arc(bx - 3.5, by - 4, 2.4, 0, TAU); x.fillStyle = 'rgba(255,255,255,.85)'; x.fill(); x.save(); x.translate(d.x + d.w * .64, by); x.rotate(-.16);
+      x.beginPath(); x.arc(bx - 3.5, by - 4, 2.4, 0, TAU); x.fillStyle = INK(.85); x.fill(); x.save(); x.translate(d.x + d.w * .64, by); x.rotate(-.16);
       K.rr(x, -22, -13, 44, 26, 3); x.fillStyle = '#f4ecff'; x.fill(); x.strokeStyle = 'rgba(60,40,100,.32)'; x.lineWidth = 1.3;
       for (let i = -1; i < 2; i++) { x.beginPath(); x.moveTo(-15, i * 7); x.lineTo(13, i * 7); x.stroke(); }
       x.restore(); x.restore();
     }
     x.restore(); x.save(); x.shadowColor = 'rgba(0,0,0,.4)'; x.shadowBlur = 16; x.shadowOffsetY = 8; const dg = x.createLinearGradient(0, d.y + off, 0, d.y + off + d.h);
     dg.addColorStop(0, '#5c4589'); dg.addColorStop(1, '#3c2b64'); K.rr(x, d.x, d.y + off, d.w, d.h, 10); x.fillStyle = dg; x.fill(); x.restore();
-    x.strokeStyle = 'rgba(255,255,255,.15)'; x.lineWidth = 1.2; K.rr(x, d.x, d.y + off, d.w, d.h, 10); x.stroke();
+    x.strokeStyle = INK(.15); x.lineWidth = 1.2; K.rr(x, d.x, d.y + off, d.w, d.h, 10); x.stroke();
     K.rr(x, d.x + d.w / 2 - 24, d.y + off + 16, 48, 8, 4); x.fillStyle = '#d9b26a'; x.fill();
   }
   function drawSill(x, G) {
     const sy = G.sy, w = G.w; x.save(); x.shadowColor = 'rgba(0,0,0,.4)'; x.shadowBlur = 14; x.shadowOffsetY = 9;
     const wd = x.createLinearGradient(0, sy, 0, sy + G.h * .05); wd.addColorStop(0, '#ecd9c2'); wd.addColorStop(.35, '#d8bb9c'); wd.addColorStop(1, '#a98a70');
-    K.rr(x, -12, sy, w + 24, G.h * .05, 8); x.fillStyle = wd; x.fill(); x.restore(); x.fillStyle = 'rgba(255,255,255,.4)'; x.fillRect(-12, sy + 1.5, w + 24, 2);
+    K.rr(x, -12, sy, w + 24, G.h * .05, 8); x.fillStyle = wd; x.fill(); x.restore(); x.fillStyle = INK(.4); x.fillRect(-12, sy + 1.5, w + 24, 2);
   }
   function drawPlant(x, G) {
     const px = G.pl.x, sy = G.sy, pg = x.createLinearGradient(px - 22, 0, px + 22, 0); pg.addColorStop(0, '#9d4b2b'); pg.addColorStop(.4, '#d9825b'); pg.addColorStop(1, '#9d4b2b');
@@ -163,7 +164,7 @@
       x.fillStyle = bg; x.beginPath(); x.arc(lx, sy - 56, 34, 0, TAU); x.fill();
     }
     x.beginPath(); x.moveTo(lx + 16, sy - 68); x.quadraticCurveTo(lx + 21, sy - 56, lx + 17, sy - 50);
-    x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = 1.5; x.stroke(); x.beginPath(); x.arc(lx + 17, sy - 49, 2.4, 0, TAU); x.fillStyle = '#ffd76a'; x.fill();
+    x.strokeStyle = INK(.35); x.lineWidth = 1.5; x.stroke(); x.beginPath(); x.arc(lx + 17, sy - 49, 2.4, 0, TAU); x.fillStyle = '#ffd76a'; x.fill();
   }
   function drawRadio(x, G) {
     const rx = G.ra.x, sy = G.sy, rw = 60, rh = 42;
@@ -173,7 +174,7 @@
         x.fillRect(rx - 20 + i * 9, sy - 50 - bh, 5, bh);
       }
     }
-    x.beginPath(); x.moveTo(rx - 12, sy - 42); x.lineTo(rx - 24, sy - 66); x.strokeStyle = 'rgba(255,255,255,.5)'; x.lineWidth = 2; x.lineCap = 'round'; x.stroke();
+    x.beginPath(); x.moveTo(rx - 12, sy - 42); x.lineTo(rx - 24, sy - 66); x.strokeStyle = INK(.5); x.lineWidth = 2; x.lineCap = 'round'; x.stroke();
     x.beginPath(); x.arc(rx - 24, sy - 66, 2.4, 0, TAU); x.fillStyle = '#ffd76a'; x.fill(); const bg = x.createLinearGradient(0, sy - rh, 0, sy);
     bg.addColorStop(0, '#f0c368'); bg.addColorStop(1, '#c58f34'); K.rr(x, rx - rw / 2, sy - rh, rw, rh, 9); x.fillStyle = bg; x.fill();
     x.strokeStyle = 'rgba(70,40,10,.35)'; x.lineWidth = 1.2; x.stroke(); x.beginPath(); x.arc(rx - 15, sy - 21, 12, 0, TAU); x.fillStyle = '#4b3a22'; x.fill();
@@ -200,7 +201,7 @@
       x.beginPath(); x.ellipse(hx + ex, hy - 1, 2.6, 3.5 * bl, 0, 0, TAU); x.fillStyle = '#2a2148'; x.fill();
     });
     x.beginPath(); x.moveTo(hx, hy + 6); x.lineTo(hx - 2.4, hy + 4); x.lineTo(hx + 2.4, hy + 4); x.closePath(); x.fillStyle = '#ff9fc4'; x.fill();
-    x.strokeStyle = 'rgba(255,255,255,.45)'; x.lineWidth = 1;
+    x.strokeStyle = INK(.45); x.lineWidth = 1;
     [-1, 1].forEach(s => { for (let i = 0; i < 2; i++) {
       x.beginPath(); x.moveTo(hx + s * 4, hy + 6 + i * 3); x.lineTo(hx + s * (17 + i * 2), hy + 3 + i * 7); x.stroke();
     } });

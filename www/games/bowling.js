@@ -1,5 +1,6 @@
 /* Bowling — swipe up the lane; the pin left standing decides. */
 (function () {
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   const TAU = Math.PI * 2;
   const cv = () => document.getElementById('bwCv');
@@ -90,7 +91,7 @@
     while (s.length > 1 && x.measureText(s).width > max - 10) s = s.slice(0, -1);
     if (s !== p.l) s = s.trim() + '…';
     const w = Math.min(max, x.measureText(s).width + 10), h2 = size + 7;
-    K.rr(x, p.x - w / 2, p.y + geo.pinR + 2, w, h2, h2 / 2); x.fillStyle = p.down ? 'rgba(255,255,255,.38)' : 'rgba(255,255,255,.93)'; x.fill();
+    K.rr(x, p.x - w / 2, p.y + geo.pinR + 2, w, h2, h2 / 2); x.fillStyle = p.down ? INK(.38) : INK(.93); x.fill();
     x.fillStyle = p.down ? 'rgba(36,26,85,.42)' : '#241a55'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(s, p.x, p.y + geo.pinR + 2 + h2 / 2 + .5);
   }
 
@@ -106,14 +107,14 @@
   function drawBall(x) {
     const b = ball; x.save(); x.shadowColor = 'rgba(36,26,85,.28)'; x.shadowBlur = 10; x.shadowOffsetY = 4; x.beginPath(); x.arc(b.x, b.y, b.r, 0, TAU);
     const grd = x.createRadialGradient(b.x - b.r * .35, b.y - b.r * .4, 1, b.x, b.y, b.r);
-    grd.addColorStop(0, '#8f7bff'); grd.addColorStop(1, '#3a2470'); x.fillStyle = grd; x.fill(); x.restore(); x.fillStyle = 'rgba(255,255,255,.55)';
+    grd.addColorStop(0, '#8f7bff'); grd.addColorStop(1, '#3a2470'); x.fillStyle = grd; x.fill(); x.restore(); x.fillStyle = INK(.55);
     [[-.32, -.30], [0, -.46], [.34, -.26]].forEach((o) => {
       x.beginPath(); x.arc(b.x + b.r * o[0], b.y + b.r * o[1], b.r * .14, 0, TAU); x.fill();
     });
   }
 
   function drawAim(x, g) {
-    const p = clamp((drag.y0 - drag.y) / (g.h * .40), 0, 1); x.save(); x.setLineDash([6, 7]); x.strokeStyle = 'rgba(255,255,255,.85)'; x.lineWidth = 3;
+    const p = clamp((drag.y0 - drag.y) / (g.h * .40), 0, 1); x.save(); x.setLineDash([6, 7]); x.strokeStyle = INK(.85); x.lineWidth = 3;
     x.beginPath(); x.moveTo(ball.x, ball.y); x.lineTo(ball.x + (drag.x - drag.x0) * 1.4, ball.y + (drag.y - drag.y0) * 1.4); x.stroke(); x.setLineDash([]);
     const bx = g.w - 16, by = g.h * .42, bh = g.h * .30;
     K.rr(x, bx - 5, by, 10, bh, 5); x.fillStyle = 'rgba(36,26,85,.18)'; x.fill();
@@ -125,7 +126,7 @@
     if (!geo || Math.abs(geo.w - g.w) > .5) layout();
     if (!geo) return;
     const x = g.x, w = g.w, h = g.h; x.clearRect(0, 0, w, h);
-    K.rr(x, 0, 0, w, h, 18); x.fillStyle = 'rgba(255,255,255,.28)'; x.fill();
+    K.rr(x, 0, 0, w, h, 18); x.fillStyle = INK(.28); x.fill();
     drawLane(x, g);
     if (rolling) {
       const steps = Math.max(1, Math.ceil(Math.abs(ball.vy) * dt / 6));

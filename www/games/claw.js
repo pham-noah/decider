@@ -1,5 +1,6 @@
 /* Claw — drop the claw on a capsule; whatever it grabs decides. */
 (function () {
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   const cv = () => document.getElementById('clCv');
   let L = null, g = null, caps = [], falls = [], pending = null, held = null;
@@ -84,13 +85,13 @@
   function capsule(x, cx, cy, r, col, label, alpha) {
     x.save(); x.globalAlpha = alpha;
     const gr = x.createLinearGradient(0, cy - r, 0, cy + r);
-    gr.addColorStop(0, '#fff'); gr.addColorStop(0.42, col); gr.addColorStop(1, col);
+    gr.addColorStop(0, INK(1)); gr.addColorStop(0.42, col); gr.addColorStop(1, col);
     K.rr(x, cx - r, cy - r * 0.82, r * 2, r * 1.64, r * 0.8); x.fillStyle = gr; x.fill();
-    K.rr(x, cx - r * 0.66, cy - r * 0.62, r * 1.3, r * 0.36, r * 0.18); x.fillStyle = 'rgba(255,255,255,.4)'; x.fill();
+    K.rr(x, cx - r * 0.66, cy - r * 0.62, r * 1.3, r * 0.36, r * 0.18); x.fillStyle = INK(.4); x.fill();
     if (label) {
       x.font = '700 9px "Bricolage Grotesque",system-ui,sans-serif'; let t = label;
       while (t.length > 2 && x.measureText(t).width > r * 1.8) t = t.slice(0, -1);
-      x.fillStyle = '#fff'; x.shadowColor = 'rgba(20,8,50,.65)'; x.shadowBlur = 3;
+      x.fillStyle = INK(1); x.shadowColor = 'rgba(20,8,50,.65)'; x.shadowBlur = 3;
       x.textAlign = 'center'; x.textBaseline = 'middle';
       x.fillText(t === label ? t : t + '…', cx, cy + 0.5);
     }
@@ -104,9 +105,9 @@
     x.clearRect(0, 0, w, h);
     K.rr(x, 4, 4, w - 8, h - 8, 22);
     x.fillStyle = 'rgba(12,7,34,.68)'; x.fill();
-    x.strokeStyle = 'rgba(255,255,255,.45)'; x.lineWidth = 2; x.stroke();
+    x.strokeStyle = INK(.45); x.lineWidth = 2; x.stroke();
     // floor + prize chute
-    x.fillStyle = 'rgba(255,255,255,.1)'; x.fillRect(10, floorY(), w - 20, 2);
+    x.fillStyle = INK(.1); x.fillRect(10, floorY(), w - 20, 2);
     K.rr(x, w * 0.75, h * 0.625, w * 0.19, floorY() - h * 0.625, 10);
     x.fillStyle = 'rgba(6,3,20,.85)'; x.fill();
     x.strokeStyle = 'rgba(255,215,106,.75)'; x.lineWidth = 1.5; x.stroke();
@@ -114,13 +115,13 @@
     x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('PRIZE', w * 0.845, h * 0.595);
     // rail
     const railY = h * 0.13;
-    x.lineWidth = 3; x.strokeStyle = 'rgba(255,255,255,.35)';
+    x.lineWidth = 3; x.strokeStyle = INK(.35);
     x.beginPath(); x.moveTo(w * 0.1, railY); x.lineTo(w * 0.92, railY); x.stroke();
-    x.lineWidth = 1; x.strokeStyle = 'rgba(255,255,255,.16)';
+    x.lineWidth = 1; x.strokeStyle = INK(.16);
     x.beginPath(); x.moveTo(w * 0.1, railY + 5); x.lineTo(w * 0.92, railY + 5); x.stroke();
     caps.forEach(cp => { if (!cp.got) capsule(x, cp.x, cp.y, cp.r, cp.col, cp.label, 1); });
     falls.forEach(f => capsule(x, f.x, f.y, f.r, f.col, '', 0.85));
-    x.strokeStyle = 'rgba(255,255,255,.5)'; x.lineWidth = 1.5;
+    x.strokeStyle = INK(.5); x.lineWidth = 1.5;
     x.beginPath(); x.moveTo(claw.x, railY); x.lineTo(claw.x, claw.y - 8); x.stroke();
     x.fillStyle = '#e9e6ff'; K.rr(x, claw.x - 9, railY - 6, 18, 12, 4); x.fill();
     x.save(); x.translate(claw.x, claw.y);
@@ -135,7 +136,7 @@
     x.restore();
     // glass streak
     x.save(); K.rr(x, 6, 6, w - 12, h - 12, 21); x.clip();
-    x.fillStyle = 'rgba(255,255,255,.055)';
+    x.fillStyle = INK(.055);
     x.beginPath(); x.moveTo(w * 0.05, 0); x.lineTo(w * 0.34, 0); x.lineTo(w * 0.02, h); x.lineTo(-w * 0.2, h); x.fill();
     x.restore();
   }
