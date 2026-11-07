@@ -248,6 +248,48 @@
     return 'rgba(255,255,255,' + (alpha == null ? 1 : alpha) + ')';
   };
 
+
+  /* ---------- shared toy furniture ----------
+     The machines (slots, claw, gacha, coin pusher, plinko, pachinko, ring toss, dart,
+     bowling) each drew their own body with their own gradient and rim. One panel()
+     keeps them identical across skins: fill, rim, and a soft-skin bevel. label() keeps
+     every caption on the same legibility floor instead of 8–9px whispers. */
+  kit.panel = function (x, X, Y, W, H, o) {
+    o = o || {};
+    const m = kit.mat();
+    const r = o.r == null ? Math.min(16, Math.min(W, H) * .18) : o.r;
+    x.save(); kit.rr(x, X, Y, W, H, r);
+    if (m.flat) x.fillStyle = o.face || '#f1ebda';
+    else { const g = x.createLinearGradient(0, Y, 0, Y + H); g.addColorStop(0, o.face || m.s2); g.addColorStop(1, o.face2 || m.s3); x.fillStyle = g; }
+    x.fill();
+    if (o.rim !== false) {
+      x.lineWidth = m.flat ? 1.6 : 1.2;
+      x.strokeStyle = m.flat ? (m.outline || '#241a3a') : (o.rim || 'rgba(255,255,255,.18)');
+      x.stroke();
+    }
+    if (m.skin === 'soft' && !m.flat) {
+      x.save(); x.clip();
+      x.strokeStyle = 'rgba(255,255,255,.42)'; x.lineWidth = 2; x.beginPath();
+      x.moveTo(X + r * .6, Y + 1); x.lineTo(X + W - r * .6, Y + 1); x.stroke(); x.restore();
+    }
+    x.restore();
+  };
+  /* a caption that is legible on both materials and never drops under 10px */
+  kit.label = function (x, text, X, Y, size, align) {
+    const m = kit.mat();
+    x.save();
+    x.fillStyle = m.flat ? 'rgba(36,26,58,.82)' : 'rgba(255,255,255,.82)';
+    x.font = '700 ' + Math.max(10, size || 10) + 'px "Bricolage Grotesque",system-ui,sans-serif';
+    x.textAlign = align || 'center'; x.textBaseline = 'middle';
+    x.fillText(text, X, Y);
+    x.restore();
+  };
+  /* the press chain every toy should speak: squash, tone, haptic — one call */
+  kit.press = function (freq) {
+    try { tone(freq || 420, .05, .02, 'sine', (freq || 420) * 1.3); } catch (e) {}
+    try { buzz(8); } catch (e) {}
+  };
+
   window.DKIT = kit;
   window.DECIDER_GAMES = window.DECIDER_GAMES || [];
 })();
