@@ -118,10 +118,23 @@
     // floor + prize chute
     x.fillStyle = INK(.1); x.fillRect(10, floorY(), w - 20, 2);
     K.rr(x, w * 0.75, h * 0.625, w * 0.19, floorY() - h * 0.625, 10);
-    x.fillStyle = 'rgba(6,3,20,.85)'; x.fill();
+    x.fillStyle = K.mat().flat ? '#dcd2b8' : 'rgba(6,3,20,.85)'; x.fill();   // the chute was a black slab on paper
     x.strokeStyle = 'rgba(255,215,106,.75)'; x.lineWidth = 1.5; x.stroke();
-    x.fillStyle = 'rgba(255,215,106,.85)'; x.font = '700 9px "Bricolage Grotesque",system-ui,sans-serif';
+    x.fillStyle = K.mat().flat ? '#241a3a' : 'rgba(255,215,106,.85)'; x.font = '700 10px "Bricolage Grotesque",system-ui,sans-serif';
     x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('PRIZE', w * 0.845, h * 0.595);
+    /* the cabinet was a bare slab with a hole in it: add the glass edge, a brand
+       plate and a chute mouth so it reads as a machine rather than a box */
+    const glassTop = h * 0.17;
+    x.save(); x.globalAlpha = .5;
+    x.strokeStyle = INK(.35); x.lineWidth = 1.5;
+    K.rr(x, w * 0.06, glassTop, w * 0.88, floorY() - glassTop - 6, 14); x.stroke();
+    x.restore();
+    const plateW = Math.min(120, w * 0.38);
+    K.rr(x, w / 2 - plateW / 2, h * 0.045, plateW, h * 0.058, 8);
+    x.fillStyle = K.mat().flat ? '#e6dfcc' : 'rgba(255,255,255,.10)'; x.fill();
+    x.strokeStyle = INK(.4); x.lineWidth = 1.2; x.stroke();
+    K.label(x, 'GRAB', w / 2, h * 0.074, Math.max(10, h * 0.032));
+
     // rail
     const railY = h * 0.13;
     x.lineWidth = 3; x.strokeStyle = INK(.35);
@@ -132,14 +145,16 @@
     falls.forEach(f => capsule(x, f.x, f.y, f.r, f.col, '', 0.85));
     x.strokeStyle = INK(.5); x.lineWidth = 1.5;
     x.beginPath(); x.moveTo(claw.x, railY); x.lineTo(claw.x, claw.y - 8); x.stroke();
-    x.fillStyle = '#e9e6ff'; K.rr(x, claw.x - 9, railY - 6, 18, 12, 4); x.fill();
+    x.fillStyle = K.mat().flat ? '#fffdf8' : '#e9e6ff'; K.rr(x, claw.x - 9, railY - 6, 18, 12, 4); x.fill();
+    x.strokeStyle = K.mat().flat ? '#241a3a' : 'rgba(255,255,255,.5)'; x.lineWidth = 1.4; x.stroke();
     x.save(); x.translate(claw.x, claw.y);
-    x.strokeStyle = '#f4f2ff'; x.lineWidth = 4.5; x.lineCap = 'round';
+    x.strokeStyle = K.mat().flat ? '#241a3a' : '#f4f2ff'; x.lineWidth = 4.5; x.lineCap = 'round';
     const spread = 5 + claw.open * 13;
     [-1, 1].forEach(s => {
       x.beginPath(); x.moveTo(s * 3, 0); x.quadraticCurveTo(s * spread, 10, s * (spread - 3), 24); x.stroke();
     });
-    x.fillStyle = '#cfc9ff'; K.rr(x, -8, -6, 16, 12, 5); x.fill();
+    x.fillStyle = K.mat().flat ? '#fffdf8' : '#cfc9ff'; K.rr(x, -8, -6, 16, 12, 5); x.fill();
+    x.strokeStyle = K.mat().flat ? '#241a3a' : 'rgba(255,255,255,.45)'; x.lineWidth = 1.2; x.stroke();
     x.fillStyle = '#8f80ff'; x.beginPath(); x.arc(0, 0, 2.4, 0, Math.PI * 2); x.fill();
     if (held) capsule(x, Math.sin(performance.now() / 110) * 1.6, 32, held.r * 0.92, held.col, held.label, 1);
     x.restore();

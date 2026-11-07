@@ -115,13 +115,14 @@
     const bg = x.createLinearGradient(0, g.bodyTop, 0, g.bodyBot);
     bg.addColorStop(0, '#9481ff'); bg.addColorStop(.55, '#6d5bd8'); bg.addColorStop(1, '#46359f');
     /* on paper the cabinet is printed stock with an ink edge, not a glossy violet slab */
-    x.fillStyle = K.mat().flat ? '#f1ebda' : bg; x.fill();
-    x.strokeStyle = INK(.55); x.lineWidth = 2; x.stroke();
+    x.fillStyle = K.mat().flat ? '#ece2ca' : bg; x.fill();
+    x.strokeStyle = K.mat().flat ? '#241a3a' : INK(.55); x.lineWidth = K.mat().flat ? 1.8 : 2; x.stroke();
     x.restore();
 
     x.save();
     K.rr(x, tr.x - tr.w / 2, tr.y - tr.h * 0.3, tr.w, tr.h * 1.2, 16);
     x.fillStyle = K.mat().flat ? '#e6dfcc' : INK(.45); x.fill();
+    if (K.mat().flat) { x.strokeStyle = '#241a3a'; x.lineWidth = 1.5; x.stroke(); }
     x.strokeStyle = 'rgba(36,26,85,.25)'; x.lineWidth = 2; x.stroke();
     x.restore();
 
@@ -160,8 +161,15 @@
     x.beginPath();
     x.arc(g.cx - g.domeR * 0.28, g.domeCy - g.domeR * 0.3, g.domeR * 0.55, Math.PI * 1.05, Math.PI * 1.52);
     x.strokeStyle = INK(.55); x.lineWidth = 5; x.lineCap = 'round'; x.stroke();
-    x.beginPath(); x.ellipse(g.cx, g.bodyTop + 2, g.domeR * 0.6, 11, 0, 0, Math.PI * 2);
-    x.fillStyle = 'rgba(36,26,85,.32)'; x.fill();
+    /* collar where the dome meets the body, and the mechanism that connects the knob
+       to the flap — the body was 118px of flat panel with a small dial on it */
+    x.beginPath(); x.ellipse(g.cx, g.bodyTop + 2, g.domeR * 0.86, 12, 0, 0, Math.PI * 2);
+    x.fillStyle = K.mat().flat ? '#e6dfcc' : 'rgba(0,0,0,.22)'; x.fill();
+    x.strokeStyle = INK(.5); x.lineWidth = 1.6; x.stroke();
+    x.save(); x.strokeStyle = INK(.3); x.lineWidth = 1.2;
+    x.beginPath(); x.moveTo(g.knob.x, g.knob.y - g.knob.r - 4); x.lineTo(g.knob.x, g.bodyTop + 16);
+    x.lineTo(g.flap.x, g.bodyTop + 16); x.lineTo(g.flap.x, g.flap.y - 12); x.stroke();
+    x.beginPath(); x.arc(g.knob.x, g.bodyTop + 16, 2.2, 0, Math.PI * 2); x.fillStyle = INK(.45); x.fill(); x.restore();
     x.restore();
 
     if (one) {
