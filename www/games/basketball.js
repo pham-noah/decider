@@ -146,8 +146,12 @@
     const grd = x.createRadialGradient(b.x - b.r * .35, b.y - b.r * .4, 1, b.x, b.y, b.r);
     grd.addColorStop(0, '#ffbc85'); grd.addColorStop(1, '#e2622b'); x.beginPath(); x.arc(b.x, b.y, b.r, 0, TAU); x.fillStyle = grd; x.fill(); x.restore();
     x.strokeStyle = 'rgba(70,26,8,.55)'; x.lineWidth = 1.4; x.beginPath(); x.arc(b.x, b.y, b.r, 0, TAU); x.stroke();
-    x.beginPath(); x.moveTo(b.x - b.r, b.y); x.lineTo(b.x + b.r, b.y); x.stroke(); x.beginPath(); x.arc(b.x, b.y, b.r * 1.45, Math.PI * .62, Math.PI * .95); x.stroke();
-    x.beginPath(); x.arc(b.x, b.y, b.r * 1.45, Math.PI * 1.05, Math.PI * 1.38); x.stroke();
+    x.beginPath(); x.moveTo(b.x - b.r, b.y); x.lineTo(b.x + b.r, b.y); x.stroke();
+    /* seams curve across the ball: at 1.45r they sat outside the silhouette */
+    x.save(); x.beginPath(); x.arc(b.x, b.y, b.r, 0, TAU); x.clip();
+    x.beginPath(); x.arc(b.x, b.y, b.r * .66, Math.PI * .62, Math.PI * .95); x.stroke();
+    x.beginPath(); x.arc(b.x, b.y, b.r * .66, Math.PI * 1.05, Math.PI * 1.38); x.stroke();
+    x.restore();
   }
 
   function frame(dt) {

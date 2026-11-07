@@ -99,7 +99,7 @@
     K.rr(x, cx - r * 0.66, cy - r * 0.62, r * 1.3, r * 0.36, r * 0.18); x.fillStyle = INK(.4); x.fill();
     if (label) {
       x.font = '700 9px "Bricolage Grotesque",system-ui,sans-serif'; let t = label;
-      while (t.length > 2 && x.measureText(t).width > r * 1.8) t = t.slice(0, -1);
+      while (t.length > 2 && x.measureText(t).width > r * 1.9) t = t.slice(0, -1);
       x.fillStyle = INK(1); x.shadowColor = 'rgba(20,8,50,.65)'; x.shadowBlur = 3;
       x.textAlign = 'center'; x.textBaseline = 'middle';
       x.fillText(t === label ? t : t + '…', cx, cy + 0.5);
@@ -155,7 +155,7 @@
   }
   K && window.DECIDER_GAMES.push({
     id: 'claw', name: 'Claw', short: 'Claw', label: 'Prizes', button: false,
-    body: `<canvas class="toy" id="clCv" style="max-height:min(62vh,max(140px,calc(100svh - 530px)))"></canvas>
+    body: `<canvas class="toy" id="clCv" style="max-height:min(62vh,max(240px,calc(100svh - 530px)))"></canvas>
       <div class="res" id="clRes" aria-live="polite" style="min-height:40px;font-size:calc(clamp(22px,5.2vw,30px)*var(--fs,1))"><span class="muted">Tap a capsule to drop the claw — or drag to aim, then let go</span></div>`,
     tune: `<div class="lbl">Every capsule hides one of your options. Drag, grab, hope.</div>`,
     init() {

@@ -8,7 +8,8 @@
 
   function layout() {
     const n = 16;
-    const tw = 16, th = 54;
+    /* 16x54 on a 336px card was a row of sticks in an empty field */
+    const th = Math.max(28, Math.min(84, g.h * 0.17)), tw = th * 0.5;
     const left = 26, right = g.w - 66, baseY = g.h * 0.64, amp = g.h * 0.11;
     pool = K.options(5);
     if (pool.length < 2) pool = ['Yes', 'No'];
@@ -116,10 +117,10 @@
       x.fillStyle = 'rgba(30,16,70,.22)'; x.fill();
       x.rotate(t.ang);
       const grd = x.createLinearGradient(-t.tw / 2, -t.th, t.tw / 2, 0);
-      grd.addColorStop(0, '#fffdf6'); grd.addColorStop(1, '#e6dcff');
+      grd.addColorStop(0, '#fffdf6'); grd.addColorStop(1, K.mat().flat ? '#f1ebda' : '#e6dcff');
       K.rr(x, -t.tw / 2, -t.th, t.tw, t.th, 3);
       x.fillStyle = grd; x.fill();
-      x.strokeStyle = 'rgba(36,26,85,.25)'; x.lineWidth = 1; x.stroke();
+      x.strokeStyle = K.mat().flat ? '#241a3a' : 'rgba(36,26,85,.25)'; x.lineWidth = K.mat().flat ? 1.5 : 1; x.stroke();
       x.fillStyle = t.col; x.globalAlpha = .85;
       x.fillRect(-t.tw / 2 + 1.5, -t.th * 0.52 - 0.8, t.tw - 3, 1.6);
       x.globalAlpha = 1;

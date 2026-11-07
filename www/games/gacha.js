@@ -64,6 +64,7 @@
     const g = G;
     if (st === 'spin') {
       angle += 0.23 * dt; spin += 0.23 * dt;
+      caps.forEach(c => { c.jx = (c.jx || 0) * Math.pow(.90, dt); c.jy = (c.jy || 0) * Math.pow(.90, dt); });
       caps.forEach(c => { c.rot += 0.02 * dt; });
       if (spin >= spinGoal) release();
     }
@@ -144,9 +145,12 @@
     x.fillStyle = INK(.26); x.fill();
     x.clip();
     const amp = st === 'spin' ? 3.6 : 1.4;
+    /* turn the field with the knob, so the capsule that drops is visibly carried
+       to the flap instead of appearing out of an idle dome */
+    if (st === 'spin') { x.translate(g.cx, g.domeCy); x.rotate(spin * 0.9); x.translate(-g.cx, -g.domeCy); }
     caps.forEach(c => {
-      const bx = c.x + Math.sin(now * 0.0012 + c.ph) * amp;
-      const by = c.y + Math.cos(now * 0.0016 + c.ph) * amp;
+      const bx = c.x + (c.jx || 0) + Math.sin(now * 0.0012 + c.ph) * amp;
+      const by = c.y + (c.jy || 0) + Math.cos(now * 0.0016 + c.ph) * amp;
       cap(x, bx, by, c.r, c.rot, c.ci);
     });
     x.restore();
@@ -232,7 +236,15 @@
       if (st !== 'idle') return;
       const p = Math.max(.35, Math.min(1, info.power || .6));
       // the dome takes a beating; the harder the shake, the further the drum turns
-      caps.forEach(c => { c.x += (Math.random() - .5) * 9; c.y -= Math.random() * 5; });
+      caps.forEach(c => {
+        /* jitter decays and is clamped inside the dome; the old write to c.x/c.y was
+           a random walk that pushed the contents into the rim over a dozen shakes */
+        c.jx = (c.jx || 0) + (Math.random() - .5) * 9;
+        c.jy = (c.jy || 0) - Math.random() * 5;
+        const d = Math.hypot(c.x + c.jx - g.cx, c.y + c.jy - g.domeCy);
+        const lim = g.domeR - c.r - 2;
+        if (d > lim) { c.jx *= .4; c.jy *= .4; }
+      });
       pending = p; one = null; st = 'spin'; spin = 0;
       spinGoal = Math.PI * 2 * (0.8 + p * 2.6);
       try { tone(120, .18, .06, 'square', 70); } catch (e) {}

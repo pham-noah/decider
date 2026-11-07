@@ -105,7 +105,7 @@
       x.font = `800 ${Math.max(6, Math.round(r * 0.66))}px "Bricolage Grotesque",system-ui,sans-serif`;
       x.textAlign = 'center'; x.textBaseline = 'middle';
       let s = t;
-      while (s.length > 1 && x.measureText(s).width > r * 1.7) s = s.slice(0, -1);
+      while (s.length > 1 && x.measureText(s).width > r * 2.1) s = s.slice(0, -1);
       x.fillStyle = 'rgba(20,10,50,.72)';
       x.fillText(s === t ? s : s.slice(0, 2), cx, cy + 0.5);
     }
