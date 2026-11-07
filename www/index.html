@@ -130,7 +130,7 @@ input[type=text]:focus-visible,button:focus-visible{box-shadow:0 0 0 3px rgba(12
 .cshadow{position:absolute;bottom:4px;width:130px;height:22px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.35),transparent)}
 .pair{display:flex;gap:10px;width:min(100%,420px)}
 .lbl{font-size:13px;color:var(--ink2);margin-bottom:6px;text-align:center}
-.tiles{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center;min-height:120px}
+.tiles{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center;min-height:120px;width:100%}
 /* Each tile is a stage, not a card: the die itself is the object. The scene
    perspective lives on the tile, the hop on .dsh, a three-quarter tilt on
    .dview (so the tumbling die reads as a cube) and the tumble on .cube.
@@ -141,7 +141,7 @@ input[type=text]:focus-visible,button:focus-visible{box-shadow:0 0 0 3px rgba(12
 .dglow{position:absolute;left:50%;top:47%;width:calc(var(--ds)*1.8);height:calc(var(--ds)*1.8);margin:calc(var(--ds)*-.9) 0 0 calc(var(--ds)*-.9);border-radius:50%;pointer-events:none;z-index:0;
  background:radial-gradient(closest-side,var(--die-glow,rgba(255,255,255,.3)),transparent 72%)}
 .dsh,.dview,.cube{transform-style:preserve-3d}
-.dsh{position:relative;z-index:1;will-change:transform}
+.dsh{position:relative;z-index:1;will-change:transform;transform-origin:50% 92%}
 .dview{position:relative;transform:rotateX(-16deg) rotateY(-22deg);transition:transform .5s cubic-bezier(.3,1.5,.45,1)}
 .tile.settled .dview{transform:rotateX(-6deg) rotateY(-8deg)}
 .cube{position:relative;z-index:1;width:var(--ds);height:var(--ds);transform:rotateX(0deg) rotateY(0deg);will-change:transform;pointer-events:none}
@@ -176,7 +176,7 @@ input[type=text]:focus-visible,button:focus-visible{box-shadow:0 0 0 3px rgba(12
 .dspark{position:absolute;left:calc(50% + var(--ds)*.31);top:calc(50% - var(--ds)*.45);font-size:15px;line-height:1;font-style:normal;color:#fff;opacity:0;pointer-events:none;z-index:2;
  text-shadow:0 0 8px var(--die-glow,#fff),0 0 2px rgba(255,255,255,.9)}
 .dspark.s2{left:calc(50% - var(--ds)*.43);top:calc(50% - var(--ds)*.28);font-size:10px}
-.dshadow{position:absolute;left:50%;bottom:4px;width:calc(var(--ds)*.72);height:calc(var(--ds)*.13);margin-left:calc(var(--ds)*-.36);border-radius:50%;pointer-events:none;
+.dshadow{position:absolute;left:50%;bottom:4px;width:calc(var(--ds)*.72);height:calc(var(--ds)*.13);margin-left:calc(var(--ds)*-.36);border-radius:50%;pointer-events:none;will-change:transform,opacity;
  background:radial-gradient(closest-side,rgba(40,20,60,.26),rgba(40,20,60,.11) 55%,rgba(40,20,60,0))}
 .stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:18px}
 .stat div{padding:14px;border-radius:20px;background:var(--field);border:1px solid var(--edge)}
@@ -794,7 +794,7 @@ function coinLand(){if(calm)return;const r=$('#cn').getBoundingClientRect(),cx=r
    on a face is a lookup, not a guess. Only a d6 has six faces that sum to 7;
    every other size keeps the cube as the tumble and settles on a round badge,
    with the other panels hidden, so the number on screen is the number rolled. */
-let sides=6,cnt=2,rolling=false,rollSeq=0;
+let sides=6,cnt=2,rolling=false,rollSeq=0,DICE=[],diceRAF=0,dicePrev=0;
 const PIPS={1:[[2,2]],2:[[1,1],[3,3]],3:[[1,1],[2,2],[3,3]],4:[[1,1],[1,3],[3,1],[3,3]],5:[[1,1],[1,3],[2,2],[3,1],[3,3]],6:[[1,1],[1,3],[2,1],[2,3],[3,1],[3,3]]};
 const DIE_FACES=[[1,'f-pz',0,0],[6,'f-nz',0,180],[2,'f-px',0,-90],[5,'f-nx',0,90],[3,'f-ny',-90,0],[4,'f-py',90,0]];
 /* which of the six panels carries a rolled value: d6 uses the panel with that pip
@@ -807,7 +807,7 @@ function dieFaceHTML([val,cls],k,pool){
 /* numerals shown on the cube while it tumbles: sampled from the die's own range,
    never 1..6 on a d20 */
 function facePool(){const p=[];for(let k=0;k<6;k++)p.push(1+Math.floor(rnd()*sides));return p}
-function renderDice(){rollSeq++;rolling=false;$('#roll').disabled=false;
+function renderDice(){rollSeq++;rolling=false;$('#roll').disabled=false;DICE.length=0;if(diceRAF){cancelAnimationFrame(diceRAF);diceRAF=0}
  const pool=facePool();
  $('#tiles').innerHTML=Array.from({length:cnt},()=>`<div class="tile${sides===6?' pips':''}"><i class="dglow"></i><i class="dshadow"></i><i class="dspark">✦</i><i class="dspark s2">✦</i><div class="dsh"><div class="dview"><div class="cube">${DIE_FACES.map((f,k)=>dieFaceHTML(f,k,pool)).join('')}</div><div class="badge"><b></b></div></div></div></div>`).join('');
  $('#dsides').innerHTML=[4,6,8,10,12,20,100].map(n=>`<button class="chip${n===sides?' on':''}">d${n}</button>`).join('');
@@ -816,13 +816,13 @@ function renderDice(){rollSeq++;rolling=false;$('#roll').disabled=false;
  $$('#dcnt .chip').forEach(b=>b.onclick=()=>{cnt=parseInt(b.textContent);renderDice()})}
 renderDice();
 $('#roll').onclick=()=>{if(rolling)return;rolling=true;$('#roll').disabled=true;
- const seq=++rollSeq,T=$$('.tile'),fin=T.map(()=>1+Math.floor(rnd()*sides));let left=T.length;
+ const seq=++rollSeq,T=$$('.tile'),fin=T.map(()=>1+Math.floor(rnd()*sides));
+ const geo=rowGeom(T);let left=T.length;
  $('#dres').innerHTML='<span class="muted">…</span>';
  if(!calm){tone(260,.3,.05,'triangle',520);buzz(10)}
  T.forEach((t,i)=>{
-  const delay=calm?0:i*150,dur=calm?240:1020+i*40+Math.round(rnd()*80);
-  spinDie(t,fin[i],i,delay,dur);
-  setTimeout(()=>{
+  const delay=calm?0:i*150,dur=calm?240:0;
+  const done=()=>{
    if(seq!==rollSeq)return;
    if(cur!=='dice'){rolling=false;$('#roll').disabled=false;return}
    landDie(t,fin[i],i);
@@ -830,53 +830,175 @@ $('#roll').onclick=()=>{if(rolling)return;rolling=true;$('#roll').disabled=true;
    const sum=fin.reduce((a,b)=>a+b,0),allMax=sides>2&&fin.every(v=>v===sides);
    show($('#dres'),cnt>1?sum+'  ('+fin.join(' + ')+')':String(sum));chime();buzz([20,30,20]);log('Dice',`${cnt}d${sides} = ${sum}`);if(allMax)confetti();
    later(()=>moment(String(sum),`${cnt}d${sides}`+(cnt>1?': '+fin.join(' + '):'')+(allMax?' — max roll!':'')));rolling=false;$('#roll').disabled=false;
-  },delay+dur+20);
+  };
+  if(calm){spinCalm(t,fin[i],dur,delay);setTimeout(done,delay+dur+20)}
+  else launchDie(t,fin[i],i,delay,geo[i],seq,done);
  });
 };
-/* Tumble: the cube spins about X and Y while a wrapper hops it. Rotation is the
-   only thing that decides the face, so the last two keyframes settle exactly on
-   the target angles (a 9° overshoot and back, like a die rocking to rest).
-   The hop is transform-only: squash on push-off, stretch in the air, squash on
-   landing, then a springy bounce; the contact shadow shrinks as it rises. */
-function spinDie(t,v,i,delay,dur){
- const cube=t.querySelector('.cube'),sh=t.querySelector('.dsh'),sd=t.querySelector('.dshadow');
- t.classList.remove('settled');
+/* ---- dice motion: the tiles are lanes on one shallow surface ----------------
+   Each die owns a position and a velocity inside the .tiles row, so a throw
+   travels instead of spinning on the spot. Gravity and surface friction bring
+   it down, the row's end walls bounce it back with an energy loss, and past its
+   own lane the surface curves home — a die may tumble into a neighbour's lane
+   and back, but never out of the row and never through a die already settled.
+   Rotation is driven by the ground it covers (angle ≈ distance/radius) plus an
+   axis spin that dies away, so a die that slides far turns more. When it stops
+   the rotation snaps onto the rolled face — the DIE_FACES lookup always wins —
+   and after a small damped bounce the tile settles. Transform-only throughout:
+   travel + squash on .dsh, spin on .cube, contact shadow on .dshadow. */
+const DIE_G=1900,DIE_BOUNCE=.42,DIE_WALL=.5,DIE_FRIC=2.9,DIE_DRAG=.7,DIE_QDRAG=.0013,DIE_VMAX=620,DIE_PULL=760,DIE_K=220,DIE_STOP=12,DIE_FORCE=2.5;
+/* lanes are the tiles of one visual line; a wrapped row is its own surface, so
+   dice only ever collide with the dice they share a line with */
+function rowGeom(T){
+ const B=T.map(t=>t.getBoundingClientRect()),rows=[],line=$('#tiles').getBoundingClientRect();
+ B.forEach((b,i)=>{let r=rows.find(r=>Math.abs(r.top-b.top)<Math.max(6,b.height*.45));
+  if(!r){r={top:b.top,l:line.left,rr:line.right,m:[]};rows.push(r)}
+  r.m.push(i)});
+ return B.map((b,i)=>{
+  const row=rows.find(r=>r.m.indexOf(i)>=0),ds=parseFloat(getComputedStyle(T[i]).getPropertyValue('--ds'))||88,cx=b.left+b.width/2;
+  return {cx,ds,top:b.top,rowTop:row.top,rowL:row.l,rowR:row.rr,w:b.width,rowW:row.rr-row.l,
+   laneLim:Math.max(2,(b.width-ds*1.105)/2-.5),
+   xMin:row.l+ds*.48-cx,xMax:row.rr-ds*.48-cx};
+ });
+}
+function paintDie(d){
+ const s=d.squash;
+ if(d.sh)d.sh.style.transform=`translate3d(${d.x.toFixed(2)}px,${d.y.toFixed(2)}px,0) scale(${(1+s*.55).toFixed(3)},${(1-s).toFixed(3)})`;
+ if(d.cube)d.cube.style.transform=`rotateX(${d.rx.toFixed(2)}deg) rotateY(${d.ry.toFixed(2)}deg)`;
+ if(d.sd){const h=Math.min(1,Math.max(0,-d.y)/80);
+  d.sd.style.transform=`translate3d(${d.x.toFixed(2)}px,0,0) scale(${(1-h*.5).toFixed(3)},${(1-h*.35).toFixed(3)})`;
+  d.sd.style.opacity=(1-h*.55).toFixed(3)}
+}
+function launchDie(t,v,i,delay,geo,seq,done){
+ const F=DIE_FACES.find(f=>f[0]===faceFor(v)),bx=F[2],by=F[3],prev=t._d;
+ const st=prev?{x:prev.rx,y:prev.ry}:t._rot||{x:0,y:0};
+ t.classList.remove('settled');t.style.zIndex='3';
  [...t.querySelectorAll('.dface.front')].forEach(f=>f.classList.remove('front'));
  if(sides!==6)t.querySelectorAll('.dface b').forEach(b=>{const n=1+Math.floor(rnd()*sides);b.textContent=n;b.parentNode.dataset.n=n});
- const F=DIE_FACES.find(f=>f[0]===faceFor(v)),bx=F[2],by=F[3],st=t._rot||{x:0,y:0},sx=st.x,sy=st.y;
- cube.style.transform=`rotateX(${sx}deg) rotateY(${sy}deg)`;t._rot={x:bx,y:by};
- if(calm){
-  t._anims=[cube.animate([{transform:`rotateX(${sx}deg) rotateY(${sy}deg)`},{transform:`rotateX(${bx}deg) rotateY(${by}deg)`}],{duration:dur,easing:'cubic-bezier(.4,0,.2,1)',fill:'both'})];
-  return;
+ t._rot={x:bx,y:by};
+ const g=geo,edgeL=g.cx-g.rowL,edgeR=g.rowR-g.cx;
+ /* the tiles are one surface: a die in the middle of the row may go either
+   way, one already against a row end is thrown back inwards */
+ let dir=rnd()<.5?1:-1;
+ if(Math.min(edgeL,edgeR)<g.ds*1.25)dir=edgeL<edgeR?1:-1;
+ const d={t,v,i,seq,g,done,phase:'fly',t0:0,st:0,age:0,
+  x:Math.max(-g.laneLim,Math.min(g.laneLim,prev?prev.x:0)),y:0,
+  vx:dir*(150+rnd()*180),vy:-(165+rnd()*135),
+  rx:st.x,ry:st.y,tx:bx,ty:by,bx,by,
+  spinX:(rnd()<.5?-1:1)*(420+rnd()*380),spinY:(rnd()<.5?-1:1)*(130+rnd()*170),
+  squash:0,r:g.ds/2,halfW:g.ds/2,home:(rnd()*2-1)*g.laneLim*.85,
+  sh:t.querySelector('.dsh'),cube:t.querySelector('.cube'),sd:t.querySelector('.dshadow')};
+ t._d=d;paintDie(d);
+ setTimeout(()=>{if(seq!==rollSeq)return;d.t0=performance.now();DICE.push(d);startDice()},delay);
+}
+function startDice(){if(diceRAF)return;dicePrev=performance.now();diceRAF=requestAnimationFrame(diceTick)}
+function diceTick(now){
+ const dt=Math.min(.05,Math.max(0,(now-dicePrev)/1000));dicePrev=now;
+ DICE=DICE.filter(d=>d.seq===rollSeq);
+ /* a die that has come to rest stays in the set as an obstacle for the ones
+   still rolling, so nothing may ever come down on top of it */
+ for(const d of DICE){
+  if(d.phase==='rest')continue;
+  stepDie(d,dt,now);
+  if(d.phase!=='rest')paintDie(d);
  }
- const dx=i%2?-1:1,dy=-dx;let ex=bx,ey=by;
- while(dx>0?ex<sx+720:ex>sx-720)ex+=360*dx;
- while(dy>0?ey<sy+720:ey<sy-720)ey+=360*dy;
- const ca=cube.animate([
-  {transform:`rotateX(${sx}deg) rotateY(${sy}deg)`,offset:0,easing:'cubic-bezier(.36,0,.6,.26)'},
-  {transform:`rotateX(${(sx+(ex-sx)*.6).toFixed(2)}deg) rotateY(${(sy+(ey-sy)*.56).toFixed(2)}deg)`,offset:.4,easing:'cubic-bezier(.42,0,.62,.4)'},
-  {transform:`rotateX(${(sx+(ex-sx)*.92).toFixed(2)}deg) rotateY(${(sy+(ey-sy)*.9).toFixed(2)}deg)`,offset:.74,easing:'cubic-bezier(.2,.6,.42,1)'},
-  {transform:`rotateX(${ex+9*dx}deg) rotateY(${ey+9*dy}deg)`,offset:.91,easing:'cubic-bezier(.3,0,.5,1)'},
-  {transform:`rotateX(${ex}deg) rotateY(${ey}deg)`,offset:1}
- ],{duration:dur,delay:delay,fill:'both'});
- const hop=-34-Math.round(rnd()*10);
- const ha=sh.animate([
-  {transform:'translateY(0) scale(1,1)',offset:0,easing:'cubic-bezier(.22,.68,.55,1)'},
-  {transform:'translateY(-2px) scale(1.09,.9)',offset:.09,easing:'cubic-bezier(.4,0,.82,.5)'},
-  {transform:`translateY(${hop}px) scale(.95,1.06)`,offset:.3,easing:'cubic-bezier(.4,0,.82,.5)'},
-  {transform:'translateY(0) scale(1.1,.88)',offset:.68,easing:'cubic-bezier(.2,.7,.4,1)'},
-  {transform:'translateY(-12px) scale(.98,1.03)',offset:.8,easing:'cubic-bezier(.4,0,.8,.5)'},
-  {transform:'translateY(0) scale(1.045,.955)',offset:.9,easing:'ease-out'},
-  {transform:'translateY(0) scale(1,1)',offset:1}
- ],{duration:dur,delay:delay,fill:'both'});
- if(sd)sd.animate([{transform:'scale(1,1)',opacity:.92,offset:0},{transform:`scale(${.62-rnd()*.06},.7)`,opacity:.4,offset:.3},{transform:'scale(1.1,1)',opacity:1,offset:.68},{transform:'scale(.97,1)',opacity:.85,offset:.84},{transform:'scale(1,1)',opacity:.92,offset:1}],{duration:dur,delay:delay});
- t._anims=[ca,ha];
+ if(DICE.some(d=>d.phase!=='rest'))diceRAF=requestAnimationFrame(diceTick);
+ else{DICE.length=0;diceRAF=0}
+}
+function stepDie(d,dt,now){
+ d.age=(now-d.t0)/1000;
+ const g=d.g;
+ if(d.phase==='fly'){
+  /* the lane is a groove: sloped sides outside it bring a die home, and inside
+     it the floor dips at a spot of its own, so a throw settles where it landed
+     instead of always parking in the same slot */
+  const out=Math.abs(d.x)-g.laneLim;
+  if(d.y>-12){
+   if(out>0)d.vx-=Math.sign(d.x)*(DIE_PULL*Math.min(1,out/3)+out*4)*dt;
+   else d.vx-=(d.x-d.home)*DIE_K*dt;
+  }
+  d.vy+=DIE_G*dt;
+  d.vx*=Math.exp(-DIE_DRAG*dt);
+  d.vx-=d.vx*Math.abs(d.vx)*DIE_QDRAG*dt;
+  if(d.vx>DIE_VMAX)d.vx=DIE_VMAX;else if(d.vx<-DIE_VMAX)d.vx=-DIE_VMAX;
+  d.x+=d.vx*dt;d.y+=d.vy*dt;
+  if(d.y>0){
+   const imp=-d.vy;d.y=0;
+   if(imp>110){d.vy=-imp*DIE_BOUNCE;d.squash=Math.min(.4,imp/1300);d.vx*=.86}
+   else{d.vy=0;d.vx*=.9}
+  }
+  /* rolling resistance is always there — a die thrown across felt keeps losing
+     speed even between hops, so it can never be powered into a limit cycle */
+  d.vx*=Math.exp(-(d.y>-1.5?DIE_FRIC:DIE_FRIC*.5)*dt);
+  if(d.x<g.xMin){d.x=g.xMin;d.vx=Math.abs(d.vx)*DIE_WALL}
+  else if(d.x>g.xMax){d.x=g.xMax;d.vx=-Math.abs(d.vx)*DIE_WALL}
+  /* dice are solid to each other on the surface; one in the air clears them */
+  for(const o of DICE){
+   if(o===d||Math.abs(o.g.rowTop-g.rowTop)>4||d.y<-6||o.y<-6)continue;
+   const ox=o.g.cx+o.x,gx=g.cx+d.x,mn=(d.halfW+o.halfW)*1.04,dx2=gx-ox;
+   if(Math.abs(dx2)>=mn)continue;
+   /* contact separates them fully and reverses both: dice bounce off each
+     other instead of sinking through one another */
+   const s=Math.sign(dx2)||1,push=(mn-Math.abs(dx2))*.5+.6;
+   d.x+=s*push;d.vx=s*Math.max(130,Math.abs(d.vx)*.7);
+   if(o.phase==='fly'){o.x-=s*push;o.vx=-s*Math.max(130,Math.abs(o.vx)*.7)}
+   d.squash=Math.max(d.squash,.2);
+  }
+  /* rolling: the cube turns with the ground it covers */
+  d.ry+=(d.vx*dt)/d.r*57.29578;
+  d.rx+=d.spinX*dt;d.ry+=d.spinY*dt;
+  d.spinX*=Math.exp(-1.7*dt);d.spinY*=Math.exp(-2.6*dt);
+  d.squash*=Math.exp(-9*dt);
+  if(d.age>DIE_FORCE||(d.age>.32&&d.y===0&&Math.abs(d.vx)<DIE_STOP&&Math.abs(d.x)<=g.laneLim))beginSettle(d);
+ }else if(d.phase==='settle'){
+  /* snap onto the rolled face: the nearest angle congruent with the target, so
+     the cube never unwinds more than it must, then a small damped bounce */
+  d.st+=dt;
+  const p=Math.min(1,d.st/.32),e=1-Math.pow(1-p,3);
+  d.rx=d.fx+(d.tx-d.fx)*e;
+  d.ry=d.fy+(d.ty-d.fy)*e;
+  d.x=d.fx2+(d.restX-d.fx2)*e;
+  d.y=d.fy2*(1-e)-Math.abs(Math.sin(Math.min(Math.PI,d.st*26)))*Math.max(0,9*(1-d.st/.42));
+  d.squash*=Math.exp(-7*dt);
+  if(d.st>=.42){
+   d.y=0;d.x=d.restX;d.rx=d.tx;d.ry=d.ty;d.squash=0;d.phase='rest';
+   paintDie(d);if(d.done)d.done();
+  }
+ }
+}
+function beginSettle(d){
+ d.phase='settle';d.st=0;
+ d.fx=d.rx;d.fy=d.ry;d.fx2=d.x;d.fy2=Math.min(0,d.y);
+ const lim=d.g.laneLim;
+ /* comes to rest where it stopped, never outside its own lane */
+ d.restX=Math.max(-lim,Math.min(lim,d.x+d.vx*.09));
+ d.tx=d.bx+360*Math.round((d.rx-d.bx)/360);
+ d.ty=d.by+360*Math.round((d.ry-d.by)/360);
+ d.vx=0;d.vy=0;
+}
+/* calm / reduced motion: no travel at all, just a short turn onto the face */
+function spinCalm(t,v,dur,delay){
+ const cube=t.querySelector('.cube'),sh=t.querySelector('.dsh'),sd=t.querySelector('.dshadow'),prev=t._d;
+ t.classList.remove('settled');t.style.zIndex='';
+ [...t.querySelectorAll('.dface.front')].forEach(f=>f.classList.remove('front'));
+ if(sides!==6)t.querySelectorAll('.dface b').forEach(b=>{const n=1+Math.floor(rnd()*sides);b.textContent=n;b.parentNode.dataset.n=n});
+ const st=prev?{x:prev.rx,y:prev.ry}:t._rot||{x:0,y:0};
+ const F=DIE_FACES.find(f=>f[0]===faceFor(v)),bx=F[2],by=F[3];
+ t._rot={x:bx,y:by};t._d=null;
+ if(sh)sh.style.transform='';
+ if(sd){sd.style.transform='';sd.style.opacity=''}
+ cube.style.transform=`rotateX(${st.x}deg) rotateY(${st.y}deg)`;
+ t._anims=[cube.animate([{transform:`rotateX(${st.x}deg) rotateY(${st.y}deg)`},{transform:`rotateX(${bx}deg) rotateY(${by}deg)`}],{duration:dur,delay,easing:'cubic-bezier(.4,0,.2,1)',fill:'both'})];
 }
 function landDie(t,v,i){
- const cube=t.querySelector('.cube'),sh=t.querySelector('.dsh');
+ const cube=t.querySelector('.cube'),sh=t.querySelector('.dsh'),sd=t.querySelector('.dshadow'),d=t._d;
  if(t._anims){t._anims.forEach(a=>a.cancel());t._anims=null}
  const F=DIE_FACES.find(f=>f[0]===faceFor(v)),bx=F[2],by=F[3];
  t._rot={x:bx,y:by};cube.style.transform=`rotateX(${bx}deg) rotateY(${by}deg)`;
+ const dx=d?d.x:0;
+ if(sh)sh.style.transform=`translate3d(${dx.toFixed(2)}px,0,0)`;
+ if(sd){sd.style.transform=`translate3d(${dx.toFixed(2)}px,0,0)`;sd.style.opacity=''}
+ t.style.zIndex='';
  /* exactly one panel may stay lit: the pip face for a d6, nothing for the rest */
  const front=t.querySelector('.dface.'+F[1]);
  [...t.querySelectorAll('.dface')].forEach(f=>f.classList.toggle('front',f===front));
@@ -885,13 +1007,12 @@ function landDie(t,v,i){
  t.classList.add('settled');
  diceBoing(i);
  if(!calm){
-  sh.animate([{transform:'translateY(0) scale(1.1,.88)'},{transform:'translateY(-8px) scale(.985,1.025)',offset:.34},{transform:'translateY(0) scale(1.03,.975)',offset:.68},{transform:'translateY(-3px) scale(1.008,.994)',offset:.84},{transform:'translateY(0) scale(1,1)'}],{duration:440,easing:'cubic-bezier(.2,.7,.4,1)'});
   if(sides!==6)num.animate([{transform:'scale(.35)'},{transform:'scale(1.16)',offset:.58},{transform:'scale(.95)',offset:.8},{transform:'scale(1)'}],{duration:480,easing:'cubic-bezier(.2,1.5,.4,1)'});
   [...t.querySelectorAll('.dspark')].forEach((s,k)=>s.animate([{transform:'scale(0) rotate(0deg)',opacity:0},{transform:'scale(1.15) rotate(35deg)',opacity:1,offset:.34},{transform:'scale(.25) rotate(80deg)',opacity:0}],{duration:560,delay:60+k*110,easing:'ease-out'}));
   const gl=t.querySelector('.dglow');
   if(gl)gl.animate([{opacity:1,transform:'scale(1)'},{opacity:.75,transform:'scale(1.16)'}],{duration:520,easing:'ease-out'});
  }
- if(calm)return;const r=t.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,big=v===sides&&sides>2;
+ if(calm)return;const r=cube.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,big=v===sides&&sides>2;
  ringAt(cx,cy,big?'#ffd36a':'#ffffff',big?230:150);sparks(cx,cy,big?'#ffd36a':PAL[i%8],big?18:8,big?10:7);buzz(12);
  if(big)setTimeout(()=>ringAt(cx,cy,'#ffd36a',300),70);
  else if(v===1&&sides>2)shakeEl(t,5,420)}
