@@ -104,6 +104,7 @@
   function brush() { return Math.max(15, g.w * 0.072); }
 
   function erase(x0, y0, x1, y1) {
+    try { const n = performance.now(); if (n - (erase.t || 0) > 70) { erase.t = n; tone(170 + Math.random() * 60, .035, .02, 'sawtooth', 90); buzz(4); } } catch (e) {}
     const m = mask.getContext('2d');
     m.save();
     m.setTransform(g.dpr, 0, 0, g.dpr, 0, 0);

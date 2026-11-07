@@ -33,7 +33,7 @@
   ]; const N = SHAPES.length;
 
   let L = null, g = null, idx = 0, prev = 0, m = 1, ang = 0, vAng = 0;
-  let dragging = false, lastX = 0, bounce = 1, bv = 0, flashes = [], t = 0; let found = SHAPES.map((_, i) => i === 0);
+  let dragging = false, lastX = 0, bounce = 1, bv = 0, flashes = [], t = 0, pendingFlip = 0; let found = SHAPES.map((_, i) => i === 0);
 
   const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); } catch (e) {} };
   const hap = (n) => { try { buzz(n); } catch (e) {} };
@@ -70,7 +70,7 @@
   }
 
   function flip(dir) {
-    if (m < .35 && prev !== idx) return; prev = idx; idx = (idx + dir + N) % N; m = 0; found[idx] = true;
+    if (m < .35 && prev !== idx) { pendingFlip = (pendingFlip || 0) + 1; return; } prev = idx; idx = (idx + dir + N) % N; m = 0; found[idx] = true;
     bounce = 1.18; bv = 0; sfx(392 * Math.pow(2, idx / 6), .13, .05, 'triangle', 660); hap(9);
     flashes.push({ a: 1, r: 1 }); const el = resEl();
     if (el) el.innerHTML = '<span class="muted">' + SHAPES[idx].name + ' — keep turning</span>';
@@ -104,6 +104,9 @@
     if (ang > HALF) { ang -= HALF; flip(1); }
     else if (ang < -HALF) { ang += HALF; flip(-1); }
     if (m < 1) m = Math.min(1, m + dt * .1);
+    /* a fast flick used to lose half-turns: the angle was consumed while the morph
+       was still running, so the shape never advanced. Replay them once it lands. */
+    if (pendingFlip && m >= .35) { const n = pendingFlip; pendingFlip = 0; for (let i = 0; i < n; i++) flip(1); }
 
     bounce += bv * dt; bv += (1 - bounce) * .3 * dt; bv *= Math.pow(.82, dt);
     flashes.forEach(f => { f.a -= .035 * dt; f.r += .06 * dt; }); flashes = flashes.filter(f => f.a > 0);

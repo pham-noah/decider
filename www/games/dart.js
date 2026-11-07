@@ -77,7 +77,11 @@
     let tx = aim.x + wob.x * slop;
     let ty = aim.y + wob.y * slop;
     const dx = tx - geo.cx, dy = ty - geo.cy, d = Math.hypot(dx, dy) || 1;
-    if (d > R * .92) { tx = geo.cx + dx / d * R * .92; ty = geo.cy + dy / d * R * .92; }
+    if (d > R * .92) {
+      /* a wild throw should be a miss, not a clamped hit on the rim */
+      const dd = Math.min(d, R * 1.18);
+      tx = geo.cx + dx / d * dd; ty = geo.cy + dy / d * dd;
+    }
     stuck = null; hit = -1; busy = true;
     dart = { lx: geo.w / 2, ly: geo.h + 12, tx, ty, t: 0, px: geo.w / 2, py: geo.h + 12, a: -Math.PI / 2 };
     K.setResult(res(), '…');
@@ -85,7 +89,14 @@
   }
 
   function land(d) {
-    const { cx, cy, n, st } = geo;
+    const { cx, cy, n, st, R } = geo;
+    /* every dart won a label, even one stuck in the score ring */
+    if (Math.hypot(d.tx - cx, d.ty - cy) > R * 0.94) {
+      stuck = null; aim = null; busy = false; hit = -1;
+      K.setResult(res(), 'Off the board — throw again');
+      try { tone(150, .16, .05, 'triangle', 100); } catch (e) {}
+      return;
+    }
     const ang = Math.atan2(d.ty - cy, d.tx - cx);
     const rel = ((ang + Math.PI / 2) % TAU + TAU) % TAU;
     hit = Math.min(n - 1, Math.floor(rel / st));

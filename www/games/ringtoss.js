@@ -138,7 +138,9 @@
     id: 'ringtoss', name: 'Ring Toss', short: 'Rings', label: 'Pegs', button: false,
     body: `<canvas class="toy" id="rtCv"></canvas><div class="res" id="rtRes" aria-live="polite"><span class="muted">Flick a ring at a peg — three rings</span></div><button class="btn" id="rtGo">Toss</button>`,
     init(card) {
-      labels = pick(5);
+      /* Yes/No over five pegs read Yes/No/Yes/No/Yes — a 3:2 bias on a coin flip */
+      const opts = K.options(5);
+      labels = opts.length >= 3 ? pick(5) : [...new Set(opts)];
       layout();
       L = K.loop(frame);
       card.querySelector('#rtGo').onclick = () => {

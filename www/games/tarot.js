@@ -86,7 +86,7 @@
       x.font = '800 ' + ns + 'px "Bricolage Grotesque",system-ui,sans-serif';
       while (ns > 7 && x.measureText(data[0]).width > cw - 14) { ns--; x.font = '800 ' + ns + 'px "Bricolage Grotesque",system-ui,sans-serif'; }
       x.fillText(data[0], 0, ch * 0.26);
-      x.font = '600 ' + Math.round(cw * 0.077) + 'px "Bricolage Grotesque",system-ui,sans-serif';
+      x.font = '600 ' + Math.max(11, Math.round(cw * 0.115)) + 'px "Bricolage Grotesque",system-ui,sans-serif';
       x.fillStyle = 'rgba(255,248,230,.78)';
       wrap(x, data[1], cw - 16).slice(0, 2).forEach((ln, k) => x.fillText(ln, 0, ch * 0.355 + k * cw * 0.1));
     } else {
