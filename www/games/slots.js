@@ -366,7 +366,7 @@
     init() {
       L = K.loop(tick);
       g = K.fit(cv());
-      pool = [...new Set(K.options(5))];   // two identical options could show 'No match'
+      pool = ['🍒','🍋','🔔','⭐','🍀'];   // slot symbols, never the wheel's options
       if (pool.length < 2) pool = ['Yes', 'No', 'Maybe'];
       reels = [0, 1, 2].map(i => ({ pos: i % pool.length, vel: 0, phase: 'done', target: null, stopAt: 0, settled: true, spd: 0 }));
       const c = cv();

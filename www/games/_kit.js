@@ -101,12 +101,15 @@
   };
 
   /* the app's decision list, trimmed to n readable labels */
+  /* Toy labels. The wheel's options belong to the wheel: a toy numbers its own
+   * slots, capsules or pins, so "trash / dish / laundry" can never appear on a
+   * plinko bin or a gacha capsule. */
   kit.options = function (n) {
-    const list = (typeof opts !== 'undefined' ? opts : []).map(o => o.l).filter(Boolean);
-    const fallback = ['Yes', 'No', 'Maybe', 'Later', 'Nope', 'Sure', 'Skip', 'Go'];
-    const out = (list.length >= 2 ? list : fallback);
-    return out.slice(0, n);
+    const count = Math.max(1, n | 0);
+    return Array.from({ length: count }, (_, i) => String(i + 1));
   };
+  kit.prizes = ['a star', 'a coin', 'a crown', 'a fish', 'a rocket', 'a cherry',
+                'a key', 'a shell', 'a moon', 'a dino', 'a bell', 'a feather'];
 
   /* finish a game: inline result, sound, log, confetti, full-screen card */
   kit.decide = function (label, game, sub) {

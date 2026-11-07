@@ -19,7 +19,7 @@
   }
 
   function pack(g) {
-    labels = K.options(5);
+    labels = K.prizes.slice(0, 5);
     const cr = Math.max(5, g.domeR * 0.115 * Math.sqrt(26 / Math.max(18, n)));   // 36 capsules used to overlap into one blob
     caps = [];
     for (let i = 0; i < n; i++) {
@@ -197,7 +197,7 @@
     tune: `<div class="lbl">Capsules in the dome</div><div class="chips" id="gaCount" style="margin:0"></div>`,
     init(card) {
       L = K.loop(frame);
-      labels = K.options(5);
+      labels = K.prizes.slice(0, 5);
       const c = cv();
       card.querySelector('#gaGo').onclick = () => spinNow(0.6);
       c.addEventListener('pointerdown', e => {
@@ -236,7 +236,7 @@
       };
       render();
     },
-    enter() { labels = K.options(5); if (G) pack(G); L.start(); },
+    enter() { labels = K.prizes.slice(0, 5); if (G) pack(G); L.start(); },
     leave() { L.stop(); drag = null; },
     action() { spinNow(0.6); },
     shake(info) {

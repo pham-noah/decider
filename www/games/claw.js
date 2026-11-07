@@ -10,7 +10,7 @@
   function build() {
     const c = cv(); if (!c) return;
     g = K.fit(c);
-    const labels = K.options(5);
+    const labels = K.prizes.slice(0, 5);
     const r = Math.max(15, Math.min(25, g.w * 0.068));
     const slots = [];
     [4, 3, 2].forEach((n, row) => {

@@ -7,7 +7,7 @@
   let L = null, g = null, pool = [], bs = [], parts = [], pending = [], popped = 0, t = 0, done = false;
 
   function fill() {
-    pool = K.options(5);
+    pool = K.prizes.slice(0, 5);
     if (pool.length < 2) pool = ['Yes', 'No', 'Maybe'];
     const cols = 4, rows = 3, cw = g.w / cols, ch = (g.h - 84) / rows, top = 46;
     const r = Math.min(cw, ch) * 0.37;

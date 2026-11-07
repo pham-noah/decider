@@ -53,7 +53,7 @@
   function newHand() {
     gen++;
     if (deck.length < 12) fresh();
-    const opts = K.options(2);
+    const opts = ['You', 'Dealer'];
     winLabel = opts[0] || 'Yes'; loseLabel = opts[1] || 'No';
     you = [deck.pop(), deck.pop()];
     dealer = [deck.pop(), deck.pop()];

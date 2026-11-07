@@ -47,7 +47,7 @@
     if (busy) return;
     if (deck.length < 4) fresh();
     gen++;
-    labels = K.options(2);
+    labels = ['You', 'Dealer'];
     if (labels.length < 2) labels = [labels[0] || 'Yes', 'No'];
     hand = [deck.pop(), deck.pop()];
     slots.forEach((slot, i) => {
