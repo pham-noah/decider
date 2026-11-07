@@ -55,7 +55,7 @@
     // board
     x.save();
     K.rr(x, 0, 0, g.w, g.h, 18);
-    x.fillStyle = INK(.35);
+    x.fillStyle = K.mat().flat ? '#f1ebda' : 'rgba(255,255,255,.07)';
     x.fill();
     x.restore();
 

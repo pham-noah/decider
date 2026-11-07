@@ -181,7 +181,7 @@
     x.save();
     K.rr(x, trayX, g.lip + 2, trayW, g.h - g.lip - 8, 14);
     const lg = x.createLinearGradient(0, g.lip, 0, g.h);
-    lg.addColorStop(0, 'rgba(36,26,85,.82)'); lg.addColorStop(1, 'rgba(36,26,85,.55)');
+    lg.addColorStop(0, K.mat().flat ? 'rgba(36,26,58,.10)' : 'rgba(36,26,85,.82)'); lg.addColorStop(1, K.mat().flat ? 'rgba(36,26,58,.04)' : 'rgba(36,26,85,.55)');
     x.fillStyle = lg; x.fill();
     x.restore();
     x.fillStyle = INK(.55);

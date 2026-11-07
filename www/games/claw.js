@@ -113,7 +113,7 @@
     }
     x.clearRect(0, 0, w, h);
     K.rr(x, 4, 4, w - 8, h - 8, 22);
-    x.fillStyle = 'rgba(12,7,34,.68)'; x.fill();
+    x.fillStyle = K.mat().flat ? '#f1ebda' : 'rgba(12,7,34,.68)'; x.fill();   // bone stock on paper, not a black slab
     x.strokeStyle = INK(.45); x.lineWidth = 2; x.stroke();
     // floor + prize chute
     x.fillStyle = INK(.1); x.fillRect(10, floorY(), w - 20, 2);

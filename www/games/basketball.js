@@ -88,7 +88,7 @@
 
   function drawHoop(x) {
     const { cx, rimY, rimW } = geo; x.save(); x.shadowColor = 'rgba(36,26,85,.14)'; x.shadowBlur = 18; x.shadowOffsetY = 8;
-    K.rr(x, cx - rimW - 20, 18, (rimW + 20) * 2, rimY - 36, 12); x.fillStyle = INK(.34); x.fill(); x.restore();
+    K.rr(x, cx - rimW - 20, 18, (rimW + 20) * 2, rimY - 36, 12); x.fillStyle = K.mat().flat ? '#e6dfcc' : 'rgba(255,255,255,.10)'; x.fill(); x.restore();
     K.rr(x, cx - rimW - 20, 18, (rimW + 20) * 2, rimY - 36, 12); x.strokeStyle = INK(.75); x.lineWidth = 2; x.stroke();
     K.rr(x, cx - 26, rimY - 58, 52, 34, 4); x.strokeStyle = 'rgba(255,111,174,.55)'; x.lineWidth = 2; x.stroke(); const sway = netT * 5;
     x.strokeStyle = INK(.9); x.lineWidth = 1.3;
@@ -155,7 +155,7 @@
     if (!geo || Math.abs(geo.w - g.w) > .5) layout();
     if (!geo) return;
     const x = g.x, w = g.w, h = g.h; x.clearRect(0, 0, w, h);
-    K.rr(x, 0, 0, w, h, 18); x.fillStyle = INK(.28); x.fill(); const grd = x.createLinearGradient(0, 0, 0, h);
+    K.surf(x, w, h); const grd = x.createLinearGradient(0, 0, 0, h);
     grd.addColorStop(0, INK(0)); grd.addColorStop(1, 'rgba(255,179,71,.16)'); x.fillStyle = grd; x.fillRect(0, 0, w, h);
     if (netT > 0) netT = Math.max(0, netT - dt * .04);
     if (phase === 'fly') physics(dt);

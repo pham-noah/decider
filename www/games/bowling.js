@@ -134,7 +134,7 @@
     if (!geo || Math.abs(geo.w - g.w) > .5) layout();
     if (!geo) return;
     const x = g.x, w = g.w, h = g.h; x.clearRect(0, 0, w, h);
-    K.rr(x, 0, 0, w, h, 18); x.fillStyle = INK(.28); x.fill();
+    K.surf(x, w, h);
     drawLane(x, g);
     if (rolling) {
       const steps = Math.max(1, Math.ceil(Math.abs(ball.vy) * dt / 6));

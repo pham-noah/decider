@@ -111,9 +111,13 @@
     if (g.w !== lw || g.h !== lh) { lw = g.w; lh = g.h; layout(); }
     const { x, w, h } = g;
     x.clearRect(0, 0, w, h);
-    const bg = x.createRadialGradient(w * 0.5, h * 0.34, 8, w * 0.5, h * 0.55, w * 0.85);
-    bg.addColorStop(0, 'rgba(96,74,196,.5)'); bg.addColorStop(1, 'rgba(13,8,38,.8)');
-    K.rr(x, 2, 2, w - 4, h - 4, 20); x.fillStyle = bg; x.fill();
+    /* the felt now comes from the skin, so paper gets flat stock instead of a violet wash */
+    K.surf(x, w, h);
+    if (!K.mat().flat) {
+      const bg = x.createRadialGradient(w * 0.5, h * 0.34, 8, w * 0.5, h * 0.55, w * 0.85);
+      bg.addColorStop(0, 'rgba(96,74,196,.5)'); bg.addColorStop(1, 'rgba(13,8,38,.0)');
+      x.fillStyle = bg; x.fill();
+    }
     x.fillStyle = INK(1);
     stars.forEach(s => { x.globalAlpha = s.a; x.beginPath(); x.arc(s.x * w, s.y * h * 0.72, s.r, 0, Math.PI * 2); x.fill(); });
     x.globalAlpha = 1;

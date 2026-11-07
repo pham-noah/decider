@@ -92,7 +92,7 @@
   function paint(g) {
     const x = g.x;
     x.clearRect(0, 0, g.w, g.h);
-    x.save(); K.rr(x, 0, 0, g.w, g.h, 18); x.fillStyle = INK(.34); x.fill(); x.restore();
+    K.surf(x, g.w, g.h);
 
     slots.forEach((s, i) => {
       x.save();

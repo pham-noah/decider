@@ -110,9 +110,10 @@
 
     K.rr(x, 6, 4, w - 12, h - 10, 26);
     const bg = x.createLinearGradient(0, 0, w, h);
-    bg.addColorStop(0, 'rgba(64,32,128,.93)');
+    const flatCab = K.mat().flat;
+    bg.addColorStop(0, flatCab ? '#f1ebda' : 'rgba(64,32,128,.93)');
     bg.addColorStop(.55, 'rgba(38,20,80,.95)');
-    bg.addColorStop(1, 'rgba(20,10,46,.96)');
+    bg.addColorStop(1, flatCab ? '#e6dfcc' : 'rgba(20,10,46,.96)');
     x.fillStyle = bg; x.fill();
     x.strokeStyle = INK(.4); x.lineWidth = 1.5; x.stroke();
 

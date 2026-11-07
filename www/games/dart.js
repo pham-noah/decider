@@ -36,7 +36,7 @@
     }
     if (hit >= 0) {
       const a0 = -Math.PI / 2 + hit * st;
-      x.beginPath(); x.moveTo(cx, cy); x.arc(cx, cy, R * .865, a0, a0 + st); x.closePath(); x.fillStyle = INK(.26); x.fill();
+      x.beginPath(); x.moveTo(cx, cy); x.arc(cx, cy, R * .865, a0, a0 + st); x.closePath();      x.fillStyle = K.mat().flat ? '#f1ebda' : 'rgba(255,255,255,.14)'; x.fill();
       x.strokeStyle = INK(.95); x.lineWidth = 3; x.stroke();
     }
     /* score ring with sector numbers */
@@ -113,7 +113,7 @@
     if (!geo) return;
     const x = g.x, w = g.w, h = g.h, R = geo.R;
     x.clearRect(0, 0, w, h);
-    K.rr(x, 0, 0, w, h, 18); x.fillStyle = INK(.32); x.fill();
+    K.surf(x, w, h);
     if (aiming) {
       tAim += dt * .55;
       wob = { x: Math.sin(tAim) * R * .035, y: Math.cos(tAim * 1.4) * R * .032 };

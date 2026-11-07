@@ -113,13 +113,14 @@
     K.rr(x, 10, g.bodyTop, g.w - 20, g.bodyBot - g.bodyTop + 10, 26);
     const bg = x.createLinearGradient(0, g.bodyTop, 0, g.bodyBot);
     bg.addColorStop(0, '#9481ff'); bg.addColorStop(.55, '#6d5bd8'); bg.addColorStop(1, '#46359f');
-    x.fillStyle = bg; x.fill();
+    /* on paper the cabinet is printed stock with an ink edge, not a glossy violet slab */
+    x.fillStyle = K.mat().flat ? '#f1ebda' : bg; x.fill();
     x.strokeStyle = INK(.55); x.lineWidth = 2; x.stroke();
     x.restore();
 
     x.save();
     K.rr(x, tr.x - tr.w / 2, tr.y - tr.h * 0.3, tr.w, tr.h * 1.2, 16);
-    x.fillStyle = INK(.45); x.fill();
+    x.fillStyle = K.mat().flat ? '#e6dfcc' : INK(.45); x.fill();
     x.strokeStyle = 'rgba(36,26,85,.25)'; x.lineWidth = 2; x.stroke();
     x.restore();
 
