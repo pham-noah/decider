@@ -20,7 +20,7 @@
 
   function pack(g) {
     labels = K.options(5);
-    const cr = Math.max(6, g.domeR * 0.115);
+    const cr = Math.max(5, g.domeR * 0.115 * Math.sqrt(26 / Math.max(18, n)));   // 36 capsules used to overlap into one blob
     caps = [];
     for (let i = 0; i < n; i++) {
       let px = g.cx, py = g.domeCy, ok = false;

@@ -125,7 +125,8 @@
     x.globalAlpha = 1;
     x.fillStyle = INK(.55); x.font = '600 11px "Bricolage Grotesque",system-ui,sans-serif';
     x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.fillText(state === 'deck' ? 'Tap the deck to deal' : state === 'idle' ? 'Tap a card' : state === 'shown' ? 'Tap to deal again' : '', w / 2, h * 0.09);
+    /* the .res line under the canvas already carries the instruction; the canvas
+       was printing a second wording of the same sentence */
     // a pulsing halo behind the deck, so the first tap is obvious
     if (state === 'deck') {
       const pl = 0.5 + 0.5 * Math.sin(performance.now() / 420);

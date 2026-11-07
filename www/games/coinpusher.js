@@ -38,6 +38,9 @@
   function win(c) {
     busy = true; cool = 62; hit = c.ci;
     const label = labels[c.ci] || labels[0];
+    /* the answer landed as a text swap: no tone, no haptic, no ring */
+    try { tone(560, .1, .06, 'triangle', 820); } catch (e) {}
+    try { buzz([14, 36, 20]); } catch (e) {}
     K.setResult(out(), label);
     K.decide(label, 'Coin Pusher', 'Pushed off the shelf');
   }

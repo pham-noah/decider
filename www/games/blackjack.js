@@ -127,9 +127,10 @@
       $('bjStand').onclick = stand;
       $('bjNew').onclick = newHand;
       fresh();
-      newHand();
+      /* dealt on entry, not at registration: a hand resolved at boot could chime and
+         write history for a toy nobody had opened */
     },
-    enter() {},
+    enter() { if (!you.length && state === 'idle') newHand(); },
     leave() {},
     action
   });
