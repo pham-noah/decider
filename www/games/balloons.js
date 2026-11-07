@@ -1,30 +1,44 @@
-/* Balloons — a bobbing grid, each balloon hides a label; pop one to decide. */
+/* Balloons — a bobbing grid you pop for the feel of it. Nothing is decided and
+ * nothing is printed: a tap is a pop, and the twelfth pop fades a fresh grid
+ * back in on its own, so there is no reset button to hunt for. */
 (function () {
   const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   const cv = () => document.getElementById('blCv');
   const TAU = Math.PI * 2;
-  let L = null, g = null, pool = [], bs = [], parts = [], pending = [], popped = 0, t = 0, done = false;
+  const COLS = 4, ROWS = 3, TOP = 46, BOT = 84;
+  let L = null, g = null, bs = [], parts = [], popped = 0;
+  let bw = 0, bh = 0, refillIn = 0, fade = 1;
 
-  function fill() {
-    pool = K.prizes.slice(0, 5);
-    if (pool.length < 2) pool = ['Yes', 'No', 'Maybe'];
-    const cols = 4, rows = 3, cw = g.w / cols, ch = (g.h - 84) / rows, top = 46;
+  /* geometry only: jitter, colour and live flag survive a resize, so a rotation
+     never hands the player a fresh grid mid-pop */
+  function place() {
+    const cw = g.w / COLS, ch = (g.h - BOT) / ROWS;
     const r = Math.min(cw, ch) * 0.37;
-    bs = []; parts = []; pending = []; popped = 0; done = false;
-    for (let ry = 0; ry < rows; ry++) {
-      for (let cx = 0; cx < cols; cx++) {
-        const i = ry * cols + cx;
-        bs.push({
-          x: (cx + 0.5) * cw + (Math.random() - 0.5) * 8,
-          y: top + (ry + 0.4) * ch + (Math.random() - 0.5) * 10,
-          r: r * (0.92 + Math.random() * 0.14),
-          col: PAL[i % PAL.length], ph: Math.random() * TAU, sp: 0.8 + Math.random() * 0.5,
-          label: pool[Math.floor(Math.random() * pool.length)], live: true, pop: 0, bx: 0, by: 0
-        });
-      }
+    bs.forEach((b, i) => {
+      const cx = i % COLS, ry = (i / COLS) | 0;
+      b.x = (cx + 0.5) * cw + b.jx;
+      b.y = TOP + (ry + 0.4) * ch + b.jy;
+      b.r = r * b.rs;
+      b.bx = b.x; b.by = b.y;
+    });
+    bw = g.w; bh = g.h;
+  }
+
+  function grid() {
+    bs = []; popped = 0; refillIn = 0;
+    for (let i = 0; i < COLS * ROWS; i++) {
+      bs.push({
+        jx: (Math.random() - 0.5) * 8,
+        jy: (Math.random() - 0.5) * 10,
+        rs: 0.92 + Math.random() * 0.14,
+        col: PAL[i % PAL.length],
+        ph: Math.random() * TAU,
+        sp: 0.8 + Math.random() * 0.5,
+        live: true, x: 0, y: 0, r: 0, bx: 0, by: 0
+      });
     }
-    K.setResult(document.getElementById('blRes'), '');
+    place();
   }
 
   function balloon(x, b, now) {
@@ -33,6 +47,8 @@
     const bx = b.x + sway, by = b.y + bob;
     b.bx = bx; b.by = by;
     if (!b.live) return;
+
+    const m = K.mat();
 
     x.beginPath();
     x.moveTo(bx, by + b.r * 1.12);
@@ -46,18 +62,25 @@
     gr.addColorStop(.32, b.col);
     gr.addColorStop(1, b.col);
     x.fillStyle = gr; x.fill();
+    /* paper gets a drawn edge: a riso balloon is a cut-out, not a glow */
+    if (m.flat) {
+      x.strokeStyle = m.outline || '#241a3a';
+      x.lineWidth = 1.5;
+      x.stroke();
+    }
     x.save(); x.clip();
     const sh = x.createLinearGradient(0, by - b.r, 0, by + b.r * 1.2);
     sh.addColorStop(0, K.light(.25));
     sh.addColorStop(.55, INK(0));
-    sh.addColorStop(1, 'rgba(20,8,50,.35)');
+    sh.addColorStop(1, m.flat ? 'rgba(36,26,58,.16)' : 'rgba(20,8,50,.35)');
     x.fillStyle = sh; x.fillRect(bx - b.r, by - b.r * 1.2, b.r * 2, b.r * 2.4);
     x.beginPath(); x.ellipse(bx - b.r * .34, by - b.r * .5, b.r * .26, b.r * .34, -.5, 0, TAU);
-    x.fillStyle = INK(.6); x.fill();
+    x.fillStyle = K.light(.7); x.fill();
     x.restore();
 
     x.beginPath(); x.moveTo(bx - 5, by + b.r * 1.06); x.lineTo(bx + 5, by + b.r * 1.06); x.lineTo(bx, by + b.r * 1.22);
     x.closePath(); x.fillStyle = b.col; x.fill();
+    if (m.flat) { x.strokeStyle = m.outline || '#241a3a'; x.lineWidth = 1.2; x.stroke(); }
 
     x.textAlign = 'center'; x.textBaseline = 'middle';
     x.fillStyle = INK(.45);
@@ -74,29 +97,45 @@
     parts.push({ x: b.bx, y: b.by, ring: 1, r: b.r, life: 1, col: b.col });
   }
 
-  function pop(b) {
-    /* a second balloon used to re-roll the verdict while the first was still pending */
-    if (done) { if (b.live) { b.live = false; burst(b); try { tone(520, .06, .04, 'sine', 300); } catch (e) {} } return; }
-    if (!b.live || pending.length) return;
-    done = true;
-    b.live = false; b.pop = 0.001;
-    popped++;
-    burst(b);
-    try { tone(560 + Math.random() * 160, .1, .07, 'sine', 260); } catch (e) {}
-    pending.push({ b, t: 0 });
+  /* the chime that says "fresh grid" without a single word */
+  function chime() {
+    try { tone(784, .18, .045, 'sine', 792); } catch (e) {}
+    setTimeout(() => { try { tone(1175, .26, .04, 'sine'); } catch (e) {} }, 90);
+    try { buzz([4, 40, 6]); } catch (e) {}
   }
 
-  function tick(dt, now) {
-    if (!g) return;
+  function pop(b) {
+    if (!b.live) return;
+    b.live = false;
+    popped++;
+    burst(b);
+    try { tone(520 + Math.random() * 180, .09, .06, 'sine', 250); } catch (e) {}
+    try { buzz(7); } catch (e) {}
+    if (popped >= bs.length) refillIn = 560;
+  }
+
+  function draw(dt, now) {
+    const c = cv();
+    if (!c) return;
+    g = K.fit(c);
+    if (Math.abs(g.w - bw) > 1 || Math.abs(g.h - bh) > 1) place();
     const x = g.x;
     x.clearRect(0, 0, g.w, g.h);
 
-    x.fillStyle = INK(.62);
-    x.font = '700 12px "Bricolage Grotesque",system-ui,sans-serif';
-    x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.fillText(popped ? 'one popped — reset for a fresh grid' : 'tap a balloon', g.w / 2, 20);
+    /* one static hint for the whole life of the toy — it never reacts to a pop */
+    K.label(x, 'tap a balloon', g.w / 2, 21, 11);
 
+    /* the beat between the last pop and the next grid */
+    if (refillIn > 0) {
+      refillIn -= dt * 16.667;
+      if (refillIn <= 0) { refillIn = 0; grid(); fade = 0; chime(); }
+    }
+    if (fade < 1) fade = Math.min(1, fade + dt * 0.045);
+
+    x.save();
+    x.globalAlpha = fade;
     bs.forEach(b => balloon(x, b, now));
+    x.restore();
 
     for (let i = parts.length - 1; i >= 0; i--) {
       const p = parts[i];
@@ -115,48 +154,46 @@
       }
       if (p.life <= 0) parts.splice(i, 1);
     }
+  }
 
-    for (let i = pending.length - 1; i >= 0; i--) {
-      const q = pending[i];
-      q.t += dt;
-      q.b.pop = Math.min(1, q.t / 20);
-      if (q.t > 16) {
-        pending.splice(i, 1);
-        K.setResult(document.getElementById('blRes'), q.b.label);
-      }
-    }
+  let warned = false;
+  function tick(dt, now) {
+    try { draw(dt, now); }
+    catch (e) { if (!warned) { warned = true; console.warn('balloons frame', e); } }
   }
 
   function at(e) {
     const r = cv().getBoundingClientRect();
-    const x = e.clientX - r.left, y = e.clientY - r.top;
+    const px = e.clientX - r.left, py = e.clientY - r.top;
     let best = null, bd = 1e9;
     bs.forEach(b => {
       if (!b.live) return;
-      const d = Math.hypot(x - b.bx, y - b.by);
+      const d = Math.hypot(px - b.bx, py - b.by);
       if (d < b.r * 1.18 && d < bd) { bd = d; best = b; }
     });
     return best;
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'balloons', name: 'Balloons', short: 'Balloons', label: 'Grid', noResult: true,
-    body: `<canvas class="toy" id="blCv"></canvas>
-      <div class="res" id="blRes" aria-live="polite"><span class="muted">Pop one</span></div>
-      <button class="btn" id="blGo">Reset</button>`,
-    init(card) {
+    id: 'balloons', name: 'Balloons', short: 'Balloons',
+    noResult: true, button: false,
+    body: `<canvas class="toy" id="blCv"></canvas>`,
+    init() {
       L = K.loop(tick);
       g = K.fit(cv());
-      fill();
-      const c = cv();
-      c.addEventListener('pointerdown', e => { const b = at(e); if (b) pop(b); });
-      card.querySelector('#blGo').onclick = () => { fill(); try { tone(420, .1, .05, 'sine', 660); } catch (e) {} };
+      grid();
+      cv().addEventListener('pointerdown', e => { const b = at(e); if (b) pop(b); });
+      if (cv().clientWidth) L.start();
     },
     enter() {
-      if (!g || Math.abs(g.w - cv().clientWidth) > 1) { g = K.fit(cv()); fill(); }
+      g = K.fit(cv());
+      if (Math.abs(g.w - bw) > 1 || Math.abs(g.h - bh) > 1) place();
       L.start();
     },
     leave() { L.stop(); },
-    action() { fill(); }
+    action() {
+      const live = bs.filter(b => b.live);
+      if (live.length) pop(live[(Math.random() * live.length) | 0]);
+    }
   });
 })();
