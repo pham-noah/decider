@@ -452,9 +452,8 @@ h2{font-size:calc(20px*var(--fs,1))}
 
 <section class="view on" id="wheel">
  <div class="glass stage">
-  <div class="wwrap"><div class="ptr" id="ptr"></div><canvas id="cv" role="img" aria-label="Spinning wheel. Use the Spin button to spin it."></canvas></div>
-  <div class="res" id="wres" aria-live="polite"><span class="muted">Spin the wheel</span></div>
-  <button class="btn" id="spin">Spin</button>
+  <div class="wwrap"><div class="ptr" id="ptr"></div><canvas id="cv" role="img" aria-label="Spinning wheel. Flick it to spin."></canvas></div>
+  <div class="res" id="wres" aria-live="polite"><span class="muted">Flick the wheel to spin</span></div>
  </div>
  <div class="glass panel sheet" id="sheet">
   <button class="grab" id="grab"><i></i><span>Options</span></button>
@@ -474,7 +473,7 @@ h2{font-size:calc(20px*var(--fs,1))}
  <div class="glass center">
   <div class="cwrap"><div class="arc" id="arc"><div class="coin" id="cn"><div class="face"><span id="sA">Heads</span></div><div class="face b"><span id="sB">Tails</span></div></div></div><div class="cshadow" id="csh"></div></div>
   <div class="c3row" id="c3row" hidden></div>
-  <div class="res" id="cres" aria-live="polite"><span class="muted">Tap Flip, or swipe up on the coin</span></div>
+  <div class="res" id="cres" aria-live="polite"><span class="muted">Swipe up on the coin to flip it</span></div>
   <button class="chip tune-btn" data-tune="tunecoin">Coin sides</button>
   <div class="tune" id="tunecoin">
    <div class="pair"><div style="flex:1"><div class="lbl">Side one</div><input type="text" id="iA" value="Heads" maxlength="14"></div><div style="flex:1"><div class="lbl">Side two</div><input type="text" id="iB" value="Tails" maxlength="14"></div></div>
@@ -483,20 +482,18 @@ h2{font-size:calc(20px*var(--fs,1))}
    <div class="lbl">Which side are you hoping for?</div>
    <div class="chips" id="hope" style="margin:0"></div>
   </div>
-  <button class="btn" id="flip">Flip</button>
  </div>
 </section>
 
 <section class="view" id="dice">
  <div class="glass center">
   <div class="tiles" id="tiles"></div>
-  <div class="res" id="dres" aria-live="polite"><span class="muted">Roll the dice</span></div>
+  <div class="res" id="dres" aria-live="polite"><span class="muted">Tap the dice to roll</span></div>
   <button class="chip tune-btn" data-tune="tunedice">Dice</button>
   <div class="tune" id="tunedice">
    <div class="chips" id="dsides" style="justify-content:center;margin:0"></div>
    <div class="chips" id="dcnt" style="justify-content:center;margin:0"></div>
   </div>
-  <button class="btn" id="roll">Roll</button>
  </div>
 </section>
 
@@ -511,20 +508,18 @@ h2{font-size:calc(20px*var(--fs,1))}
 
 <section class="view" id="oracle">
  <div class="glass center">
-  <div class="o8" id="o8" role="button" aria-label="Ask the orb"><div class="o8w"><span id="o8t">Ask</span></div></div>
+  <div class="o8" id="o8" role="button" aria-label="Ask the orb" tabindex="0"><div class="o8w"><span id="o8t">Ask</span></div></div>
   <input type="text" id="oq" maxlength="80" placeholder="Your yes or no question" aria-label="Your question" style="width:min(100%,420px)">
-  <div class="res" id="ores" aria-live="polite"><span class="muted">Think of a question, then ask</span></div>
-  <button class="btn" id="oask">Ask the orb</button>
+  <div class="res" id="ores" aria-live="polite"><span class="muted">Think of a question, then tap the orb</span></div>
  </div>
 </section>
 
 <section class="view" id="bottle">
  <div class="glass center">
   <div class="glass bst" id="bst"><div id="bt"><svg viewBox="0 0 60 200"><defs><linearGradient id="bgl" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".4" stop-color="#9ee8ff" stop-opacity=".55"/><stop offset="1" stop-color="#6f8bff" stop-opacity=".7"/></linearGradient></defs><path d="M23 4h14v6l-2 14c0 6 15 14 15 34v128c0 6-4 10-10 10H20c-6 0-10-4-10-10V58c0-20 15-28 15-34l-2-14z" fill="url(#bgl)" stroke="#fff" stroke-width="2"/><rect x="16" y="90" width="28" height="60" rx="6" fill="rgba(255,255,255,.55)"/><path d="M19 70v110" stroke="#fff" stroke-opacity=".8" stroke-width="3" stroke-linecap="round"/></svg></div></div>
-  <div class="res" id="bres" aria-live="polite"><span class="muted">Spin the bottle</span></div>
+  <div class="res" id="bres" aria-live="polite"><span class="muted">Drag the bottle to spin it</span></div>
   <button class="chip tune-btn" data-tune="tunebottle">Players</button>
   <div class="tune" id="tunebottle"><div class="chips" id="bpl" style="justify-content:center;margin:0"></div></div>
-  <button class="btn" id="bspin">Spin</button>
  </div>
 </section>
 
@@ -534,7 +529,6 @@ h2{font-size:calc(20px*var(--fs,1))}
  <div class="glass center">
   <div class="deckcard glass" id="deckcard"><span class="decktag" id="decktag">Truth or dare</span><span class="decktext" id="decktext">Draw a card and take it</span></div>
   <div class="chips" id="deckmode" style="justify-content:center;margin:0"></div>
-  <button class="btn" id="deckgo">Draw a card</button>
  </div>
 </section>
 
@@ -544,7 +538,6 @@ h2{font-size:calc(20px*var(--fs,1))}
   <div class="res" id="tmerres" aria-live="polite"><span class="muted">Tap to stop the clock — or let it decide for you</span></div>
   <button class="chip tune-btn" data-tune="tunetmer">Options</button>
   <div class="tune" id="tunetmer"><input type="text" id="tmerlist" maxlength="120" placeholder="Go, Stay, Later (comma separated)" aria-label="Options"></div>
-  <button class="btn" id="tmergo">Start the clock</button>
  </div>
 </section>
 
@@ -706,7 +699,7 @@ function flick(){const n=performance.now(),gap=n-lastFlick;lastFlick=n;const amp
 function landFx(wi){if(calm)return;flash={i:wi,t0:performance.now()};(function fl(){draw();if(flash&&performance.now()-flash.t0<1100)requestAnimationFrame(fl);else{flash=null;draw()}})();
  $('.wwrap').animate([{transform:'scale(1)'},{transform:'scale(1.06)',offset:.25},{transform:'scale(.985)',offset:.55},{transform:'scale(1)'}],{duration:620,easing:'ease-out'});
  $('#ptr').animate([{transform:'translateX(-50%) rotate(-32deg)'},{transform:'translateX(-50%) rotate(0)'}],{duration:520,easing:'cubic-bezier(.2,1.7,.4,1)'});tone(90,.22,.22,'sine',45)}
-function spin(pw=.6,dir=1){if(spinning||opts.length<2)return;const windup=!calm&&arguments.length===0;spinning=true;spinBegin();$('#spin').disabled=true;
+function spin(pw=.6,dir=1){if(spinning||opts.length<2)return;const windup=!calm&&arguments.length===0;spinning=true;spinBegin();
  const tot=opts.reduce((a,o)=>a+o.w,0);let r=rnd()*tot,wi=0;for(;wi<opts.length-1;wi++){r-=opts[wi].w;if(r<0)break}
  let a=0;for(let i=0;i<wi;i++)a+=opts[i].w/tot;const f=a+opts[wi].w/tot*(.12+.76*rnd());
  const st=rot,tn=Math.round(3+pw*6)+Math.floor(rnd()*2),delta=dir>0?((((-f*TAU-st)%TAU)+TAU)%TAU)+TAU*tn:-(((((f*TAU+st)%TAU)+TAU)%TAU)+TAU*tn),dur=calm?1800:3600+pw*3600,t0=performance.now(),WU=windup?340:0,off=windup?-dir*.22:0,T=st+delta;let last=idxAt(rot),launched=false;
@@ -721,8 +714,7 @@ function spin(pw=.6,dir=1){if(spinning||opts.length<2)return;const windup=!calm&
   const showM=()=>{if($('.view.on').id==='wheel')moment(w,'Wheel')};if(calm)moment(w,'Wheel');else setTimeout(showM,800);
   if(rmAfter&&opts.length>2)setTimeout(()=>delOpt(wi,true),calm?1500:2300);
   const SET=calm?0:420,t1=performance.now();
-  (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;rot=T+dir*.028*Math.exp(-5*u)*Math.sin(u*Math.PI*3);if(u>=1)rot=T;spinPaint();if(u<1)requestAnimationFrame(settle);else{spinning=false;spinFinish();$('#spin').disabled=false}})(t1)})(t0)}
-$('#spin').onclick=()=>{sheet.classList.remove('open');spin()};
+  (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;rot=T+dir*.028*Math.exp(-5*u)*Math.sin(u*Math.PI*3);if(u>=1)rot=T;spinPaint();if(u<1)requestAnimationFrame(settle);else{spinning=false;spinFinish()}})(t1)})(t0)}
 const save=()=>store.set('d.opts',opts);
 function renderOpts(){const L=$('#olist');L.innerHTML='';
  opts.forEach((o,i)=>{const r=document.createElement('div');r.className='orow';
@@ -746,7 +738,7 @@ function renderHope(){const n=names();$('#sA').textContent=n[0];$('#sB').textCon
 $('#iA').oninput=$('#iB').oninput=renderHope;renderHope();
 /* how many coins: one for a clean heads/tails, more for a count (the old Three coins) */
 let ccoins=store.get('d.ccoins',1),cbusy=false;
-const coinsHint=()=>ccoins>1?ccoins+' coins — the majority decides':'Tap Flip, or swipe up on the coin';
+const coinsHint=()=>ccoins>1?ccoins+' coins — the majority decides':'Swipe up on the coin to flip it';
 function renderCoins(){
  const row=$('#c3row'),cw=document.querySelector('#coin .cwrap');
  row.style.display=ccoins<2?'none':'flex';cw.style.display=ccoins>1?'none':'';
@@ -755,7 +747,7 @@ function renderCoins(){
  $$('#ccoins .chip').forEach(b=>b.onclick=()=>{ccoins=+b.dataset.n;store.set('d.ccoins',ccoins);renderCoins();$('#cres').innerHTML='<span class="muted">'+coinsHint()+'</span>'});
 }
 function flipMany(){
- if(cbusy)return;cbusy=true;$('#flip').disabled=true;$('#cres').innerHTML='<span class="muted">…</span>';
+ if(cbusy)return;cbusy=true;$('#cres').innerHTML='<span class="muted">…</span>';
  const coins=$$('#c3row .c3c'),res=[],dur=calm?450:1000,step=calm?90:240;
  coins.forEach((c,i)=>setTimeout(()=>{
   const heads=rnd()<.5;res[i]=heads;c.textContent='?';c.classList.remove('heads');
@@ -767,11 +759,11 @@ function flipMany(){
   const label=h+' '+A+' · '+t+' '+B;
   show($('#cres'),label);log('Coin',label);chime();buzz([25,35,25]);if(h!==t)confetti();
   later(()=>moment(h>t?A:h<t?B:'Even',coins.length+' coins'));
-  cbusy=false;$('#flip').disabled=false;
+  cbusy=false;
  },(coins.length-1)*step+dur+180);
 }
 renderCoins();
-$('#flip').onclick=()=>{if(ccoins>1){flipMany();return}if(flipping)return;flipping=true;$('#flip').disabled=true;
+function flipCoin(){if(ccoins>1){flipMany();return}if(flipping)return;flipping=true;
  const res=rnd()<.5?0:1,cur=(ang/180)%2,to=ang+360*(5+Math.floor(rnd()*3))+((res-cur+2)%2)*180,dur=calm?700:2100,WU=calm?0:150;
  $('#cres').innerHTML='<span class="muted">…</span>';
  if(WU){$('.cwrap').animate([{transform:'scale(1,1)'},{transform:'scale(1.12,.8)',offset:.7},{transform:'scale(.94,1.1)'}],{duration:WU,easing:'ease-out'});tone(220,.15,.06,'triangle',140);buzz(8)}
@@ -779,9 +771,9 @@ $('#flip').onclick=()=>{if(ccoins>1){flipMany();return}if(flipping)return;flippi
  $('#cn').animate([{transform:`rotateX(${ang}deg)`},{transform:`rotateX(${to}deg)`}],{duration:dur,delay:WU,easing:'cubic-bezier(.25,.6,.25,1)',fill:'both'});
  $('#arc').animate([{transform:'translateY(0) scale(1)',easing:'cubic-bezier(.2,.7,.4,1)'},{transform:'translateY(-120px) scale(1.4)',offset:.42,easing:'cubic-bezier(.6,0,.9,.5)'},{transform:'translateY(0) scale(1)',offset:.88,easing:'ease-out'},{transform:'translateY(-14px) scale(1.04)',offset:.94},{transform:'translateY(0) scale(1)'}],{duration:dur,delay:WU});
  $('#csh').animate([{transform:'scale(1)',opacity:.9},{transform:'scale(.45)',opacity:.35,offset:.42},{transform:'scale(1)',opacity:.9,offset:.88},{transform:'scale(1)',opacity:.9}],{duration:dur,delay:WU});
- setTimeout(()=>{ang=to;const a=$('#cn');a.getAnimations().forEach(x=>x.cancel());a.style.transform=`rotateX(${to}deg)`;flipping=false;$('#flip').disabled=false;
+ setTimeout(()=>{ang=to;const a=$('#cn');a.getAnimations().forEach(x=>x.cancel());a.style.transform=`rotateX(${to}deg)`;flipping=false;
   const n=names();let msg=n[res];if(hope>=0)msg+=hope===res?' — you got what you hoped for':' — notice how that feels';show($('#cres'),msg);$('#cres').style.fontSize='clamp(20px,4.5vw,30px)';chime();buzz([25,35,25]);if(hope===res)confetti();log('Coin',n[res]);coinLand();
-  later(()=>moment(n[res],hope<0?'Coin':hope===res?'You got what you hoped for':'Notice how that feels'))},dur+WU)};
+  later(()=>moment(n[res],hope<0?'Coin':hope===res?'You got what you hoped for':'Notice how that feels'))},dur+WU)}
 function coinLand(){if(calm)return;const r=$('#cn').getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
  ringAt(cx,r.bottom-16,'#ffd36a',230);sparks(cx,cy,'#ffd36a',24,11);sparks(cx,cy,'#ffffff',10,7);shakeEl($('#coin .center'),5,380);
  $('.cwrap').animate([{transform:'scale(1,1)'},{transform:'scale(1.08,.88)',offset:.3},{transform:'scale(.98,1.04)',offset:.6},{transform:'scale(1,1)'}],{duration:440,easing:'ease-out'});
@@ -807,7 +799,7 @@ function dieFaceHTML([val,cls],k,pool){
 /* numerals shown on the cube while it tumbles: sampled from the die's own range,
    never 1..6 on a d20 */
 function facePool(){const p=[];for(let k=0;k<6;k++)p.push(1+Math.floor(rnd()*sides));return p}
-function renderDice(){rollSeq++;rolling=false;$('#roll').disabled=false;DICE.length=0;if(diceRAF){cancelAnimationFrame(diceRAF);diceRAF=0}
+function renderDice(){rollSeq++;rolling=false;DICE.length=0;if(diceRAF){cancelAnimationFrame(diceRAF);diceRAF=0}
  const pool=facePool();
  $('#tiles').innerHTML=Array.from({length:cnt},()=>`<div class="tile${sides===6?' pips':''}"><i class="dglow"></i><i class="dshadow"></i><i class="dspark">✦</i><i class="dspark s2">✦</i><div class="dsh"><div class="dview"><div class="cube">${DIE_FACES.map((f,k)=>dieFaceHTML(f,k,pool)).join('')}</div><div class="badge"><b></b></div></div></div></div>`).join('');
  $('#dsides').innerHTML=[4,6,8,10,12,20,100].map(n=>`<button class="chip${n===sides?' on':''}">d${n}</button>`).join('');
@@ -815,7 +807,18 @@ function renderDice(){rollSeq++;rolling=false;$('#roll').disabled=false;DICE.len
  $$('#dsides .chip').forEach(b=>b.onclick=()=>{sides=+b.textContent.slice(1);renderDice()});
  $$('#dcnt .chip').forEach(b=>b.onclick=()=>{cnt=parseInt(b.textContent);renderDice()})}
 renderDice();
-$('#roll').onclick=()=>{if(rolling)return;rolling=true;$('#roll').disabled=true;
+/* the dice are the button: a tap or a flick rolls them */
+(() => {
+ const t = $('#tiles'); t.style.touchAction = 'none'; let td = null;
+ t.addEventListener('pointerdown', e => { td = { y: e.clientY, t: performance.now() }; });
+ t.addEventListener('pointerup', e => {
+  if (!td) return;
+  const dt = performance.now() - td.t; td = null;
+  if (dt < 600) rollDice();
+ });
+ t.addEventListener('pointercancel', () => { td = null; });
+})();
+function rollDice(){if(rolling)return;rolling=true;
  const seq=++rollSeq,T=$$('.tile'),fin=T.map(()=>1+Math.floor(rnd()*sides));
  const geo=rowGeom(T);let left=T.length;
  $('#dres').innerHTML='<span class="muted">…</span>';
@@ -824,12 +827,12 @@ $('#roll').onclick=()=>{if(rolling)return;rolling=true;$('#roll').disabled=true;
   const delay=calm?0:i*150,dur=calm?240:0;
   const done=()=>{
    if(seq!==rollSeq)return;
-   if(cur!=='dice'){rolling=false;$('#roll').disabled=false;return}
+   if(cur!=='dice'){rolling=false;return}
    landDie(t,fin[i],i);
    if(--left)return;
    const sum=fin.reduce((a,b)=>a+b,0),allMax=sides>2&&fin.every(v=>v===sides);
    show($('#dres'),cnt>1?sum+'  ('+fin.join(' + ')+')':String(sum));chime();buzz([20,30,20]);log('Dice',`${cnt}d${sides} = ${sum}`);if(allMax)confetti();
-   later(()=>moment(String(sum),`${cnt}d${sides}`+(cnt>1?': '+fin.join(' + '):'')+(allMax?' — max roll!':'')));rolling=false;$('#roll').disabled=false;
+   later(()=>moment(String(sum),`${cnt}d${sides}`+(cnt>1?': '+fin.join(' + '):'')+(allMax?' — max roll!':'')));rolling=false;
   };
   if(calm){spinCalm(t,fin[i],dur,delay);setTimeout(done,delay+dur+20)}
   else launchDie(t,fin[i],i,delay,geo[i],seq,done);
@@ -1084,7 +1087,7 @@ function renderBottle(){const S=$('#bst');S.querySelectorAll('.bd').forEach(e=>e
   else if(b.id==='brnd'){brnd=!brnd;store.set('d.brnd',brnd)}
   else bn=parseInt(b.textContent);
   renderBottle()})}
-function spinBottle(pw=.6,dir=1){if(bSpin)return;$('#bt').classList.add('nofx');const windup=!calm&&arguments.length===0;bSpin=true;$('#bspin').disabled=true;$$('.bd').forEach(e=>e.classList.remove('hit','dim'));$('#bres').innerHTML='<span class="muted">…</span>';
+function spinBottle(pw=.6,dir=1){if(bSpin)return;$('#bt').classList.add('nofx');const windup=!calm&&arguments.length===0;bSpin=true;$$('.bd').forEach(e=>e.classList.remove('hit','dim'));$('#bres').innerHTML='<span class="muted">…</span>';
  const w=Math.floor(rnd()*bn),sec=360/bn,tgt=brnd?rnd()*360:(w*sec+(rnd()-.5)*sec*.6),st=bAng,tn=Math.round(3+pw*6)+Math.floor(rnd()*2),delta=dir>0?(((tgt-st)%360)+360)%360+360*tn:-((((st-tgt)%360)+360)%360+360*tn),dur=calm?1500:3200+pw*3200,t0=performance.now(),bt=$('#bt'),WU=windup?320:0,off=windup?-dir*26:0,T=st+delta;let last=-1,launched=false;
  const setR=a=>{bAng=a;bt.style.transform=`translate(-50%,-50%) rotate(${a}deg)`};
  if(windup){tone(300,.3,.04,'triangle',170);buzz(10)}
@@ -1101,14 +1104,18 @@ function spinBottle(pw=.6,dir=1){if(bSpin)return;$('#bt').classList.add('nofx');
   if(pl)bottleFx(pl);else{const r=$('#bst').getBoundingClientRect();sparks(r.left+r.width/2,r.top+r.height/2,PAL[0],18,10)}
   later(()=>moment(m,'Bottle',null,party&&!brnd?w*360/bn+180:null));
   const SET=calm?0:450,t1=performance.now();
-  (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;setR(T+dir*3.2*Math.exp(-5*u)*Math.sin(u*Math.PI*3));if(u>=1)setR(T);if(u<1)requestAnimationFrame(settle);else{bSpin=false;$('#bt').classList.remove('nofx');$('#bspin').disabled=false}})(t1)})(t0)}
+  (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;setR(T+dir*3.2*Math.exp(-5*u)*Math.sin(u*Math.PI*3));if(u>=1)setR(T);if(u<1)requestAnimationFrame(settle);else{bSpin=false;$('#bt').classList.remove('nofx')}})(t1)})(t0)}
 function bottleFx(pl){if(calm)return;const r=pl.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,c=getComputedStyle(pl).backgroundColor;
  ringAt(cx,cy,'#ffffff',200);setTimeout(()=>ringAt(cx,cy,c,320),120);sparks(cx,cy,c,24,11);sparks(cx,cy,'#ffffff',14,8);tone(110,.2,.2,'sine',55);shakeEl($('#bottle .center'),5,380)}
-$('#bspin').onclick=()=>spinBottle();
+/* the deck is the button: tap the card to draw */
+(() => { const c = $('#deckcard'); c.addEventListener('click', () => drawCard()); })();
+/* the clock is the button: tap it to start */
+(() => { const w = $('.tmerwrap'); if (w) w.addEventListener('click', () => startClock()); })();
+
 
 /* shake */
 let shake=false,lastM=null,lastS=0;
-function onMotion(e){const a=e.accelerationIncludingGravity;if(!a)return;const m=Math.abs(a.x||0)+Math.abs(a.y||0)+Math.abs(a.z||0);if(lastM!==null&&Math.abs(m-lastM)>30&&Date.now()-lastS>1800){lastS=Date.now();const v=$('.view.on').id;const shakeInfo={power:Math.min(1,Math.abs(m-lastM)/90),dir:((a.x||0)>=0?1:-1)};if(v==='wheel')spin();else if(v==='coin')$('#flip').click();else if(v==='dice')$('#roll').click();else if(v==='bottle')spinBottle();else if(v==='oracle')askOracle();else if(window.__gameShake)window.__gameShake(shakeInfo)}lastM=m}
+function onMotion(e){const a=e.accelerationIncludingGravity;if(!a)return;const m=Math.abs(a.x||0)+Math.abs(a.y||0)+Math.abs(a.z||0);if(lastM!==null&&Math.abs(m-lastM)>30&&Date.now()-lastS>1800){lastS=Date.now();const v=$('.view.on').id;const shakeInfo={power:Math.min(1,Math.abs(m-lastM)/90),dir:((a.x||0)>=0?1:-1)};if(v==='wheel')spin();else if(v==='coin')flipCoin();else if(v==='dice')rollDice();else if(v==='bottle')spinBottle();else if(v==='oracle')askOracle();else if(window.__gameShake)window.__gameShake(shakeInfo)}lastM=m}
 async function setShake(on){const n=$('#shkn');if(on){if(!('DeviceMotionEvent' in window)){n.textContent='This device has no motion sensor.';return}
  try{if(typeof DeviceMotionEvent.requestPermission==='function'&&await DeviceMotionEvent.requestPermission()!=='granted'){n.textContent='Motion access was declined.';return}}catch(e){n.textContent='Motion access isn’t available here.';return}
  addEventListener('devicemotion',onMotion);n.textContent='Shake the wheel, the coin, the dice, the bottle or the oracle — plus the gacha and plinko.'}else{removeEventListener('devicemotion',onMotion);n.textContent=''}
@@ -1149,21 +1156,21 @@ grab.addEventListener('pointerup',gup);grab.addEventListener('pointercancel',gup
 /* wheel drag + flick */
 let drag=null;cv.style.touchAction='none';
 const wang=e=>{const r=cv.getBoundingClientRect();return Math.atan2(e.clientY-r.top-r.height/2,e.clientX-r.left-r.width/2)};
-cv.addEventListener('pointerdown',e=>{if(spinning)return;cv.setPointerCapture(e.pointerId);drag={a:wang(e),t:performance.now(),v:0,last:idxAt(rot)}});
+cv.addEventListener('pointerdown',e=>{if(spinning)return;try{cv.setPointerCapture(e.pointerId)}catch(err){}drag={a:wang(e),t:performance.now(),v:0,last:idxAt(rot)}});
 cv.addEventListener('pointermove',e=>{if(!drag)return;const a=wang(e);let d=a-drag.a;if(d>Math.PI)d-=TAU;if(d<-Math.PI)d+=TAU;const now=performance.now();drag.v=.7*drag.v+.3*(d/Math.max(1,now-drag.t)*1000);rot+=d;drag.a=a;drag.t=now;const i=idxAt(rot);if(i!==drag.last){drag.last=i;tick();flick();buzz(4)}draw()});
 cv.addEventListener('pointerup',()=>{if(!drag)return;const v=drag.v;drag=null;if(Math.abs(v)>4){sheet.classList.remove('open');spin(Math.min(1,Math.abs(v)/16),v>0?1:-1)}});
 cv.addEventListener('pointercancel',()=>{drag=null});
 /* bottle drag + flick */
 const bst=$('#bst');let bd=null;bst.style.touchAction='none';
 const bang=e=>{const r=bst.getBoundingClientRect();return Math.atan2(e.clientY-r.top-r.height/2,e.clientX-r.left-r.width/2)*180/Math.PI};
-bst.addEventListener('pointerdown',e=>{if(bSpin)return;bmoved=false;bst.setPointerCapture(e.pointerId);bd={a:bang(e),t:performance.now(),v:0,last:-1}});
+bst.addEventListener('pointerdown',e=>{if(bSpin)return;bmoved=false;try{bst.setPointerCapture(e.pointerId)}catch(err){}bd={a:bang(e),t:performance.now(),v:0,last:-1}});
 bst.addEventListener('pointermove',e=>{if(!bd)return;const a=bang(e);let d=a-bd.a;if(d>180)d-=360;if(d<-180)d+=360;if(Math.abs(d)>.5)bmoved=true;const now=performance.now();bd.v=.7*bd.v+.3*(d/Math.max(1,now-bd.t)*1000);bAng+=d;bd.a=a;bd.t=now;$('#bt').style.transform=`translate(-50%,-50%) rotate(${bAng}deg)`;const sec=360/bn,i=Math.round((((bAng%360)+360)%360)/sec)%bn;if(i!==bd.last){if(bd.last>=0)tick();bd.last=i}});
 bst.addEventListener('pointerup',()=>{if(!bd)return;const v=bd.v,mv=bmoved;bd=null;if(!mv)spinBottle();else if(Math.abs(v)>240)spinBottle(Math.min(1,Math.abs(v)/1000),v>0?1:-1)});
 bst.addEventListener('pointercancel',()=>{bd=null});
 /* coin: tap or swipe up */
 const cw=$('.cwrap');let cy=null;cw.style.touchAction='none';
 cw.addEventListener('pointerdown',e=>{cy={y:e.clientY,t:performance.now()}});
-cw.addEventListener('pointerup',e=>{if(!cy)return;const dy=cy.y-e.clientY,dt=performance.now()-cy.t;cy=null;if((dy>40&&dt<500)||(dt<250&&Math.abs(dy)<8))$('#flip').click()});
+cw.addEventListener('pointerup',e=>{if(!cy)return;const dy=cy.y-e.clientY,dt=performance.now()-cy.t;cy=null;if((dy>40&&dt<500)||(dt<250&&Math.abs(dy)<8))flipCoin()});
 /* full-screen result + share card */
 function moment(text,sub,c,rot){$$('#tips').forEach(e=>e.remove());if(!fsr)return;$$('.moment').forEach(e=>e.remove());const o=document.createElement('div');o.className='moment';const t=document.createElement('div');t.className='mt';t.textContent=text;if(sub){const s=document.createElement('div');s.className='ms';s.textContent=sub;t.appendChild(s)}if(rot!=null)t.style.transform=`rotate(${rot}deg)`;o.appendChild(t);if(!calm){o.classList.add('fx');const rr=document.createElement('div');rr.className='rays';o.insertBefore(rr,o.firstChild)}const b=document.createElement('button');b.className='chip';b.textContent='Share';b.onclick=e=>{e.stopPropagation();shareCard(text,sub)};o.appendChild(b);document.body.appendChild(o);const close=()=>{if(o.isConnected&&!o.classList.contains('out')){o.classList.add('out');o.animate([{opacity:1},{opacity:0}],{duration:350}).onfinish=()=>o.remove()}};o.onclick=close;setTimeout(close,5000)}
 function cardBlob(text,sub){const c=document.createElement('canvas');c.width=c.height=1080;const x=c.getContext('2d'),cs=getComputedStyle(document.documentElement),g=x.createLinearGradient(0,0,1080,1080);g.addColorStop(0,cs.getPropertyValue('--a1').trim()||'#ff5fa2');g.addColorStop(1,cs.getPropertyValue('--a2').trim()||'#7b6cff');x.fillStyle=g;x.fillRect(0,0,1080,1080);const h=x.createRadialGradient(300,160,0,300,160,800);h.addColorStop(0,'rgba(255,255,255,.5)');h.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=h;x.fillRect(0,0,1080,1080);x.fillStyle='#fff';x.textAlign='center';x.textBaseline='middle';let fs=190;const ff=s=>`800 ${s}px "Bricolage Grotesque",system-ui,sans-serif`;x.font=ff(fs);while(x.measureText(text).width>940&&fs>50){fs-=8;x.font=ff(fs)}x.fillText(text,540,500);x.font='600 44px system-ui,sans-serif';x.globalAlpha=.9;x.fillText(sub||'',540,640);x.font=ff(40);x.fillText('Decider',540,980);return new Promise(r=>c.toBlob(r,'image/png'))}
@@ -1213,16 +1220,16 @@ cv.addEventListener('pointercancel',()=>{if(tp){clearTimeout(tp.t);tp=null}});
 const OA=[['Yes','y'],['Definitely','y'],['Go for it','y'],['All signs say yes','y'],['Without a doubt','y'],['Very likely','y'],['No','n'],['Don’t count on it','n'],['Very doubtful','n'],['Not this time','n'],['Better not','n'],['My sources say no','n'],['Ask again later','m'],['Hard to say','m'],['Not clear yet','m']];
 const OC={y:'rgba(47,224,196,.85)',n:'rgba(255,111,174,.85)',m:'rgba(255,179,71,.85)'};
 let asking=false;
-function askOracle(){if(asking)return;asking=true;const o=$('#o8'),t=$('#o8t');$('#oask').disabled=true;$('#ores').innerHTML='<span class="muted">…</span>';o.classList.add('swirl');
+function askOracle(){if(asking)return;asking=true;const o=$('#o8'),t=$('#o8t');$('#ores').innerHTML='<span class="muted">…</span>';o.classList.add('swirl');
  if(!calm){o.classList.add('shake');o.animate([{boxShadow:'0 0 0 rgba(150,130,255,0)'},{boxShadow:'0 0 80px rgba(150,130,255,.95)'}],{duration:950,easing:'ease-in'})}
- let n=0;const iv=setInterval(()=>{if(cur!=='oracle'){clearInterval(iv);asking=false;$('#oask').disabled=false;return}tone(180+Math.random()*120+n*25,.06,.05,'sine',90);buzz(6+n);if(!calm){const r=o.getBoundingClientRect(),g=Math.random()*TAU;sparks(r.left+r.width/2+Math.cos(g)*r.width*.48,r.top+r.height/2+Math.sin(g)*r.width*.48,'#c4b5ff',2,3)}if(++n>(calm?2:8))clearInterval(iv)},110);
+ let n=0;const iv=setInterval(()=>{if(cur!=='oracle'){clearInterval(iv);asking=false;return}tone(180+Math.random()*120+n*25,.06,.05,'sine',90);buzz(6+n);if(!calm){const r=o.getBoundingClientRect(),g=Math.random()*TAU;sparks(r.left+r.width/2+Math.cos(g)*r.width*.48,r.top+r.height/2+Math.sin(g)*r.width*.48,'#c4b5ff',2,3)}if(++n>(calm?2:8))clearInterval(iv)},110);
  const a=OA[Math.floor(rnd()*OA.length)];
- setTimeout(()=>{o.classList.remove('shake','swirl');o.style.setProperty('--oc',OC[a[1]]);t.textContent=a[0];t.animate([{opacity:0,transform:'scale(.6)'},{opacity:1,transform:'scale(1)'}],{duration:calm?100:600,easing:'cubic-bezier(.2,1.6,.4,1)'});show($('#ores'),a[0]);chime();buzz([25,35,25]);const q=$('#oq').value.trim();log('Oracle',a[0]+(q?' — '+q.slice(0,40):''));oracleFx(o,a[1]);later(()=>moment(a[0],q||'Oracle'));asking=false;$('#oask').disabled=false},calm?400:950)}
+ setTimeout(()=>{o.classList.remove('shake','swirl');o.style.setProperty('--oc',OC[a[1]]);t.textContent=a[0];t.animate([{opacity:0,transform:'scale(.6)'},{opacity:1,transform:'scale(1)'}],{duration:calm?100:600,easing:'cubic-bezier(.2,1.6,.4,1)'});show($('#ores'),a[0]);chime();buzz([25,35,25]);const q=$('#oq').value.trim();log('Oracle',a[0]+(q?' — '+q.slice(0,40):''));oracleFx(o,a[1]);later(()=>moment(a[0],q||'Oracle'));asking=false},calm?400:950)}
 function oracleFx(o,k){if(calm)return;const r=o.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,c=OC[k];
  ringAt(cx,cy,c,r.width*1.1);setTimeout(()=>ringAt(cx,cy,c,r.width*1.5),140);sparks(cx,cy,c,26,12);sparks(cx,cy,'#ffffff',12,8);
  o.animate([{filter:'brightness(2.4) saturate(1.4)'},{filter:'brightness(1)'}],{duration:650,easing:'ease-out'});
  if(k==='y')confetti();else if(k==='n')tone(200,.4,.1,'sine',90);else shakeEl(o,7,500)}
-$('#oask').onclick=askOracle;$('#o8').onclick=askOracle;
+$('#o8').onclick=askOracle;
 
 
 
@@ -1233,23 +1240,23 @@ let deckMode='any';
 function renderDeck(){$('#deckmode').innerHTML=[['any','Any'],['truth','Truths'],['dare','Dares']].map(([k,n])=>`<button class="chip${deckMode===k?' on':''}" data-k="${k}">${n}</button>`).join('');
  $$('#deckmode .chip').forEach(b=>b.onclick=()=>{deckMode=b.dataset.k;renderDeck()})}
 renderDeck();
-$('#deckgo').onclick=()=>{
+function drawCard(){
  const kinds=deckMode==='any'?['truth','dare']:[deckMode],kind=kinds[Math.floor(rnd()*kinds.length)];
  const pack=CARDS[kind],text=pack[Math.floor(rnd()*pack.length)];
  const c=$('#deckcard');c.animate([{transform:'rotateY(0) scale(1)'},{transform:'rotateY(180deg) scale(.96)'},{transform:'rotateY(360deg) scale(1)'}],{duration:calm?150:560,easing:'cubic-bezier(.3,.8,.3,1)'});
  setTimeout(()=>{$('#decktag').textContent=kind;$('#decktext').textContent=text;show($('#decktext'),text);
-  tone(kind==='truth'?660:420,.16,.08,'triangle');buzz(12);log('Deck',kind+': '+text.slice(0,32))},calm?60:270)};
+  tone(kind==='truth'?660:420,.16,.08,'triangle');buzz(12);log('Deck',kind+': '+text.slice(0,32))},calm?60:270)}
 
 /* timed call */
 let tmerBusy=false,tmerRaf=0;
-$('#tmergo').onclick=()=>{
+function startClock(){
  const opts=($('#tmerlist').value||'Go, Stay, Later').split(',').map(x=>x.trim()).filter(Boolean).slice(0,8);
- if(tmerBusy)return;tmerBusy=true;$('#tmergo').disabled=true;
+ if(tmerBusy)return;tmerBusy=true;
  const q=$('#tmerq'),fill=$('#tmerfill'),resEl=$('#tmerres'),dur=calm?2600:4200,t0=performance.now();
  resEl.innerHTML='<span class="muted">Decide before the bar runs out…</span>';
  let last=0;
  (function step(now){
-  if(cur!=='tmer'){tmerBusy=false;$('#tmergo').disabled=false;fill.style.transform='scaleX(1)';return}
+  if(cur!=='tmer'){tmerBusy=false;fill.style.transform='scaleX(1)';return}
   const p=Math.min(1,(now-t0)/dur);fill.style.transform='scaleX('+(1-p)+')';
   const i=Math.floor(p*opts.length*3)%opts.length;
   if(i!==last){last=i;q.textContent=opts[i];tone(520+i*40,.05,.04,'square')}
@@ -1257,8 +1264,8 @@ $('#tmergo').onclick=()=>{
   const pick=opts[Math.floor(rnd()*opts.length)];
   q.textContent=pick;show(resEl,'Time — '+pick);log('Timer',pick);
   chime();buzz([30,40,30]);confetti();later(()=>moment(pick,'The clock decided'));
-  tmerBusy=false;$('#tmergo').disabled=false;fill.style.transform='scaleX(1)';
- })(t0)};
+  tmerBusy=false;fill.style.transform='scaleX(1)';
+ })(t0)}
 
 /* accessibility */
 function applyA11y(){const r=document.documentElement;r.dataset.contrast=store.get('d.hc',false)?'high':'normal';r.dataset.motion=calm?'reduce':'full';R.setProperty('--fs',store.get('d.fs',1))}

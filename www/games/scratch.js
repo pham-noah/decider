@@ -282,10 +282,9 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'scratch', name: 'Scratch card', short: 'Scratch', label: 'Cards', noResult: true,
+    id: 'scratch', name: 'Scratch card', short: 'Scratch', label: 'Cards', noResult: true, button: false,
     body: `<canvas class="toy" id="scCv"></canvas>
       <div class="res" id="scRes" aria-live="polite"><span class="muted">Rub the foil to reveal</span></div>
-      <button class="btn" id="scGo">Scratch it</button>
       <button class="chip" id="scNew" style="margin-top:10px">New card</button>`,
     init(card) {
       L = K.loop((dt, now) => paint(dt, now));
@@ -326,11 +325,6 @@
       };
       c.addEventListener('pointerup', up);
       c.addEventListener('pointercancel', up);
-      card.querySelector('#scGo').onclick = () => {
-        if (!g) newCard();
-        if (revealed) newCard();
-        else if (autoY < 0 && fading === 0) { autoY = box().y + 2; K.press(380); }
-      };
       card.querySelector('#scNew').onclick = newCard;
     },
     enter() {
