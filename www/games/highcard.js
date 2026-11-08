@@ -65,7 +65,7 @@
     });
     state = 'down'; busy = false;
     $('hcDeck').textContent = deck.length + ' cards left in the deck';
-    $('hcRes').innerHTML = '<span class="muted">Tap the cards to flip</span>';
+    $('hcRes').innerHTML = '<span class="muted">Tap to flip</span>';
   }
 
   function flip() {
@@ -82,7 +82,7 @@
     const a = val(hand[0]), b = val(hand[1]);
     if (a === b) {
       state = 'tie';
-      K.setResult($('hcRes'), 'Tie — dealing again');
+      K.setResult($('hcRes'), 'Tie');
       try { tone(300, 0.18, 0.05, 'sine', 250); } catch (e) {}
       setTimeout(() => { if (state === 'tie') deal(); }, 1100);
       return;
@@ -109,7 +109,7 @@
     id: 'highcard', name: 'High card', short: 'High card', label: 'Deck', noResult: true, button: false,
     body: `<div class="cards3" id="hcHand" style="gap:20px;perspective:900px;min-height:156px;cursor:pointer"></div>
       <div class="lbl" id="hcDeck" style="cursor:pointer">52 cards</div>
-      <div class="res" id="hcRes" aria-live="polite" style="font-size:calc(clamp(20px,5.4vw,30px)*var(--fs,1));min-height:48px"><span class="muted">Tap the cards to deal, tap again to flip</span></div>`,
+      <div class="res" id="hcRes" aria-live="polite" style="font-size:calc(clamp(20px,5.4vw,30px)*var(--fs,1));min-height:48px"><span class="muted">Tap to deal</span></div>`,
     tune: `<div class="lbl">A full deck, shuffled every few deals. One card per option — high card wins.</div>`,
     init() {
       buildSlots();

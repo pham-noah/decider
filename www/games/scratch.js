@@ -278,13 +278,13 @@
     if (!cv() || !cv().clientWidth) return;
     build(false);
     const r = $('scRes');
-    if (r) r.innerHTML = '<span class="muted">Rub the foil to reveal</span>';
+    if (r) r.innerHTML = '<span class="muted">Rub the foil</span>';
   }
 
   K && window.DECIDER_GAMES.push({
     id: 'scratch', name: 'Scratch card', short: 'Scratch', label: 'Cards', noResult: true, button: false,
     body: `<canvas class="toy" id="scCv"></canvas>
-      <div class="res" id="scRes" aria-live="polite"><span class="muted">Rub the foil to reveal</span></div>
+      <div class="res" id="scRes" aria-live="polite"><span class="muted">Rub the foil</span></div>
       <button class="chip" id="scNew" style="margin-top:10px">New card</button>`,
     init(card) {
       L = K.loop((dt, now) => paint(dt, now));

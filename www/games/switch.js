@@ -335,7 +335,7 @@
   K && window.DECIDER_GAMES.push({
     id: 'switch', name: 'Switches', short: 'Switch', label: 'Switch', noResult: true, button: false,
     body: `<canvas class="toy" id="swCv"></canvas>
-      <div class="res" id="swRes" aria-live="polite"><span class="muted">Tap a switch, or sweep the bank</span></div>`,
+      <div class="res" id="swRes" aria-live="polite"><span class="muted">Tap a switch</span></div>`,
     init() {
       L = K.loop(frame); layout();
       const c = cv();

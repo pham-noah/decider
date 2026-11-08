@@ -218,7 +218,7 @@
     if (!grid) return;
     grid.fill(0); heat.fill(0); stamp.fill(0);
     dirty = true;
-    K.setResult(res(), 'Cleared — pick a material and drag');
+    K.setResult(res(), 'Cleared');
   }
 
   /* ---------- render ---------- */
@@ -294,7 +294,7 @@
     id: 'sandspiel', name: 'Sandspiel', short: 'Sand', label: 'Materials', noResult: true, button: false,
     body: `<div class="chips" id="ssMat" style="margin:0 0 10px;gap:6px"></div>
       <canvas class="toy" id="ssCv"></canvas>
-      <div class="res" id="ssRes" aria-live="polite" style="min-height:26px;font-size:calc(clamp(14px,3.3vw,17px)*var(--fs,1))"><span class="muted">Sand — drag to pour</span></div>`,
+      <div class="res" id="ssRes" aria-live="polite" style="min-height:26px;font-size:calc(clamp(14px,3.3vw,17px)*var(--fs,1))"><span class="muted">Drag to pour</span></div>`,
     init(card) {
       L = K.loop(frame);
       const chips = card.querySelector('#ssMat');

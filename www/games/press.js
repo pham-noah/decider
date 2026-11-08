@@ -154,7 +154,7 @@
   K && window.DECIDER_GAMES.push({
     id: 'press', name: 'Big button', short: 'Press', label: 'Press', noResult: true, button: false,
     body: `<canvas class="toy" id="prCv"></canvas>
-      <div class="res" id="prRes" aria-live="polite"><span class="muted">Squash it, feel the spring</span></div>`,
+      <div class="res" id="prRes" aria-live="polite"><span class="muted">Squash it</span></div>`,
     init() {
       L = K.loop(frame); layout();
       const c = cv();

@@ -47,7 +47,7 @@
   function reset() {
     pts = []; drawing = false; body = null; flashes = [];
     resetTargets();
-    K.setResult(res(), 'Draw one line, then watch it loop');
+    K.setResult(res(), 'Draw one line');
   }
 
   /* ---------- stroke ---------- */
@@ -291,7 +291,7 @@
         <span class="muted" style="font-size:calc(12.5px*var(--fs,1));align-self:center">draw once — it loops</span>
       </div>
       <canvas class="toy" id="bkCv"></canvas>
-      <div class="res" id="bkRes" aria-live="polite" style="min-height:26px;font-size:calc(clamp(14px,3.3vw,17px)*var(--fs,1))"><span class="muted">Draw one line, then watch it loop</span></div>`,
+      <div class="res" id="bkRes" aria-live="polite" style="min-height:26px;font-size:calc(clamp(14px,3.3vw,17px)*var(--fs,1))"><span class="muted">Draw one line</span></div>`,
     init(card) {
       L = K.loop(frame);
       card.querySelector('#bkReset').onclick = reset;
@@ -319,7 +319,7 @@
     enter() { L.start(); },
     leave() { L.stop(); drawing = false; },
     action() {                       // fallback: give the traveller a new heading
-      if (!body) { K.setResult(res(), 'Draw a line first — one continuous stroke'); return; }
+      if (!body) { K.setResult(res(), 'One continuous line'); return; }
       body.vx = -body.vx; body.vy = -body.vy;
       flashes.push({ x: body.x, y: body.y, life: 1, vertical: true });
       try { tone(300, .08, .04, 'triangle', 420); } catch (e) {}

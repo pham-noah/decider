@@ -93,7 +93,7 @@
     /* every dart won a label, even one stuck in the score ring */
     if (Math.hypot(d.tx - cx, d.ty - cy) > R * 0.94) {
       stuck = null; aim = null; busy = false; hit = -1;
-      K.setResult(res(), 'Off the board — throw again');
+      K.setResult(res(), 'Off the board');
       try { tone(150, .16, .05, 'triangle', 100); } catch (e) {}
       return;
     }
@@ -150,7 +150,7 @@
 
   K && window.DECIDER_GAMES.push({
     id: 'dart', name: 'Dart', short: 'Dart', label: 'Board', noResult: true, button: false,
-    body: `<canvas class="toy" id="dtCv"></canvas><div class="res" id="dtRes" aria-live="polite"><span class="muted">Drag to aim, let go to throw</span></div><button class="btn" id="dtGo">Throw</button>`,
+    body: `<canvas class="toy" id="dtCv"></canvas><div class="res" id="dtRes" aria-live="polite"><span class="muted">Drag to aim</span></div><button class="btn" id="dtGo">Throw</button>`,
     init(card) {
       /* one label per sector, and as many sectors as divide evenly: 6 stays a
          dartboard, 4/5 options get their own sectors instead of a 1.2x bias */

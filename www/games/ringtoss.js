@@ -528,7 +528,7 @@
 
   K && window.DECIDER_GAMES.push({
     id: 'ringtoss', name: 'Ring Toss', short: 'Rings', label: 'Pegs', noResult: true, button: false,
-    body: '<canvas class="toy" id="rtCv"></canvas><div class="res" id="rtRes" aria-live="polite"><span class="muted">Flick a ring at a post</span></div>',
+    body: '<canvas class="toy" id="rtCv"></canvas><div class="res" id="rtRes" aria-live="polite"><span class="muted">Flick up</span></div>',
     init() {
       try { best = +store.get('d.rtbest', 0) || 0; } catch (e) {}
       layout(); L = K.loop(frame);

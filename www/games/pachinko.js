@@ -177,7 +177,7 @@
   window.DECIDER_GAMES.push({
     id: 'pachinko', name: 'Pachinko', short: 'Pachinko', label: 'Power', noResult: true, button: false,
     body: `<canvas class="toy" id="paCv"></canvas>
-      <div class="res" id="paRes" aria-live="polite"><span class="muted">Hold to charge, release to fire</span></div>
+      <div class="res" id="paRes" aria-live="polite"><span class="muted">Hold, then release</span></div>
       <button class="btn" id="paGo">Hold to fire</button>`,
     tune: `<div class="lbl">Peg bounce</div><div class="chips" id="paBounce" style="margin:0"></div>`,
     init(card) {

@@ -136,7 +136,7 @@
   K && window.DECIDER_GAMES.push({
     id: 'knob', name: 'Knob', short: 'Knob', label: 'Knob', noResult: true, button: false,
     body: `<canvas class="toy" id="knCv"></canvas>
-      <div class="res" id="knRes" aria-live="polite"><span class="muted">Turn it, let it click</span></div>`,
+      <div class="res" id="knRes" aria-live="polite"><span class="muted">Turn it</span></div>`,
     init() {
       L = K.loop(frame); g = K.fit(cv());
       const c = cv();

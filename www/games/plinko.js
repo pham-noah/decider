@@ -162,7 +162,7 @@
   K && window.DECIDER_GAMES.push({
     id: 'plinko', name: 'Plinko', short: 'Plinko', label: 'Pegs', noResult: true, button: false,
     body: `<canvas class="toy" id="pkCv"></canvas>
-      <div class="res" id="pkRes" aria-live="polite"><span class="muted">Drop a ball and let the pegs decide</span></div>
+      <div class="res" id="pkRes" aria-live="polite"><span class="muted">Drop a ball</span></div>
       <button class="btn" id="pkGo">Drop</button>`,
     tune: `<div class="lbl">Rows of pegs</div><div class="chips" id="pkRows" style="margin:0"></div>`,
     init(card) {

@@ -454,7 +454,7 @@ h2{font-size:calc(20px*var(--fs,1))}
 <section class="view on" id="wheel">
  <div class="glass stage">
   <div class="wwrap"><div class="ptr" id="ptr"></div><canvas id="cv" role="img" aria-label="Spinning wheel. Flick it to spin."></canvas></div>
-  <div class="res" id="wres" aria-live="polite"><span class="muted">Flick the wheel to spin</span></div>
+  <div class="res" id="wres" aria-live="polite"><span class="muted">Flick to spin</span></div>
  </div>
  <div class="glass panel sheet" id="sheet">
   <button class="grab" id="grab"><i></i><span>Options</span></button>
@@ -474,7 +474,7 @@ h2{font-size:calc(20px*var(--fs,1))}
  <div class="glass center">
   <div class="cwrap"><div class="arc" id="arc"><div class="coin" id="cn"><div class="face"><span id="sA">Heads</span></div><div class="face b"><span id="sB">Tails</span></div></div></div><div class="cshadow" id="csh"></div></div>
   <div class="c3row" id="c3row" hidden></div>
-  <div class="res" id="cres" aria-live="polite"><span class="muted">Swipe up on the coin to flip it</span></div>
+  <div class="res" id="cres" aria-live="polite"><span class="muted">Swipe up to flip</span></div>
   <button class="chip tune-btn" data-tune="tunecoin">Coin sides</button>
   <div class="tune" id="tunecoin">
    <div class="pair"><div style="flex:1"><div class="lbl">Side one</div><input type="text" id="iA" value="Heads" maxlength="14"></div><div style="flex:1"><div class="lbl">Side two</div><input type="text" id="iB" value="Tails" maxlength="14"></div></div>
@@ -489,7 +489,7 @@ h2{font-size:calc(20px*var(--fs,1))}
 <section class="view" id="dice">
  <div class="glass center">
   <div class="tiles" id="tiles"></div>
-  <div class="res" id="dres" aria-live="polite"><span class="muted">Tap the dice to roll</span></div>
+  <div class="res" id="dres" aria-live="polite"><span class="muted">Tap to roll</span></div>
   <button class="chip tune-btn" data-tune="tunedice">Dice</button>
   <div class="tune" id="tunedice">
    <div class="chips" id="dsides" style="justify-content:center;margin:0"></div>
@@ -511,14 +511,14 @@ h2{font-size:calc(20px*var(--fs,1))}
  <div class="glass center">
   <div class="o8" id="o8" role="button" aria-label="Ask the orb" tabindex="0"><div class="o8w"><span id="o8t">Ask</span></div></div>
   <input type="text" id="oq" maxlength="80" placeholder="Your yes or no question" aria-label="Your question" style="width:min(100%,420px)">
-  <div class="res" id="ores" aria-live="polite"><span class="muted">Think of a question, then tap the orb</span></div>
+  <div class="res" id="ores" aria-live="polite"><span class="muted">Tap the orb</span></div>
  </div>
 </section>
 
 <section class="view" id="bottle">
  <div class="glass center">
   <div class="glass bst" id="bst"><div id="bt"><svg viewBox="0 0 60 200"><defs><linearGradient id="bgl" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".4" stop-color="#9ee8ff" stop-opacity=".55"/><stop offset="1" stop-color="#6f8bff" stop-opacity=".7"/></linearGradient></defs><path d="M23 4h14v6l-2 14c0 6 15 14 15 34v128c0 6-4 10-10 10H20c-6 0-10-4-10-10V58c0-20 15-28 15-34l-2-14z" fill="url(#bgl)" stroke="#fff" stroke-width="2"/><rect x="16" y="90" width="28" height="60" rx="6" fill="rgba(255,255,255,.55)"/><path d="M19 70v110" stroke="#fff" stroke-opacity=".8" stroke-width="3" stroke-linecap="round"/></svg></div></div>
-  <div class="res" id="bres" aria-live="polite"><span class="muted">Drag the bottle to spin it</span></div>
+  <div class="res" id="bres" aria-live="polite"><span class="muted">Drag to spin</span></div>
   <button class="chip tune-btn" data-tune="tunebottle">Players</button>
   <div class="tune" id="tunebottle"><div class="chips" id="bpl" style="justify-content:center;margin:0"></div></div>
  </div>
@@ -536,7 +536,7 @@ h2{font-size:calc(20px*var(--fs,1))}
 <section class="view" id="tmer">
  <div class="glass center">
   <div class="tmerwrap"><span class="tmerq" id="tmerq">?</span><div class="tmerbar"><i id="tmerfill"></i></div></div>
-  <div class="res" id="tmerres" aria-live="polite"><span class="muted">Tap to stop the clock — or let it decide for you</span></div>
+  <div class="res" id="tmerres" aria-live="polite"><span class="muted">Tap to stop</span></div>
   <button class="chip tune-btn" data-tune="tunetmer">Options</button>
   <div class="tune" id="tunetmer"><input type="text" id="tmerlist" maxlength="120" placeholder="Go, Stay, Later (comma separated)" aria-label="Options"></div>
  </div>
@@ -715,7 +715,7 @@ function spin(pw=.6,dir=1){if(spinning||opts.length<2)return;const windup=!calm&
   const showM=()=>{if($('.view.on').id==='wheel')moment(w,'Wheel')};if(calm)moment(w,'Wheel');else setTimeout(showM,800);
   if(rmAfter&&opts.length>2)setTimeout(()=>delOpt(wi,true),calm?1500:2300);
   const SET=calm?0:420,t1=performance.now();
-  (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;rot=T+dir*.028*Math.exp(-5*u)*Math.sin(u*Math.PI*3);if(u>=1)rot=T;spinPaint();if(ep!==viewEpoch){spinning=false;$('#wres').innerHTML='<span class="muted">Flick the wheel to spin</span>';return}
+  (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;rot=T+dir*.028*Math.exp(-5*u)*Math.sin(u*Math.PI*3);if(u>=1)rot=T;spinPaint();if(ep!==viewEpoch){spinning=false;$('#wres').innerHTML='<span class="muted">Flick to spin</span>';return}
   if(u<1)requestAnimationFrame(settle);else{spinning=false;spinFinish()}})(t1)})(t0)}
 const save=()=>store.set('d.opts',opts);
 function renderOpts(){const L=$('#olist');L.innerHTML='';
@@ -740,7 +740,7 @@ function renderHope(){const n=names();$('#sA').textContent=n[0];$('#sB').textCon
 $('#iA').oninput=$('#iB').oninput=renderHope;renderHope();
 /* how many coins: one for a clean heads/tails, more for a count (the old Three coins) */
 let ccoins=store.get('d.ccoins',1),cbusy=false;
-const coinsHint=()=>ccoins>1?ccoins+' coins — the majority decides':'Swipe up on the coin to flip it';
+const coinsHint=()=>ccoins>1?ccoins+' coins — the majority decides':'Swipe up to flip';
 function renderCoins(){
  const row=$('#c3row'),cw=document.querySelector('#coin .cwrap');
  row.style.display=ccoins<2?'none':'flex';cw.style.display=ccoins>1?'none':'';
@@ -1116,7 +1116,7 @@ function spinBottle(pw=.6,dir=1){if(bSpin)return;const ep=viewEpoch;$('#bt').cla
   if(pl)bottleFx(pl);else{const r=$('#bst').getBoundingClientRect();sparks(r.left+r.width/2,r.top+r.height/2,PAL[0],18,10)}
   later(()=>moment(m,'Bottle',null,party&&!brnd?w*360/bn+180:null));
   const SET=calm?0:450,t1=performance.now();
-  (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;setR(T+dir*3.2*Math.exp(-5*u)*Math.sin(u*Math.PI*3));if(u>=1)setR(T);if(ep!==viewEpoch){bSpin=false;$('#bt').classList.remove('nofx');$('#bres').innerHTML='<span class="muted">Drag the bottle to spin it</span>';return}
+  (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;setR(T+dir*3.2*Math.exp(-5*u)*Math.sin(u*Math.PI*3));if(u>=1)setR(T);if(ep!==viewEpoch){bSpin=false;$('#bt').classList.remove('nofx');$('#bres').innerHTML='<span class="muted">Drag to spin</span>';return}
   if(u<1)requestAnimationFrame(settle);else{bSpin=false;$('#bt').classList.remove('nofx')}})(t1)})(t0)}
 function bottleFx(pl){if(calm)return;const r=pl.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,c=getComputedStyle(pl).backgroundColor;
  ringAt(cx,cy,'#ffffff',200);setTimeout(()=>ringAt(cx,cy,c,320),120);sparks(cx,cy,c,24,11);sparks(cx,cy,'#ffffff',14,8);tone(110,.2,.2,'sine',55);shakeEl($('#bottle .center'),5,380)}
@@ -1279,7 +1279,7 @@ function startClock(){
  tmerOpts=tmerOptions();
  if(tmerBusy)return;tmerBusy=true;
  const q=$('#tmerq'),fill=$('#tmerfill'),resEl=$('#tmerres'),dur=calm?2600:4200,t0=performance.now();
- resEl.innerHTML='<span class="muted">Tap to stop it on the one you want…</span>';
+ resEl.innerHTML='<span class="muted">Tap to stop</span>';
  tmerLast=0;q.textContent=tmerOpts[0];
  (function step(now){
   if(cur!=='tmer'){tmerBusy=false;fill.style.transform='scaleX(1)';return}
@@ -1427,9 +1427,9 @@ let viewEpoch=0,dockT=0;
    view nobody is looking at */
 function abandonView(v){
  if(!v)return;
- if(v==='wheel'&&spinning){spinning=false;$('#wres').innerHTML='<span class="muted">Flick the wheel to spin</span>'}
+ if(v==='wheel'&&spinning){spinning=false;$('#wres').innerHTML='<span class="muted">Flick to spin</span>'}
  if(v==='coin'&&flipping){flipping=false;$('#cres').innerHTML='<span class="muted">'+coinsHint()+'</span>'}
- if(v==='bottle'&&bSpin){bSpin=false;$('#bt').classList.remove('nofx');$('#bres').innerHTML='<span class="muted">Drag the bottle to spin it</span>'}
+ if(v==='bottle'&&bSpin){bSpin=false;$('#bt').classList.remove('nofx');$('#bres').innerHTML='<span class="muted">Drag to spin</span>'}
 }
 function goTo(v){
  if(!document.getElementById(v))return;

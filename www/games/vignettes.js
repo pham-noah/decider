@@ -146,7 +146,7 @@
 
   function announce(i) {
     const el = resEl(); if (!el) return;
-    el.innerHTML = '<span class="muted">' + SHAPES[i].name + ' — ' + SHAPES[i].caption + '</span>';
+    el.innerHTML = '<span class="muted">' + SHAPES[i].name +  + '</span>';
   }
 
   function burst(i) {
@@ -471,7 +471,7 @@
   K && window.DECIDER_GAMES.push({
     id: 'vignettes', name: 'Vignettes', short: 'Vignettes', label: 'Object', noResult: true, button: false,
     body: `<canvas class="toy" id="vgCv"></canvas>
-      <div class="res" id="vgRes" aria-live="polite"><span class="muted">Drag to turn the ring — tap a dot to jump</span></div>`,
+      <div class="res" id="vgRes" aria-live="polite"><span class="muted">Drag the ring</span></div>`,
     init() {
       L = K.loop(frame); geometry(); const c = cv();
       if (c && c.clientWidth > 2) { paint(1); L.start(); }

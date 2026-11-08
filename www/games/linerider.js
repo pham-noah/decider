@@ -52,7 +52,7 @@
     rider = null; parts = []; dist = 0;
     running = false; paused = false; crashed = false; over = false;
     sync();
-    K.setResult(res(), 'Drag on the snow to draw a track');
+    K.setResult(res(), 'Draw a track');
   }
 
   /* ---------- sled ---------- */
@@ -171,8 +171,8 @@
       b.classList.toggle('on', running && !paused);
     }
     if (crashed) K.setResult(res(), 'Crashed · ' + Math.round(dist) + ' m — draw a ramp');
-    else if (!strokes.length) K.setResult(res(), 'Drag on the snow to draw a track');
-    else if (!running) K.setResult(res(), 'Ready — press Go');
+    else if (!strokes.length) K.setResult(res(), 'Draw a track');
+    else if (!running) K.setResult(res(), 'Press Go');
   }
 
   function tickText() {
@@ -329,7 +329,7 @@
   };
 
   function toggle() {
-    if (!strokes.length && !stroke) { K.setResult(res(), 'Draw a track first — drag on the snow'); return; }
+    if (!strokes.length && !stroke) { K.setResult(res(), 'Draw a track first'); return; }
     if (running) { paused = !paused; sync(); return; }
     if (!rider || over) { crashed = false; over = false; parts = []; if (!spawn()) return; }
     running = true; paused = false;
@@ -344,7 +344,7 @@
         <button class="chip" id="lrClear">↺ Clear</button>
       </div>
       <canvas class="toy" id="lrCv"></canvas>
-      <div class="res" id="lrRes" aria-live="polite" style="min-height:26px;font-size:calc(clamp(14px,3.3vw,17px)*var(--fs,1))"><span class="muted">Drag on the snow to draw a track</span></div>`,
+      <div class="res" id="lrRes" aria-live="polite" style="min-height:26px;font-size:calc(clamp(14px,3.3vw,17px)*var(--fs,1))"><span class="muted">Draw a track</span></div>`,
     init(card) {
       L = K.loop(frame);
       card.querySelector('#lrGo').onclick = toggle;

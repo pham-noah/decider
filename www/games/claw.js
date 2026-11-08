@@ -42,7 +42,7 @@
   }
   function miss() {
     state = 'aim'; pending = null;
-    K.setResult(document.getElementById('clRes'), 'Nothing — try again');
+    K.setResult(document.getElementById('clRes'), 'Nothing');
     try { tone(150, 0.22, 0.06, 'sawtooth', 90); } catch (e) {}
   }
   function win(cap) {
@@ -170,7 +170,7 @@
   K && window.DECIDER_GAMES.push({
     id: 'claw', name: 'Claw', short: 'Claw', label: 'Prizes', noResult: true, button: false,
     body: `<canvas class="toy" id="clCv" style="max-height:min(62vh,max(240px,calc(100svh - 530px)))"></canvas>
-      <div class="res" id="clRes" aria-live="polite" style="min-height:40px;font-size:calc(clamp(22px,5.2vw,30px)*var(--fs,1))"><span class="muted">Tap a capsule to drop the claw — or drag to aim, then let go</span></div>`,
+      <div class="res" id="clRes" aria-live="polite" style="min-height:40px;font-size:calc(clamp(22px,5.2vw,30px)*var(--fs,1))"><span class="muted">Tap a capsule</span></div>`,
     tune: `<div class="lbl">Every capsule hides one of your options. Drag, grab, hope.</div>`,
     init() {
       L = K.loop(dt => { step(dt); draw(); });

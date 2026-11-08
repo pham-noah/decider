@@ -118,7 +118,7 @@
   K && window.DECIDER_GAMES.push({
     id: 'ball', name: 'Stress ball', short: 'Ball', label: 'Ball', noResult: true, button: false,
     body: `<canvas class="toy" id="sbCv"></canvas>
-      <div class="res" id="sbRes" aria-live="polite"><span class="muted">Squeeze it, let it jiggle</span></div>`,
+      <div class="res" id="sbRes" aria-live="polite"><span class="muted">Squeeze it</span></div>`,
     init() {
       L = K.loop(frame); g = K.fit(cv());
       const c = cv();

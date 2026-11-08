@@ -496,7 +496,7 @@
   window.DECIDER_GAMES.push({
     id: 'coinpusher', name: 'Coin Pusher', short: 'Pusher', label: 'Shelf', noResult: true, button: false,
     body: '<canvas class="toy" id="cpCv"></canvas>' +
-      '<div class="res" id="cpRes" aria-live="polite"><span class="muted">Tap the coin slot to feed the pusher</span></div>',
+      '<div class="res" id="cpRes" aria-live="polite"><span class="muted">Tap the slot</span></div>',
     init() {
       layout();
       L = K.loop(frame);

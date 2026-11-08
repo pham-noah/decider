@@ -329,7 +329,7 @@
   K && window.DECIDER_GAMES.push({
     id: 'band', name: 'Rubber band', short: 'Band', label: 'Band', noResult: true, button: false,
     body: `<canvas class="toy" id="bdCv"></canvas>
-      <div class="res" id="bdRes" aria-live="polite"><span class="muted">Pull the band, let it snap</span></div>`,
+      <div class="res" id="bdRes" aria-live="polite"><span class="muted">Pull, then let go</span></div>`,
     init() {
       L = K.loop(frame); layout();
       const c = cv();

@@ -128,7 +128,7 @@
   K && window.DECIDER_GAMES.push({
     id: 'bubblewrap', name: 'Bubble wrap', short: 'Wrap', label: 'Wrap', noResult: true, button: false,
     body: `<canvas class="toy" id="bw2Cv"></canvas>
-      <div class="res" id="bw2Res" aria-live="polite"><span class="muted">Pop a sheet, let it refill</span></div>`,
+      <div class="res" id="bw2Res" aria-live="polite"><span class="muted">Pop a sheet</span></div>`,
     init() {
       L = K.loop(frame); layout();
       const c = cv();

@@ -37,12 +37,12 @@
     if (id === 'lamp') {
       lamp.on = !lamp.on; sfx(lamp.on ? 540 : 360, .08, .05, 'triangle', lamp.on ? 820 : 240); hap(8); say(lamp.on ? 'the bulb warms up and the wall goes amber' : 'the room falls back into blue');
     } else if (id === 'plant') {
-      plant.v += (p.x < g.G.pl.x ? -1 : 1) * .19; sfx(330, .12, .05, 'sine', 200); hap(10); say('the leaves nod, then think better of it');
+      plant.v += (p.x < g.G.pl.x ? -1 : 1) * .19; sfx(330, .12, .05, 'sine', 200); hap(10); say('the leaves nod');
     } else if (id === 'cup') {
-      cup.v += (p.x < g.G.cu.x ? -1 : 1) * .22; cup.wait = .18; sfx(880, .06, .04, 'sine', 1240); hap(12); say('the cup rocks — a drop goes over the edge');
+      cup.v += (p.x < g.G.cu.x ? -1 : 1) * .22; cup.wait = .18; sfx(880, .06, .04, 'sine', 1240); hap(12); say('a drop spills');
     } else if (id === 'radio') {
       radio.until = t + 150; radio.spawn = 0; [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => { if (t < radio.until + 6) sfx(f, .16, .035, 'square', f * 1.02); }, i * 190));
-      hap(8); say('a four-note loop and a very small light show');
+      hap(8); say('four notes, small lights');
     } else if (id === 'drawer') {
       drawer.want = drawer.want > .5 ? 0 : 1; sfx(170, .2, .06, 'sawtooth', drawer.want ? 240 : 110); hap(16);
       say(drawer.want ? 'the drawer rolls out — a marble, and a folded note' : 'the drawer slides shut');
@@ -50,15 +50,15 @@
       /* the glass answers where you knocked */
       starHit = { x: p.x, y: p.y, a: 1 };
       sfx(660, .12, .04, 'sine', 1400); hap(6);
-      say('you tap the glass — a star flares and the moon dims for a moment');
+      say('a star flares');
     } else if (id === 'clock') {
       /* where you flick it, and how far from the pin, decides the spin */
       const c = g.G.clk, dx = p.x - c.x, dy = p.y - c.y;
       const sp = Math.min(1, Math.hypot(dx, dy) / (c.r * 2.2));
       clock.v += (dx >= 0 ? 1 : -1) * (.25 + sp * 1.6);
-      sfx(1240, .04, .035, 'square'); hap(6); say('the hands spin; the afternoon gets away from you');
+      sfx(1240, .04, .035, 'square'); hap(6); say('the afternoon slips');
     } else if (id === 'cat') {
-      cat.tx = p.x; cat.ty = p.y; cat.v = 9; sfx(780, .07, .05, 'triangle', 1180); hap(8); say('the cat bats at your finger, missing on purpose');
+      cat.tx = p.x; cat.ty = p.y; cat.v = 9; sfx(780, .07, .05, 'triangle', 1180); hap(8); say('the cat misses on purpose');
     }
   }
   function step(dt) {
@@ -260,7 +260,7 @@
   K && window.DECIDER_GAMES.push({
     id: 'windowsill', name: 'Windowsill', short: 'Windowsill', label: 'Sill', noResult: true, button: false,
     body: `<canvas class="toy" id="wsCv"></canvas>
-      <div class="res" id="wsRes" aria-live="polite"><span class="muted">Poke anything on the sill — nothing to win</span></div>`,
+      <div class="res" id="wsRes" aria-live="polite"><span class="muted">Poke anything</span></div>`,
     init(card) {
       for (let i = 0; i < 34; i++) stars.push({ x: rnd(), y: rnd(), r: .5 + rnd() * 1.1, p: rnd() * TAU }); L = K.loop(frame); const c = cv();
       c.addEventListener('pointerdown', e => {
