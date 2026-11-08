@@ -70,7 +70,12 @@
     /* the lane is measured by the short side of the canvas: a wide, shallow card must
        not blow the pin rack up past the top of the frame */
     const halfNear = Math.min(w * 0.445, h * 0.42);
-    const yNear = h * 0.985, yFar = h * 0.185;
+    const yNear = h * 0.985;
+    /* the scorecard owns the top band, and the rack is tall: keep the far end of
+       the lane below it or the pins stand behind the card on a short canvas */
+    const cardTop = 42;
+    const pinTall = 0.38 * (halfNear * 0.60) / HALF;
+    const yFar = Math.max(h * 0.185, cardTop + pinTall);
     const KV = 0.95, SF = 1 / (1 + KV);
     return {
       w, h, halfNear, yNear, yFar, KV, SF,
@@ -237,7 +242,7 @@
     }
     pendingFresh = fresh;
 
-    if (resEl()) K.setResult(resEl(), down + ' down · frame ' + (fi + 1) + ' · score ' + calcScore());
+    if (resEl()) K.setResult(resEl(), down + ' down · frame ' + (fi + 1) + ' · score ' + calcScore() + ' · best ' + best);
     try {
       if (down === 10) tone(660, .22, .07, 'triangle', 990);
       else tone(330 + down * 22, .13, .05, 'triangle', 460);
@@ -677,7 +682,7 @@
   }
 
   function miniRack(x, w, m) {
-    const rx = w - 30, ry = 22;
+    const rx = w - 30, ry = 52;
     x.save();
     for (const p of pins) {
       const r = p.num <= 1 ? 0 : p.num <= 3 ? 1 : p.num <= 6 ? 2 : 3;
@@ -690,9 +695,102 @@
     x.restore();
   }
 
+  /* ---------- scorecard ----------
+     Ten frames, the marks in each, and the running total underneath. A strike
+     or a spare cannot be totalled until the balls it borrows are bowled, so the
+     frame shows its mark first and its number when the bonus exists — exactly
+     as a paper card is kept. */
+  function marksFor(i) {
+    const fr = scores[i] || [], out = [];
+    let stand = 10;
+    for (const r of fr) {
+      if (r === 10 && stand === 10) { out.push('X'); stand = 10; }
+      else if (r === stand) { out.push('/'); stand = 10; }
+      else { out.push(r === 0 ? '-' : String(r)); stand -= r; }
+    }
+    return out;
+  }
+
+  function totalsByFrame() {
+    const out = new Array(10).fill(null);
+    const flat = (from) => {
+      const o = [];
+      for (let i = from; i <= 9; i++) for (const r of (scores[i] || [])) o.push(r);
+      return o;
+    };
+    let total = 0;
+    for (let i = 0; i < 9; i++) {
+      const fr = scores[i] || [];
+      if (!fr.length) break;
+      if (fr[0] === 10) {
+        const nx = flat(i + 1);
+        if (nx.length < 2) break;
+        total += 10 + nx[0] + nx[1];
+      } else if (fr.length >= 2) {
+        if (fr[0] + fr[1] === 10) {
+          const nx = flat(i + 1);
+          if (!nx.length) break;
+          total += 10 + nx[0];
+        } else total += fr[0] + fr[1];
+      } else break;
+      out[i] = total;
+    }
+    const t = scores[9] || [];
+    if (t.length) {
+      const done = t.length >= 3 || (t.length === 2 && t[0] !== 10 && t[0] + t[1] < 10);
+      if (done) out[9] = total + t.reduce((a, b) => a + b, 0);
+    }
+    return out;
+  }
+
+  function scorecard(x, m) {
+    const w = geo.w;
+    const ink = m.flat ? '#241a3a' : '#fffdf8';
+    const dim = m.flat ? 'rgba(36,26,58,.55)' : 'rgba(255,255,255,.62)';
+    const faint = m.flat ? 'rgba(36,26,58,.09)' : 'rgba(255,255,255,.06)';
+    const line = m.flat ? 'rgba(36,26,58,.22)' : 'rgba(255,255,255,.24)';
+    const font = (wt, px) => wt + ' ' + px + 'px "Bricolage Grotesque",system-ui,sans-serif';
+    const tot = totalsByFrame();
+    /* on a narrow card five frames at a time, scrolled to the one being bowled */
+    const wide = w >= 420, n = wide ? 10 : 5;
+    const first = wide ? 0 : clamp(fi - 2, 0, 5);
+    const pad = 10, gap = 3;
+    const cw = (w - pad * 2 - gap * (n - 1)) / n;
+    const y0 = 5, ch = 30;
+    x.save();
+    x.textBaseline = 'middle';
+    for (let k = 0; k < n; k++) {
+      const i = first + k, cx = pad + k * (cw + gap);
+      const cur = i === fi && !gameOver;
+      x.beginPath(); K.rr(x, cx, y0, cw, ch, 5);
+      x.fillStyle = cur ? (m.flat ? 'rgba(36,26,58,.10)' : 'rgba(255,255,255,.15)') : faint;
+      x.fill();
+      x.strokeStyle = cur ? ink : line; x.lineWidth = cur ? 1.6 : 1; x.stroke();
+      x.fillStyle = dim; x.font = font(700, 7); x.textAlign = 'center';
+      x.fillText(String(i + 1), cx + cw / 2, y0 + 4);
+      const mk = marksFor(i), slots = i === 9 ? 3 : 2, bw = (cw - 6) / slots;
+      for (let sl = 0; sl < slots; sl++) {
+        const bx = cx + 3 + sl * bw;
+        x.strokeStyle = line; x.lineWidth = .8;
+        x.strokeRect(bx, y0 + 7.5, bw, 10);
+        const t = mk[sl];
+        if (t) {
+          x.fillStyle = (t === 'X' || t === '/') ? ink : dim;
+          x.font = font(800, 9); x.textAlign = 'center';
+          x.fillText(t, bx + bw / 2, y0 + 12.8);
+        }
+      }
+      if (tot[i] !== null) {
+        x.fillStyle = ink; x.font = font(800, 11); x.textAlign = 'right';
+        x.fillText(String(tot[i]), cx + cw - 4, y0 + 24);
+      }
+    }
+    x.restore();
+  }
+
   function drawHUD(x, m) {
     const down = pins.filter((p) => !p.stand).length;
-    K.label(x, 'FR ' + (fi + 1) + '/10 · ' + calcScore() + ' · best ' + best, geo.w - 14, 20, 11, 'right');
+    scorecard(x, m);
     if (phase === 'aim') {
       /* the angle bar, up the left edge, matching the power bar on the right:
          a track under the ball read as a rail it was sliding along */
@@ -722,8 +820,8 @@
       K.label(x, stage === 'power' ? 'POWER' : 'power', bx - 8, by - 9, 10, 'right');
     }
     if (phase === 'roll' || phase === 'settle' || phase === 'done') {
-      K.label(x, down + ' DOWN', 14, 20, 11, 'left');
-      miniRack(x, geo.w, m);
+      K.label(x, down + ' DOWN', 12, 46, 10, 'left');
+      K.label(x, 'best ' + best, geo.w - 12, 46, 10, 'right');
     }
     if (flashTxt > 0) {
       x.save();
