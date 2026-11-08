@@ -35,7 +35,9 @@ const gradle = "android/app/build.gradle";
 if (existsSync(gradle)) {
   const { version } = JSON.parse(readFileSync("package.json", "utf8"));
   const [maj = 1, min = 0, patch = 0] = version.split(".").map((n) => parseInt(n, 10) || 0);
-  const code = maj * 10000 + min * 100 + patch;
+  // major*10000 + minor*1000 + patch: 1.2.0 -> 12000, 1.2.1 -> 12001, 2.0.0 -> 20000.
+  // (The old minor*100 shape gave 1.2.0 -> 10200, which cannot express the intended 12000.)
+  const code = maj * 10000 + min * 1000 + patch;
 
   let s = readFileSync(gradle, "utf8");
   s = s.replace(/versionCode\s+\d+/, `versionCode ${code}`);
