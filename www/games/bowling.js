@@ -12,11 +12,13 @@
 
   /* ---------- the lane, in metres ---------- */
   const HALF = 0.533;          // lane half-width
-  const DECK_Z = 26.0;         // where the deck band starts (visual stretch)
+  const DECK_Z = 25.35;        // where the deck band starts
   const PIT_Z = 27.35;         // back of the pin deck
-  const HEAD_Z = 26.29;        // head pin
+  const HEAD_Z = 25.5;         // head pin
   const GAP = 0.3048;          // pin spacing (12in)
-  const ROW = GAP * 0.866;     // row depth
+  const ROW = GAP * 0.866 * 2; // row depth, doubled: 10.4in of real depth is
+                               // under one pin-width of screen here, and the rack
+                               // came out as a single row of ten
   const BALL_R = 0.108, BALL_M = 6.8;
   const PIN_R = 0.033, PIN_RB = 0.058, PIN_M = 1.55, PIN_H = 0.38, PIN_BELLY = 0.0605;
 
@@ -692,17 +694,19 @@
     const down = pins.filter((p) => !p.stand).length;
     K.label(x, 'FR ' + (fi + 1) + '/10 · ' + calcScore() + ' · best ' + best, geo.w - 14, 20, 11, 'right');
     if (phase === 'aim') {
-      /* the angle track, across the bottom */
+      /* the angle bar, up the left edge, matching the power bar on the right:
+         a track under the ball read as a rail it was sliding along */
       const w = geo.w, h = geo.h;
-      const tw = Math.min(210, w * .54), tx = (w - tw) / 2, ty = h - 26;
+      const ah = Math.min(150, h * .40), aw = 10, ax = 32, ay = h * .46 - ah / 2;
       x.save();
       x.fillStyle = m.flat ? 'rgba(36,26,58,.14)' : 'rgba(255,255,255,.16)';
-      K.rr(x, tx, ty - 3, tw, 6, 3); x.fill();
+      K.rr(x, ax, ay, aw, ah, aw / 2); x.fill();
       const u = (lockAng / .030 + 1) / 2;
-      x.fillStyle = stage === 'angle' ? (m.flat ? '#241a3a' : '#fffdf8') : (m.flat ? 'rgba(36,26,58,.4)' : 'rgba(255,255,255,.45)');
-      x.beginPath(); x.arc(tx + tw * u, ty, 6, 0, TAU); x.fill();
+      const kn = ay + ah - ah * clamp(u, 0, 1);
+      x.fillStyle = stage === 'angle' ? (m.flat ? '#241a3a' : '#fffdf8') : (m.flat ? 'rgba(36,26,58,.55)' : 'rgba(255,255,255,.6)');
+      x.beginPath(); x.arc(ax + aw / 2, kn, 6.5, 0, TAU); x.fill();
       x.restore();
-      K.label(x, 'ANGLE', tx, ty - 11, 10, 'left');
+      K.label(x, stage === 'angle' ? 'ANGLE' : 'angle', ax + aw + 9, ay - 9, 10, 'left');
 
       /* the power bar, up the right edge */
       const bw = 10, bh = Math.min(150, h * .40), bx = w - 32, by = h * .46 - bh / 2;
