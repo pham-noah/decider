@@ -1,52 +1,32 @@
-/* Fidget spinner — flick it, let friction pick the arm under the pointer. */
+/* Fidget spinner — a machined plate with three bearings. Flick it and it coasts;
+ * it decides nothing and shows nothing, so there is nothing to read on it. */
 (function () {
   const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT;
   const cv = () => document.getElementById('fgCv');
   const TAU = Math.PI * 2;
-  let L = null, g = null, a = 0, v = 0, arms = 3, labels = [], drag = null,
-      touched = false, settling = null, done = false, pool = [];
+  let L = null, g = null, a = 0, v = 0, drag = null, touched = false;
+  const arms = 3;              /* a spinner has three lobes; nothing here picks */
 
+  /* sized off the short side of the card, so it fills the toy whatever shape it is */
   const geo = () => {
     const s = Math.min(g.w * .86, g.h * .84);
     const R = s * .30;
     return { cx: g.w / 2, cy: g.h * .48, R, lobe: Math.max(12, s * .088), tagR: R * 1.40, s };
   };
 
-  function pick() {
-    /* labels[i % pool.length] repeated the pool over the arms: 5 options on 3 arms
-       dropped two answers, and 2 options on 3 arms was a 2:1 bias */
-    pool = K.options(arms);
-    while (pool.length < arms) pool.push('…');
-    labels = [];
-    /* one distinct option per arm — no repeat, no bias; a spare arm reads '…' */
-    for (let i = 0; i < arms; i++) labels.push(pool[i] || '…');
-  }
-
   function wrap(t) { while (t > Math.PI) t -= TAU; while (t < -Math.PI) t += TAU; return t; }
 
-  function nearest() {
-    const want = -Math.PI / 2;
-    let best = 0, bd = 9;
-    for (let i = 0; i < arms; i++) {
-      const d = Math.abs(wrap(a + (i * TAU) / arms - want));
-      if (d < bd) { bd = d; best = i; }
-    }
-    return best;
-  }
-
   function spin(force) {
-    if (settling) return;
     v = (force || 1) * (0.42 + Math.random() * 0.35) * (Math.random() < 0.5 ? 1 : -1);
     touched = true; done = false;
-    K.setResult(document.getElementById('fgRes'), '');
     try { tone(320, .08, .05, 'triangle', 520); } catch (e) {}
   }
 
   /* a real spinner is a machined plate with three bearings in it, not three
-     sticks: a tri-lobe body, steel bearing caps set into each lobe, a chrome
-     centre race, and no readout carved into it — the pointer says where it
-     stopped and the line under the toy says what that was. */
+     sticks: a tri-lobe body, steel bearing caps set into each lobe, and a chrome
+     centre race with a notch in the bore so the spin is visible. No tags, no
+     pointer, no numbers — the toy is the spin. */
   function bodyPath(x, G) { bodyShape(x, G, false); }
 
   /* the plate: three lobes joined by fat rounded arms, so the silhouette is a
@@ -153,54 +133,22 @@
     x.beginPath(); x.arc(cx - hubR * .34, cy - hubR * .40, hubR * .18, 0, TAU);
     x.fillStyle = 'rgba(255,255,255,.85)'; x.fill();
 
-    /* option tags, riding the arms */
-    for (let i = 0; i < arms; i++) {
-      const th = a + (i * TAU) / arms;
-      const lx = cx + Math.cos(th) * tagR, ly = cy + Math.sin(th) * tagR;
-      const fs = g.w < 360 ? 10 : 12;
-      let txt = labels[i];
-      x.font = `700 ${fs}px "Bricolage Grotesque",system-ui,sans-serif`;
-      while (txt.length > 2 && x.measureText(txt).width > 84) txt = txt.slice(0, -1);
-      if (txt !== labels[i]) txt = txt.slice(0, -1) + '…';
-      K.tag(x, lx, ly, txt, '#fffdf8', '#241a55', fs);
-    }
-
-    /* fixed pointer at the top */
-    const py = cy - tagR - 24;
-    x.beginPath(); x.moveTo(cx, py + 12); x.lineTo(cx - 9, py); x.lineTo(cx + 9, py);
-    x.closePath(); x.fillStyle = INK(1); x.fill();
-    x.strokeStyle = 'rgba(36,26,85,.25)'; x.lineWidth = 1.2; x.stroke();
-    x.beginPath(); x.moveTo(cx, py + 14); x.lineTo(cx, cy - R - lobe - 4);
-    x.setLineDash([3, 5]); x.strokeStyle = INK(.4); x.stroke(); x.setLineDash([]);
   }
 
   function tick(dt) {
     if (!g) return;
-    if (settling) {
-      a += wrap(settling - a) * 0.17 * dt;
-      v *= Math.pow(0.80, dt);
-      if (Math.abs(wrap(settling - a)) < 0.006) {
-        a = settling; settling = null; v = 0;
-        if (!done) {
-          done = true;
-          const label = labels[nearest()];
-          K.setResult(document.getElementById('fgRes'), label);
-        }
-      }
-    } else if (drag) {
+    try { tickBody(dt); } catch (e) { window.__fgErr = String(e && e.stack || e); }
+  }
+
+  function tickBody(dt) {
+    if (drag) {
       /* angle is driven by the finger */
     } else if (Math.abs(v) > 0.012) {
       a += v * dt;
-      v *= Math.pow(0.955, dt);   // ~1.2s to settle instead of 4-5
-      if (Math.abs(v) < 0.02 && touched && !done) {
-        const k = nearest();
-        const base = -Math.PI / 2 - (k * TAU) / arms;
-        settling = base + Math.round((a - base) / TAU) * TAU;
-        try { tone(720, .1, .05, 'sine', 400); } catch (e) {}
-      }
+      v *= Math.pow(0.955, dt);   /* bearing drag: a flick coasts about a second */
     } else {
       v = 0;
-      if (!touched || done) a += 0.0016 * dt;   // breathe before the first touch and after every answer
+      a += 0.0016 * dt;           /* a slow idle drift, so it never looks frozen */
     }
     draw();
   }
@@ -211,18 +159,13 @@
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'fidget', name: 'Fidget spinner', short: 'Fidget', label: 'Arms', noResult: true, button: false,
-    body: `<canvas class="toy" id="fgCv"></canvas>
-      <div class="res" id="fgRes" aria-live="polite"><span class="muted">Flick it</span></div>
-      <button class="btn" id="fgGo">Flick</button>`,
-    tune: `<div class="lbl">Arms</div><div class="chips" id="fgArms" style="margin:0"></div>`,
-    init(card) {
+    id: 'fidget', name: 'Fidget spinner', short: 'Fidget', label: 'Spin', noResult: true, button: false,
+    body: `<canvas class="toy" id="fgCv"></canvas><div class="res" id="fgRes" aria-live="polite" style="display:none"></div>`,
+    init() {
       L = K.loop(tick);
-      pick();
       g = K.fit(cv());
       const c = cv();
       c.addEventListener('pointerdown', e => {
-        if (settling) return;
         try { c.setPointerCapture(e.pointerId); } catch (err) {}
         drag = { ang: ang(e), live: false };
         touched = true;
@@ -235,25 +178,11 @@
       });
       const up = () => {
         if (!drag) return;
-        /* a light touch used to get a coin-flip direction; now the disc simply
-           stays where you put it, so placement is still the answer */
         if (!drag.live) v = 0;
         drag = null;
-        done = false;
       };
       c.addEventListener('pointerup', up);
       c.addEventListener('pointercancel', up);
-      card.querySelector('#fgGo').onclick = () => spin(1);
-      const chips = card.querySelector('#fgArms');
-      const render = () => {
-        chips.innerHTML = [3, 5].map(n => `<button class="chip${n === arms ? ' on' : ''}" data-n="${n}">${n}</button>`).join('');
-        chips.querySelectorAll('.chip').forEach(b => b.onclick = () => {
-          if (settling) return;
-          arms = +b.dataset.n; pick(); done = false; render();
-          K.setResult(document.getElementById('fgRes'), '');
-        });
-      };
-      render();
     },
     enter() { if (!g || Math.abs(g.w - cv().clientWidth) > 1) g = K.fit(cv()); L.start(); },
     leave() { L.stop(); },
