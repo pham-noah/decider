@@ -242,7 +242,7 @@
     }
     pendingFresh = fresh;
 
-    if (resEl()) K.setResult(resEl(), down + ' down · frame ' + (fi + 1) + ' · score ' + calcScore() + ' · best ' + best);
+    if (resEl()) K.setResult(resEl(), calcScore() + ' · best ' + best);
     try {
       if (down === 10) tone(660, .22, .07, 'triangle', 990);
       else tone(330 + down * 22, .13, .05, 'triangle', 460);
@@ -913,7 +913,7 @@
   K && window.DECIDER_GAMES.push({
     id: 'bowling', name: 'Bowling', short: 'Bowling', label: 'Lane', noResult: true, button: false,
     body: '<canvas class="toy" id="bwCv"></canvas>' +
-      '<div class="res" id="bwRes" aria-live="polite"><span class="muted">Tap to set the angle, tap to set the power</span></div>',
+      '<div class="res" id="bwRes" aria-live="polite"><span class="muted">tap for angle · tap for power</span></div>',
     init() {
       layout();
       try { best = +store.get('d.bowlgame', 0) || 0; } catch (e) {}
@@ -929,7 +929,7 @@
           /* the angle is chosen: now the power bar starts sweeping */
           stage = 'power'; sweep = 0;
           try { K.press(360); } catch (err) {}
-          if (resEl()) K.setResult(resEl(), 'Power — tap again to throw');
+          if (resEl()) K.setResult(resEl(), '');
         } else {
           const lean = lockAng, power = lockPow;
           stage = 'angle'; sweep = 0;

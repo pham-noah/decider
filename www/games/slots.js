@@ -36,7 +36,7 @@
     const slRes = document.getElementById('slRes');
     if (credits < BET) {
       credits = BUY_IN;
-      K.setResult(slRes, 'Bought back in · ' + credits);
+      K.setResult(slRes, 'buy-in');
     }
     credits -= BET; lastPay = 0;
     power = Math.max(0, Math.min(1, p == null ? 0.5 : p));
@@ -63,7 +63,7 @@
     Object.keys(count).forEach(k => { if (count[k] > bn) { bn = count[k]; best = +k; } });
     const res = document.getElementById('slRes');
     if (bn === 1) {
-      K.setResult(res, 'No match · ' + credits);
+      K.setResult(res, 'No match');
       try { tone(220, .22, .07, 'sine', 140); } catch (e) {}
       return;
     }
@@ -73,7 +73,7 @@
     if (credits > bestBank) { bestBank = credits; try { store.set('d.slbest', bestBank); } catch (e) {} }
     winFlash = { label: best, t: 0, bn };
     try { buzz(bn === 3 ? [12, 40, 12] : [8, 24]); } catch (e) {}
-    K.setResult(res, label + ' ×' + bn + '  +' + pay + ' · ' + credits);
+    K.setResult(res, label + ' ×' + bn + '  +' + pay);
     /* noResult:true — a machine that pays out celebrates here, it does not deal a verdict */
     if (bn === 3) { try { chime(); confetti(); } catch (e) {} }
   }

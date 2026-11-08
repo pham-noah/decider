@@ -454,7 +454,7 @@
       drawParticles(x);
       drawDrag(x, flat);
 
-      if (phase === 'aim') K.label(x, score >= 5 ? 'the basket is moving — flick up to shoot' : 'flick up to shoot', w / 2, h - 14, 10);
+      
     } catch (e) { if (!frameErr) { frameErr = e; console.error('basketball frame:', e); } }
   }
 
@@ -463,7 +463,7 @@
   K && window.DECIDER_GAMES.push({
     id: 'basketball', name: 'Basketball', short: 'Hoops', label: 'Shots', noResult: true, button: false,
     body: `<canvas class="toy" id="bbCv"></canvas>
-      <div class="res" id="bbRes" aria-live="polite"><span class="muted">Flick up from anywhere — the basket starts moving at five</span></div>`,
+      <div class="res" id="bbRes" aria-live="polite"></div>`,
     init() {
       L = K.loop(frame);
       layout();

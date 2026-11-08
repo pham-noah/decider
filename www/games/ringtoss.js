@@ -65,7 +65,7 @@
     drift = 0; driftT = 0; sparks = []; floats = []; shake = 0;
     pegs.forEach((p) => { p.hit = false; p.flash = 0; });
     state = 'ready'; wait = 0; resetRing();
-    say('3 rings · a rung gives one back');
+    say('');
   }
 
   function say(t) {
@@ -96,7 +96,7 @@
     trail = [];
     ring.x = 0; ring.y = Y0; ring.z = Z0; ring.vy = 0; ring.vz = 0;
     state = 'fly'; t0 = performance.now(); rings--; thrown++;
-    say('Rung it to get the ring back');
+    say('');
     try { tone(430, .1, .05, 'sine', 720); } catch (e) {}
     try { buzz(6); } catch (e) {}
   }
@@ -120,7 +120,7 @@
       if (score > best) { best = score; try { store.set('d.rtbest', best); } catch (e) {} }
       burst(hit.t.x, hit.t.y, 14, '255,226,150');
       float(streak, hit.t.x, hit.t.y - 14, streak > 1 ? '×' + streak : '+1');
-      say(streak > 1 ? streak + ' in a row · ' + score : 'Rung peg ' + hit.l + ' · ' + score);
+      say('');
       try { tone(760 + Math.min(9, streak) * 70, .16, .06, 'sine', 1320 + streak * 60); } catch (e) {}
       try { buzz([10, 38, 12]); } catch (e) {}
     } else {
@@ -128,7 +128,7 @@
       ring.vy = .5; ring.vz = 1.15;
       streak = 0; shake = 7;
       state = 'land';
-      say(rings ? 'Missed · ' + rings + ' left' : 'Missed');
+      say('Missed');
       try { tone(300, .09, .03, 'triangle', 190); } catch (e) {}
     }
   }
@@ -137,7 +137,7 @@
     state = 'wait';
     if (rings <= 0) {
       over = true; wait = Math.max(t, 1.5);
-      say(score + ' points · best ' + best + ' · tap to play again');
+      say('tap to replay');
       try { tone(240, .3, .06, 'triangle', 160); } catch (e) {}
     } else wait = t;
   }
@@ -231,7 +231,7 @@
       wait -= s;
       if (wait <= 0) {
         if (over) { state = 'over'; }
-        else { state = 'ready'; resetRing(); say(rings + (rings === 1 ? ' ring left' : ' rings left') + ' · ' + score); }
+        else { state = 'ready'; resetRing(); say(''); }
       }
     }
 
