@@ -12,9 +12,9 @@
 
   /* ---------- the lane, in metres ---------- */
   const HALF = 0.533;          // lane half-width
-  const DECK_Z = 18.0;         // where the deck band starts (visual stretch)
-  const PIT_Z = 19.35;         // back of the pin deck
-  const HEAD_Z = 18.29;        // head pin
+  const DECK_Z = 26.0;         // where the deck band starts (visual stretch)
+  const PIT_Z = 27.35;         // back of the pin deck
+  const HEAD_Z = 26.29;        // head pin
   const GAP = 0.3048;          // pin spacing (12in)
   const ROW = GAP * 0.866;     // row depth
   const BALL_R = 0.108, BALL_M = 6.8;
@@ -22,6 +22,14 @@
 
   let L = null, geo = null, pins = [], ball = null, drag = null, trail = [];
   let phase = 'aim', wait = 0, thrown = 0, since = 0, flashTxt = 0, lastSnd = 0;
+  let run = 0, best = 0, homeX = 0, dropOff = 0;
+  /* two sweeping bars — angle, then power — and they run faster the longer
+     the run gets */
+  let stage = 'angle', sweep = 0, lockAng = 0, lockPow = .55;
+  const sweepSpeed = () => .85 + 1.35 * diff();
+  /* a consecutive run: every pin adds, a gutter ends it, and the game gets
+     harder the further the run goes */
+  const diff = () => clamp(run / 70, 0, 1);
   let msg = '';
 
   /* ---------- camera ----------
@@ -68,7 +76,7 @@
   }
 
   function ballHome() {
-    ball = { x: 0, z: 0.62, vx: 0, vz: 0, hook: 0, rot: 0, spin: 0, live: false, gutter: false, r: BALL_R };
+    ball = { x: homeX, z: 0.62, vx: 0, vz: 0, hook: 0, rot: 0, spin: 0, live: false, gutter: false, r: BALL_R };
   }
 
   function layout() {
@@ -103,9 +111,9 @@
     const power = clamp(up / (geo.h * 0.52) + span / (geo.h * 1.8), 0.18, 1);
     const startX = clamp((d.x0 - geo.w / 2) / (geo.w * 0.44), -1, 1) * HALF * 0.58;
     /* aim is a nudge, not a slice: a 20px lean moves the ball about four boards */
-    const lean = clamp((d.x - d.x0) / (geo.h * 7), -0.055, 0.055);
+    const lean = clamp((d.x - d.x0) / (geo.h * 7), -0.055, 0.055) * (1 + 0.45 * diff());
     const bow = bowOf(d.pts);
-    const hook = clamp(bow / 52, -1, 1) * (1.2 + power * 1.6);
+    const hook = clamp(bow / 52, -1, 1) * (1.2 + power * 1.6) * (1 + 0.5 * diff());
     return { power, startX, lean, hook };
   }
 
@@ -118,6 +126,7 @@
     ball.vz = sp * Math.cos(prm.lean);
     ball.vx = sp * Math.sin(prm.lean) * 0.9;
     ball.hook = prm.hook;
+    ball.sp = sp;               /* the speed the throw gave it, held for the lane */
     ball.live = true;
     phase = 'roll'; since = 0; thrown++;
     flashTxt = 0;
@@ -135,18 +144,33 @@
   }
 
   function resetRack() {
-    rack(); ballHome();
+    rack();
+    /* the ball never waits in the same place twice, and the spread widens as
+       the run grows */
+    homeX = (rnd() - .5) * 2 * HALF * (0.30 + 0.58 * diff());
+    ballHome();
     phase = 'aim'; wait = 0; since = 0;
+    stage = 'angle'; sweep = 0;
     trail = [];
+    dropOff = 190;                 /* the basket sets the rack down */
   }
 
   function finish() {
-    phase = 'done'; wait = 1.8;
+    phase = 'done'; wait = 1.8 - 0.9 * diff();
     const down = pins.filter((p) => !p.stand).length;
     const up = 10 - down;
-    msg = down === 10 ? 'STRIKE' : down === 0 ? 'gutter' : '';
+    /* the run: pins accumulate, a gutter ends it and the best run is kept */
+    const ending = down === 0;
+    if (down > 0) run += down;
+    if (ending) {
+      if (run > best) { best = run; try { store.set('d.bowlbest', best); } catch (e) {} }
+      run = 0;
+    } else if (run > best) {
+      best = run; try { store.set('d.bowlbest', best); } catch (e) {}
+    }
+    msg = down === 10 ? 'STRIKE' : ending ? 'RUN OVER' : '';
     if (msg) flashTxt = down === 10 ? 2.2 : 1.2;
-    if (resEl()) K.setResult(resEl(), down + ' down · ' + up + ' standing');
+    if (resEl()) K.setResult(resEl(), down + ' down · run ' + run + ' · best ' + best);
     try {
       if (down === 10) tone(660, .22, .07, 'triangle', 990);
       else tone(330 + down * 22, .13, .05, 'triangle', 460);
@@ -177,10 +201,14 @@
 
   function tick(h) {
     const b = ball;
-    /* the ball: skid, then the dry back end bites and the hook arrives */
+    /* the ball: it runs down the lane at the speed the throw gave it — the
+       hook turns its heading, it never speeds the ball up */
     if (phase === 'roll' && b.live) {
       const bite = clamp((b.z / DECK_Z - 0.40) / 0.50, 0, 1);
-      b.vx += b.hook * bite * bite * h;
+      const sp = b.sp || Math.hypot(b.vx, b.vz) || 1;
+      const head = Math.atan2(b.vx, b.vz) + (b.hook * bite * bite * h) / sp;
+      b.vx = Math.sin(head) * sp;
+      b.vz = Math.cos(head) * sp;
       b.x += b.vx * h; b.z += b.vz * h;
       b.rot += b.vz * h * 1.7;
       b.spin += (b.hook * 1.3 + b.vx * 0.45) * h;
@@ -445,6 +473,7 @@
 
   function drawPin(x, cam, m, p) {
     const base = cam.p(p.x, p.z), k = cam.k(p.z);
+    if (dropOff) base.y -= dropOff;   /* the basket setting the rack down */
     const e = p.stand ? 0 : (p.f * p.f * (3 - 2 * p.f));
     const H = PIN_H * k;
     const stand = { x: base.x, y: base.y - H };
@@ -596,6 +625,33 @@
 
   function drawHUD(x, m) {
     const down = pins.filter((p) => !p.stand).length;
+    K.label(x, 'RUN ' + run + ' · BEST ' + best, geo.w - 14, 20, 11, 'right');
+    if (phase === 'aim') {
+      /* the angle track, across the bottom */
+      const w = geo.w, h = geo.h;
+      const tw = Math.min(210, w * .54), tx = (w - tw) / 2, ty = h - 26;
+      x.save();
+      x.fillStyle = m.flat ? 'rgba(36,26,58,.14)' : 'rgba(255,255,255,.16)';
+      K.rr(x, tx, ty - 3, tw, 6, 3); x.fill();
+      const u = (lockAng / .030 + 1) / 2;
+      x.fillStyle = stage === 'angle' ? (m.flat ? '#241a3a' : '#fffdf8') : (m.flat ? 'rgba(36,26,58,.4)' : 'rgba(255,255,255,.45)');
+      x.beginPath(); x.arc(tx + tw * u, ty, 6, 0, TAU); x.fill();
+      x.restore();
+      K.label(x, 'ANGLE', tx, ty - 11, 10, 'left');
+
+      /* the power bar, up the right edge */
+      const bw = 10, bh = Math.min(150, h * .40), bx = w - 32, by = h * .46 - bh / 2;
+      x.save();
+      x.fillStyle = m.flat ? 'rgba(36,26,58,.14)' : 'rgba(255,255,255,.16)';
+      K.rr(x, bx, by, bw, bh, bw / 2); x.fill();
+      const ph = Math.max(3, bh * clamp((lockPow - .18) / .82, 0, 1));
+      const grad = x.createLinearGradient(0, by + bh, 0, by);
+      grad.addColorStop(0, '#2fe0c4'); grad.addColorStop(.6, '#ffb347'); grad.addColorStop(1, '#ff5fa2');
+      x.fillStyle = grad;
+      K.rr(x, bx, by + bh - ph, bw, ph, bw / 2); x.fill();
+      x.restore();
+      K.label(x, stage === 'power' ? 'POWER' : 'power', bx - 8, by - 9, 10, 'right');
+    }
     if (phase === 'roll' || phase === 'settle' || phase === 'done') {
       K.label(x, down + ' DOWN', 14, 20, 11, 'left');
       miniRack(x, geo.w, m);
@@ -638,8 +694,9 @@
     K.rr(x, 0, 0, w, h, m.radius); x.clip();
     drawBack(x, cam, m);
     drawLane(x, cam, m);
-    if (drag && phase === 'aim') {
-      const pts = preview(dragParams());
+    if (phase === 'aim') {
+      /* the aim line, drawn live from the bars you are freezing */
+      const pts = preview({ power: lockPow, startX: homeX, lean: lockAng, hook: 0 });
       x.save();
       x.setLineDash([3, 6]);
       x.strokeStyle = INK(.55); x.lineWidth = 2;
@@ -668,6 +725,14 @@
       if (!geo || Math.abs(geo.w - g.w) > .5 || Math.abs(geo.h - g.h) > .5) layout();
       const sdt = Math.min(.05, dt / 60);
       if (phase === 'done') { wait -= sdt; if (wait <= 0) resetRack(); }
+      if (phase === 'aim') {
+        /* a bar that sweeps end to end and back: tap to freeze it */
+        sweep += sdt * sweepSpeed();
+        const u = 1 - Math.abs((sweep % 2) - 1);        /* 0 → 1 → 0 */
+        if (stage === 'angle') lockAng = (u * 2 - 1) * .030;
+        else lockPow = .20 + .80 * u;
+      }
+      if (dropOff > 0) dropOff = Math.max(0, dropOff - (540 + 1040 * diff()) * sdt);
       step(sdt);
       draw(g);
     } catch (e) {}
@@ -681,35 +746,37 @@
   K && window.DECIDER_GAMES.push({
     id: 'bowling', name: 'Bowling', short: 'Bowling', label: 'Lane', noResult: true, button: false,
     body: '<canvas class="toy" id="bwCv"></canvas>' +
-      '<div class="res" id="bwRes" aria-live="polite"><span class="muted">Swipe up the lane — bow it to hook</span></div>',
+      '<div class="res" id="bwRes" aria-live="polite"><span class="muted">Tap to set the angle, tap to set the power</span></div>',
     init() {
       layout();
+      try { best = +store.get('d.bowlbest', 0) || 0; } catch (e) {}
+      run = 0; homeX = 0; dropOff = 0;
       L = K.loop(frame);
       const c = cv();
       c.addEventListener('pointerdown', (e) => {
         /* a touch during the wait for the rack re-racks it now — never a dead zone */
-        if (phase === 'done') resetRack();
+        if (phase === 'done') { resetRack(); return; }
         if (phase !== 'aim' || !geo) { try { K.press(300); } catch (err) {} return; }
-        const p = at(e);
-        drag = { x0: p.x, y0: p.y, x: p.x, y: p.y, pts: [p] };
         try { c.setPointerCapture(e.pointerId); } catch (err) {}
+        if (stage === 'angle') {
+          /* the angle is chosen: now the power bar starts sweeping */
+          stage = 'power'; sweep = 0;
+          try { K.press(360); } catch (err) {}
+          if (resEl()) K.setResult(resEl(), 'Power — tap again to throw');
+        } else {
+          const lean = lockAng, power = lockPow;
+          stage = 'angle'; sweep = 0;
+          throwBall({ power, startX: homeX, lean, hook: 0 });
+        }
       });
-      c.addEventListener('pointermove', (e) => {
-        if (!drag) return;
-        const p = at(e);
-        drag.x = p.x; drag.y = p.y;
-        drag.pts.push(p);
-        if (drag.pts.length > 40) drag.pts.shift();
-      });
-      c.addEventListener('pointerup', () => { if (drag) bowled(); });
-      c.addEventListener('pointercancel', () => { drag = null; });
       if (c.clientWidth) L.start();
     },
     enter() { layout(); L.start(); },
     leave() { drag = null; L.stop(); },
     action() {
       if (phase === 'aim') {
-        throwBall({ power: .6, startX: (rnd() - .5) * .12, lean: (rnd() - .5) * .03, hook: (rnd() - .5) * 1.2 });
+        stage = 'angle'; sweep = 0;
+        throwBall({ power: lockPow, startX: homeX, lean: lockAng, hook: 0 });
       }
     },
     status() {

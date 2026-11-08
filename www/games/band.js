@@ -1,7 +1,8 @@
-/* Band — a latex band hooked over two solid posts. Grab either end: the band
- * follows your finger with a little lag, goes taut and thin, and snaps home
- * with an underdamped quiver when you let go. Tapping the band plucks a
- * standing wave through it. No goal, no numbers. */
+/* Band — a latex band hooked over two solid posts. Take hold of the strand
+ * (the middle is where a hand goes) and pull: the band sits exactly under your
+ * finger, goes taut and thin, and snaps home with an underdamped quiver when
+ * you let go — carrying whatever fling you gave it. A tap plucks a standing
+ * wave through it. No goal, no numbers. */
 (function () {
   const K = window.DKIT, TAU = Math.PI * 2, N = 46;
   const cv = () => document.getElementById('bdCv');
@@ -9,8 +10,17 @@
   const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); } catch (e) {} };
   const hap = (n) => { try { buzz(n); } catch (e) {} };
 
-  let L = null, g = null, posts = [], rest = [], ends = [];
-  let grab = -1, ph = 0, amp = 0, tnow = 0, relT = 0;
+  let L = null, g = null, posts = [], rest = [], home = null;
+  let P = null;                       /* the point of the latex under the finger */
+  let grab = false, ph = 0, amp = 0, tnow = 0, relT = 0, sGrab = .5, downOk = false;
+  let vel = { x: 0, y: 0 }, downAt = 0, downX = 0, downY = 0;
+
+  /* where a released band returns to: the same fraction along the run the
+     player took hold of, because a straight band puts that point back there */
+  const homeAt = (s) => ({
+    x: rest[0].x + (rest[1].x - rest[0].x) * s,
+    y: rest[0].y + (rest[1].y - rest[0].y) * s
+  });
 
   function layout() {
     const c = cv(); if (!c) return;
@@ -18,38 +28,62 @@
     const cy = g.h * .50, half = Math.max(7, Math.min(9, g.w * .024));
     posts = [{ x: g.w * .155, y: cy, w: half * 2 }, { x: g.w * .845, y: cy, w: half * 2 }];
     rest = [{ x: posts[0].x + half + 3, y: cy }, { x: posts[1].x - half - 3, y: cy }];
-    ends = rest.map(p => ({ x: p.x, y: p.y, vx: 0, vy: 0, held: false }));
-    grab = -1; amp = 0; relT = 0;
+    sGrab = .5; home = homeAt(sGrab);
+    P = { x: home.x, y: home.y, vx: 0, vy: 0 };
+    grab = false; amp = 0; relT = 0; vel = { x: 0, y: 0 }; downOk = false;
   }
 
   const gap = () => rest[1].x - rest[0].x;
-  const dist = () => Math.hypot(ends[1].x - ends[0].x, ends[1].y - ends[0].y);
+  /* the latex runs post to post THROUGH the pulled point */
+  const runLen = () => Math.hypot(P.x - rest[0].x, P.y - rest[0].y) +
+                       Math.hypot(rest[1].x - P.x, rest[1].y - P.y);
   /* 0 at rest, 1 when the latex cannot give any more */
-  const tension = () => clamp((dist() / gap() - 1) / .34, 0, 1);
+  const tension = () => clamp((runLen() / gap() - 1) / .9, 0, 1);
   /* how much spare length hangs between the posts */
-  const slackness = () => clamp((1.11 - dist() / gap()) / .17, 0, 1);
+  const slackness = () => clamp((1.06 - runLen() / gap()) / .12, 0, 1);
 
-  /* keep an end on its own side of the other post, inside the card, and
-     short of the stretch the latex could survive */
-  function clampEnd(i, x, y) {
-    const o = ends[1 - i];
-    if (i === 0) x = Math.min(x, o.x - 28); else x = Math.max(x, o.x + 28);
+  /* keep the pulled point inside the card and short of the stretch the latex
+     could survive */
+  function clampP(x, y) {
     x = clamp(x, 13, g.w - 13);
     y = clamp(y, 44, g.h - 30);
-    const lim = gap() * 1.95, dx = x - o.x, dy = y - o.y, d = Math.hypot(dx, dy);
-    if (d > lim) { x = o.x + dx / d * lim; y = o.y + dy / d * lim; }
-    return { x, y };
+    const lim = gap() * 1.9, a = rest[0], b = rest[1];
+    if (Math.hypot(x - a.x, y - a.y) + Math.hypot(x - b.x, y - b.y) <= lim) return { x, y };
+    /* walk back toward home until both arms fit inside the stretch */
+    let lo = 0, hi = 1;
+    for (let i = 0; i < 14; i++) {
+      const t = (lo + hi) / 2, px = home.x + (x - home.x) * t, py = home.y + (y - home.y) * t;
+      const d = Math.hypot(px - a.x, py - a.y) + Math.hypot(px - b.x, py - b.y);
+      if (d > lim) hi = t; else lo = t;
+    }
+    return { x: home.x + (x - home.x) * lo, y: home.y + (y - home.y) * lo };
   }
 
-  function pull(i, p, dt) {
-    const e = ends[i];
-    const t = clampEnd(i, p.x, p.y);
-    /* a little lag, so the band loads up behind the finger instead of
-       teleporting onto it */
-    const k = Math.min(1, .34 * dt);
-    e.x += (t.x - e.x) * k;
-    e.y += (t.y - e.y) * k;
-    e.held = true;
+  /* the finger is the truth: the latex sits under it, never trailing behind */
+  function dragTo(p) {
+    const t = clampP(p.x, p.y);
+    vel.x = vel.x * .45 + (t.x - P.x) * .55;
+    vel.y = vel.y * .45 + (t.y - P.y) * .55;
+    P.x = t.x; P.y = t.y;
+    relT = 0;
+  }
+
+  /* take hold of the band at the point nearest the finger */
+  function holdAt(p) {
+    const a = rest[0], b = rest[1];
+    sGrab = clamp((p.x - a.x) / (b.x - a.x), .04, .96);
+    home = homeAt(sGrab);
+    const t = clampP(p.x, p.y);
+    P.x = t.x; P.y = t.y;
+    grab = true; relT = 0; vel = { x: 0, y: 0 };
+  }
+
+  /* how far the finger landed from the strand, in pixels */
+  function offStrand(p) {
+    const a = rest[0], b = rest[1];
+    const vx = b.x - a.x, vy = b.y - a.y;
+    const t = clamp(((p.x - a.x) * vx + (p.y - a.y) * vy) / (vx * vx + vy * vy || 1), 0, 1);
+    return Math.hypot(p.x - (a.x + vx * t), p.y - (a.y + vy * t));
   }
 
   function twang(t) {
@@ -59,58 +93,64 @@
     hap(9 + Math.round(t * 8));
   }
 
-  function release(i) {
-    const e = ends[i];
-    if (!e.held) return;
+  function release() {
+    if (!grab) return;
     const t = tension();
-    e.held = false; e.vx = 0; e.vy = 0; relT = 0;
+    grab = false; relT = 0;
+    /* the snap carries the fling you gave it */
+    P.vx = clamp(vel.x, -46, 46) * .72;
+    P.vy = clamp(vel.y, -46, 46) * .72;
     twang(t);
-    /* the band keeps the shock as a ripple that dies out */
     amp = Math.max(amp, 1.6 + t * 5);
+  }
+
+  function pluck() {
+    amp = Math.max(amp, 20);
+    ph = Math.PI / 2;
+    const p = 320 + Math.random() * 150 + tension() * 200;
+    sfx(p, .26, .05, 'triangle', p * .55);
+    setTimeout(() => sfx(p * 1.5, .12, .016, 'sine'), 30);
+    hap(7);
   }
 
   function step(dt) {
     /* sub-step so a long frame cannot throw the spring */
     const n = Math.max(1, Math.ceil(dt)), h = dt / n;
     for (let k = 0; k < n; k++) {
-      ends.forEach((e, i) => {
-        if (e.held) return;
-        const ax = (rest[i].x - e.x) * .030, ay = (rest[i].y - e.y) * .030;
-        e.vx = (e.vx + ax * h) * Math.pow(.90, h);
-        e.vy = (e.vy + ay * h) * Math.pow(.90, h);
-        e.vx = clamp(e.vx, -34, 34); e.vy = clamp(e.vy, -34, 34);
-        e.x += e.vx * h; e.y += e.vy * h;
-        if (Math.abs(e.x - rest[i].x) < .35 && Math.abs(e.y - rest[i].y) < .35 &&
-            Math.hypot(e.vx, e.vy) < .12) {
-          e.x = rest[i].x; e.y = rest[i].y; e.vx = 0; e.vy = 0;
-        }
-      });
+      if (grab) break;                /* held: the finger owns the position */
+      const ax = (home.x - P.x) * .055, ay = (home.y - P.y) * .055;
+      P.vx = (P.vx + ax * h) * Math.pow(.88, h);
+      P.vy = (P.vy + ay * h) * Math.pow(.88, h);
+      P.vx = clamp(P.vx, -60, 60); P.vy = clamp(P.vy, -60, 60);
+      P.x += P.vx * h; P.y += P.vy * h;
+      if (Math.abs(P.x - home.x) < .7 && Math.abs(P.y - home.y) < .7 &&
+          Math.hypot(P.vx, P.vy) < .3) {
+        P.x = home.x; P.y = home.y; P.vx = 0; P.vy = 0;
+      }
     }
-    if (grab < 0 && !ends[0].held && !ends[1].held) {
+    if (!grab) {
       relT += dt;
       /* fail-safe: the band is never left hanging stretched */
-      if (relT > 78) ends.forEach((e, i) => { e.x = rest[i].x; e.y = rest[i].y; e.vx = 0; e.vy = 0; });
-    } else relT = 0;
+      if (relT > 78) { P.x = home.x; P.y = home.y; P.vx = 0; P.vy = 0; }
+    }
     if (amp > .02) { ph += .36 * dt; amp *= Math.pow(.955, dt); } else amp = 0;
     tnow += dt;
   }
 
   /* ---------- band geometry ---------- */
   function bandPts() {
-    const a = ends[0], b = ends[1];
-    const dx = b.x - a.x, dy = b.y - a.y;
-    const sag = 3 + slackness() * slackness() * 30;
+    const a = rest[0], b = rest[1];
+    /* a quadratic whose midpoint is exactly the pulled point, so the latex
+       bends from post to post through your finger and lies straight at rest */
+    const cx = 2 * P.x - (a.x + b.x) / 2, cy2 = 2 * P.y - (a.y + b.y) / 2;
+    const sag = grab ? 0 : 3 + slackness() * slackness() * 30;
     const wave = amp * Math.sin(ph);
-    const c1 = { x: a.x + dx * .30, y: a.y + dy * .30 + sag };
-    const c2 = { x: a.x + dx * .70, y: a.y + dy * .70 + sag };
     const pts = [];
     for (let i = 0; i <= N; i++) {
       const s = i / N, u = 1 - s;
-      pts.push({
-        s,
-        x: u * u * u * a.x + 3 * u * u * s * c1.x + 3 * u * s * s * c2.x + s * s * s * b.x,
-        y: u * u * u * a.y + 3 * u * u * s * c1.y + 3 * u * s * s * c2.y + s * s * s * b.y
-      });
+      const x = u * u * a.x + 2 * u * s * cx + s * s * b.x;
+      const y = u * u * a.y + 2 * u * s * cy2 + s * s * b.y;
+      pts.push({ s, x, y: y + sag * Math.sin(Math.PI * s) });
     }
     /* standing wave: one belly, pinned at both ends */
     for (let i = 0; i <= N; i++) {
@@ -140,9 +180,9 @@
     x.closePath();
   }
 
-  /* the loose end past each finger, sagging when the latex is slack */
+  /* the loose latex past each post, sagging when the band is slack */
   function tail(x, i, flat) {
-    const e = ends[i], t = tension(), sgn = i === 0 ? -1 : 1;
+    const e = rest[i], t = tension(), sgn = i === 0 ? -1 : 1;
     const len = 12 + (1 - t) * 22;
     const droop = 6 + (1 - t) * 28;
     const pts = [];
@@ -230,20 +270,21 @@
     }
   }
 
-  function grip(x, i, flat) {
-    const e = ends[i];
-    if (!e.held) {
-      const pulse = .05 + .05 * (Math.sin(tnow * .09 + i * 2) + 1) / 2;
-      x.beginPath(); x.arc(e.x, e.y, 12, 0, TAU);
+  function grip(x, flat) {
+    const away = Math.hypot(P.x - home.x, P.y - home.y);
+    if (!grab && away < 1.2) {
+      /* nothing held: a soft ring sits on the strand, where the hand goes */
+      const pulse = .05 + .05 * (Math.sin(tnow * .09) + 1) / 2;
+      x.beginPath(); x.arc(home.x, home.y, 13, 0, TAU);
       x.strokeStyle = flat ? 'rgba(36,26,58,' + pulse + ')' : 'rgba(255,255,255,' + pulse + ')';
       x.lineWidth = 1.2; x.stroke();
       return;
     }
     /* pinched: a bright collar where the fingers are */
-    x.beginPath(); x.arc(e.x, e.y, 6.4, 0, TAU);
+    x.beginPath(); x.arc(P.x, P.y, 6.4, 0, TAU);
     x.fillStyle = flat ? '#fffdf8' : 'rgba(255,255,255,.92)'; x.fill();
     x.strokeStyle = flat ? '#241a3a' : 'rgba(255,255,255,.5)'; x.lineWidth = flat ? 1.4 : 1; x.stroke();
-    x.beginPath(); x.arc(e.x - 1.4, e.y - 1.6, 1.5, 0, TAU); x.fillStyle = 'rgba(255,255,255,.75)'; x.fill();
+    x.beginPath(); x.arc(P.x - 1.4, P.y - 1.6, 1.5, 0, TAU); x.fillStyle = 'rgba(255,255,255,.75)'; x.fill();
   }
 
   function draw() {
@@ -258,20 +299,19 @@
     }
 
     posts.forEach(p => post(x, p.x, p.y, flat));
-    ends.forEach((e, i) => tail(x, i, flat));
+    rest.forEach((_, i) => tail(x, i, flat));
 
-    /* the band is hooked round each post: the wrap sits under it while the
-       end is still home, so the latex reads as lying over the anchor */
-    posts.forEach((p, i) => {
-      if (Math.hypot(ends[i].x - rest[i].x, ends[i].y - rest[i].y) > 14) return;
+    /* the band is hooked round each post: the wrap sits under it, so the
+       latex reads as lying over the anchor */
+    posts.forEach(p => {
       x.beginPath(); x.ellipse(p.x, p.y, posts[0].w * .86, posts[0].w * .66, 0, 0, TAU);
       x.strokeStyle = flat ? '#d63a7c' : '#c62c6c'; x.lineWidth = 4.4; x.stroke();
       x.strokeStyle = flat ? '#f0478f' : '#ef4a91'; x.lineWidth = 2.6; x.stroke();
     });
     drawBand(x, flat);
-    ends.forEach((e, i) => grip(x, i, flat));
+    grip(x, flat);
 
-    K.label(x, 'STRETCH THE BAND', w / 2, 20, 11);
+    K.label(x, 'PULL THE BAND', w / 2, 20, 11);
     const t = tension();
     K.label(x, t < .10 ? 'slack' : t < .55 ? 'pulling' : t < .92 ? 'taut' : 'about to ping', w / 2, h - 20, 10);
   }
@@ -285,52 +325,44 @@
   }
 
   const at = (e) => { const r = cv().getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
-  function nearEnd(p) {
-    const d0 = Math.hypot(p.x - ends[0].x, p.y - ends[0].y);
-    const d1 = Math.hypot(p.x - ends[1].x, p.y - ends[1].y);
-    if (d0 < 42 && d0 <= d1) return 0;
-    if (d1 < 46) return 1;
-    return -1;
-  }
-
-  function pluck() {
-    amp = Math.max(amp, 20);
-    ph = Math.PI / 2;
-    const p = 320 + Math.random() * 150 + tension() * 200;
-    sfx(p, .26, .05, 'triangle', p * .55);
-    setTimeout(() => sfx(p * 1.5, .12, .016, 'sine'), 30);
-    hap(7);
-  }
 
   K && window.DECIDER_GAMES.push({
     id: 'band', name: 'Rubber band', short: 'Band', label: 'Band', noResult: true, button: false,
     body: `<canvas class="toy" id="bdCv"></canvas>
-      <div class="res" id="bdRes" aria-live="polite"><span class="muted">Pull an end, let it snap</span></div>`,
+      <div class="res" id="bdRes" aria-live="polite"><span class="muted">Pull the band, let it snap</span></div>`,
     init() {
       L = K.loop(frame); layout();
       const c = cv();
       c.addEventListener('pointerdown', e => {
         if (!g) return;
         try { c.setPointerCapture(e.pointerId); } catch (err) {}
-        const p = at(e), i = nearEnd(p);
-        if (i >= 0) { grab = i; ends[i].held = true; K.press(300); pull(i, p, 1); }
-        else pluck();
+        const p = at(e);
+        downAt = performance.now(); downX = p.x; downY = p.y;
+        /* pressing on the latex takes hold of it; pressing empty card plucks */
+        downOk = offStrand(p) < 46;
+        if (downOk) { holdAt(p); K.press(300); }
       });
-      c.addEventListener('pointermove', e => {
-        if (grab < 0) return;
-        pull(grab, at(e), 1);
-      });
-      const end = () => {
-        if (grab >= 0) { const i = grab; grab = -1; release(i); }
+      c.addEventListener('pointermove', e => { if (grab) dragTo(at(e)); });
+      const end = (e) => {
+        const p = e && typeof e.clientX === 'number' ? at(e) : null;
+        const moved = p ? Math.hypot(p.x - downX, p.y - downY) : 99;
+        const tapped = moved < 7 && performance.now() - downAt < 420;
+        if (downOk && grab) {
+          if (tapped) {
+            grab = false; P.x = home.x; P.y = home.y; P.vx = 0; P.vy = 0;
+            pluck();
+          } else release();
+        } else if (!downOk && tapped) pluck();
+        downOk = false;
       };
       c.addEventListener('pointerup', end);
       c.addEventListener('pointercancel', end);
       if (cv().clientWidth) L.start();
     },
-    enter() { layout(); amp = 0; grab = -1; L.start(); },
+    enter() { layout(); amp = 0; grab = false; L.start(); },
     leave() {
-      ends.forEach((e, i) => { e.held = false; e.x = rest[i].x; e.y = rest[i].y; e.vx = 0; e.vy = 0; });
-      grab = -1; amp = 0; L.stop();
+      P.x = home.x; P.y = home.y; P.vx = 0; P.vy = 0;
+      grab = false; amp = 0; downOk = false; L.stop();
     }
   });
 })();

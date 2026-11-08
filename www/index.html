@@ -30,7 +30,6 @@
 <script src="games/gacha.js"></script>
 <script src="games/hanoi.js"></script>
 <script src="games/highcard.js"></script>
-<script src="games/infinitecraft.js"></script>
 <script src="games/knob.js"></script>
 <script src="games/linerider.js"></script>
 <script src="games/pachinko.js"></script>
@@ -52,7 +51,7 @@
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--ink:#1d1340;--ink2:rgba(29,19,64,.82);--base:#ece7ff;--g1:rgba(255,255,255,.8);--g2:rgba(255,255,255,.48);--edge:rgba(255,255,255,.85);--sh:rgba(70,40,140,.22);--field:rgba(255,255,255,.62);--b1:#ff5fa2;--b2:#6f8bff;--b3:#2fe0c4;--b4:#ffb347;--a1:#ff5fa2;--a2:#7b6cff;color-scheme:light}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#f6f2ff;--ink2:rgba(246,242,255,.84);--base:#0c0922;--g1:rgba(72,62,135,.55);--g2:rgba(22,16,62,.5);--edge:rgba(255,255,255,.4);--sh:rgba(0,0,0,.5);--field:rgba(255,255,255,.14);--tgOff:rgba(255,255,255,.22);color-scheme:dark}}
 :root[data-theme="dark"]{--ink:#f6f2ff;--ink2:rgba(246,242,255,.84);--base:#0c0922;--g1:rgba(72,62,135,.55);--g2:rgba(22,16,62,.5);--edge:rgba(255,255,255,.4);--sh:rgba(0,0,0,.5);--field:rgba(255,255,255,.14);--tgOff:rgba(255,255,255,.22);color-scheme:dark}
-html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:manipulation}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 body{font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--base);min-height:100vh;-webkit-tap-highlight-color:transparent}
 .bg{position:fixed;inset:0;z-index:-1;overflow:hidden;background:var(--base)}
 .bg i{translate:calc(var(--tx,0)*-34px) calc(var(--ty,0)*-34px);position:absolute;width:48vmax;height:48vmax;border-radius:50%;opacity:.8;animation:drift 20s ease-in-out infinite alternate}
@@ -810,15 +809,22 @@ renderDice();
 /* the dice are the button: a tap or a flick rolls them */
 (() => {
  const t = $('#tiles'); t.style.touchAction = 'none'; let td = null;
- t.addEventListener('pointerdown', e => { td = { y: e.clientY, t: performance.now() }; });
+ t.addEventListener('pointerdown', e => { td = { x: e.clientX, y: e.clientY, t: performance.now() }; });
  t.addEventListener('pointerup', e => {
   if (!td) return;
-  const dt = performance.now() - td.t; td = null;
-  if (dt < 600) rollDice();
+  const dt = Math.max(16, performance.now() - td.t), dx = e.clientX - td.x, dy = e.clientY - td.y;
+  td = null;
+  if (dt > 900) return;
+  /* how hard you flicked is how hard they go, and the way you flicked is the
+     way they leave — a tap is the softest of both */
+  const speed = Math.hypot(dx, dy) / dt;
+  const pw = Math.max(.18, Math.min(1, speed / 2.6));
+  const dir = Math.abs(dx) > 10 ? Math.sign(dx) : 0;
+  rollDice(pw, dir);
  });
  t.addEventListener('pointercancel', () => { td = null; });
 })();
-function rollDice(){if(rolling)return;rolling=true;
+function rollDice(pw=.55,dir=0){if(rolling)return;rolling=true;
  const seq=++rollSeq,T=$$('.tile'),fin=T.map(()=>1+Math.floor(rnd()*sides));
  const geo=rowGeom(T);let left=T.length;
  $('#dres').innerHTML='<span class="muted">…</span>';
@@ -835,7 +841,7 @@ function rollDice(){if(rolling)return;rolling=true;
    later(()=>moment(String(sum),`${cnt}d${sides}`+(cnt>1?': '+fin.join(' + '):'')+(allMax?' — max roll!':'')));rolling=false;
   };
   if(calm){spinCalm(t,fin[i],dur,delay);setTimeout(done,delay+dur+20)}
-  else launchDie(t,fin[i],i,delay,geo[i],seq,done);
+  else launchDie(t,fin[i],i,delay,geo[i],seq,done,pw,dir);
  });
 };
 /* ---- dice motion: the tiles are lanes on one shallow surface ----------------
@@ -849,7 +855,7 @@ function rollDice(){if(rolling)return;rolling=true;
    the rotation snaps onto the rolled face — the DIE_FACES lookup always wins —
    and after a small damped bounce the tile settles. Transform-only throughout:
    travel + squash on .dsh, spin on .cube, contact shadow on .dshadow. */
-const DIE_G=1900,DIE_BOUNCE=.42,DIE_WALL=.5,DIE_FRIC=2.9,DIE_DRAG=.7,DIE_QDRAG=.0013,DIE_VMAX=620,DIE_PULL=760,DIE_K=220,DIE_STOP=12,DIE_FORCE=2.5;
+const DIE_G=1900,DIE_BOUNCE=.42,DIE_WALL=.5,DIE_FRIC=2.9,DIE_DRAG=.7,DIE_QDRAG=.0013,DIE_VMAX=620,DIE_PULL=760,DIE_K=220,DIE_STOP=12,DIE_FORCE=4.5;
 /* lanes are the tiles of one visual line; a wrapped row is its own surface, so
    dice only ever collide with the dice they share a line with */
 function rowGeom(T){
@@ -872,7 +878,7 @@ function paintDie(d){
   d.sd.style.transform=`translate3d(${d.x.toFixed(2)}px,0,0) scale(${(1-h*.5).toFixed(3)},${(1-h*.35).toFixed(3)})`;
   d.sd.style.opacity=(1-h*.55).toFixed(3)}
 }
-function launchDie(t,v,i,delay,geo,seq,done){
+function launchDie(t,v,i,delay,geo,seq,done,pw=.55,wantDir=0){
  const F=DIE_FACES.find(f=>f[0]===faceFor(v)),bx=F[2],by=F[3],prev=t._d;
  const st=prev?{x:prev.rx,y:prev.ry}:t._rot||{x:0,y:0};
  t.classList.remove('settled');t.style.zIndex='3';
@@ -880,15 +886,18 @@ function launchDie(t,v,i,delay,geo,seq,done){
  if(sides!==6)t.querySelectorAll('.dface b').forEach(b=>{const n=1+Math.floor(rnd()*sides);b.textContent=n;b.parentNode.dataset.n=n});
  t._rot={x:bx,y:by};
  const g=geo,edgeL=g.cx-g.rowL,edgeR=g.rowR-g.cx;
- /* the tiles are one surface: a die in the middle of the row may go either
-   way, one already against a row end is thrown back inwards */
- let dir=rnd()<.5?1:-1;
- if(Math.min(edgeL,edgeR)<g.ds*1.25)dir=edgeL<edgeR?1:-1;
+ /* the flick sends them the way it went; with no direction in the gesture a
+   random one is the only honest choice, and a die already against a row end
+   is thrown back inwards */
+ let dir=wantDir||(rnd()<.5?1:-1);
+ if(!wantDir&&Math.min(edgeL,edgeR)<g.ds*1.25)dir=edgeL<edgeR?1:-1;
  const d={t,v,i,seq,g,done,phase:'fly',t0:0,st:0,age:0,
   x:Math.max(-g.laneLim,Math.min(g.laneLim,prev?prev.x:0)),y:0,
-  vx:dir*(150+rnd()*180),vy:-(165+rnd()*135),
+  vx:dir*(90+pw*470)*(.85+rnd()*.3),vy:-(105+pw*330)*(.9+rnd()*.2),
   rx:st.x,ry:st.y,tx:bx,ty:by,bx,by,
-  spinX:(rnd()<.5?-1:1)*(420+rnd()*380),spinY:(rnd()<.5?-1:1)*(130+rnd()*170),
+  /* it tumbles over the ground it covers; a die does not pirouette on a
+     vertical axis the way the old spinY made it */
+  spinX:(rnd()<.5?-1:1)*(230+pw*820),spinY:(rnd()<.5?-1:1)*(20+pw*80),
   squash:0,r:g.ds/2,halfW:g.ds/2,home:(rnd()*2-1)*g.laneLim*.85,
   sh:t.querySelector('.dsh'),cube:t.querySelector('.cube'),sd:t.querySelector('.dshadow')};
  t._d=d;paintDie(d);
@@ -952,18 +961,18 @@ function stepDie(d,dt,now){
   d.rx+=d.spinX*dt;d.ry+=d.spinY*dt;
   d.spinX*=Math.exp(-1.7*dt);d.spinY*=Math.exp(-2.6*dt);
   d.squash*=Math.exp(-9*dt);
-  if(d.age>DIE_FORCE||(d.age>.32&&d.y===0&&Math.abs(d.vx)<DIE_STOP&&Math.abs(d.x)<=g.laneLim))beginSettle(d);
+  if((d.age>.30&&d.y===0&&Math.abs(d.vx)<DIE_STOP&&Math.abs(d.x)<=g.laneLim)||d.age>DIE_FORCE)beginSettle(d);
  }else if(d.phase==='settle'){
   /* snap onto the rolled face: the nearest angle congruent with the target, so
      the cube never unwinds more than it must, then a small damped bounce */
   d.st+=dt;
-  const p=Math.min(1,d.st/.32),e=1-Math.pow(1-p,3);
+  const p=Math.min(1,d.st/.20),e=1-Math.pow(1-p,3);
   d.rx=d.fx+(d.tx-d.fx)*e;
   d.ry=d.fy+(d.ty-d.fy)*e;
   d.x=d.fx2+(d.restX-d.fx2)*e;
-  d.y=d.fy2*(1-e)-Math.abs(Math.sin(Math.min(Math.PI,d.st*26)))*Math.max(0,9*(1-d.st/.42));
+  d.y=d.fy2*(1-e)-Math.abs(Math.sin(Math.min(Math.PI,d.st*26)))*Math.max(0,9*(1-d.st/.30));
   d.squash*=Math.exp(-7*dt);
-  if(d.st>=.42){
+  if(d.st>=.30){
    d.y=0;d.x=d.restX;d.rx=d.tx;d.ry=d.ty;d.squash=0;d.phase='rest';
    paintDie(d);if(d.done)d.done();
   }
