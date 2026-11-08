@@ -11,7 +11,8 @@
   const hap = (n) => { try { buzz(n); } catch (e) {} };
 
   let L = null, geo = null, ball = null, drag = null, trail = [], parts = [], splash = null;
-  let shots = 0, makes = 0, tally = [], phase = 'aim', pause = 0;
+  let score = 0, best = 0, shots = 0, phase = 'aim', pause = 0;
+  let hoopX = 0, hoopA = 0, hoopT = 0;          /* where the rim is now, and how far it swings */
   let netT = 0, netPh = 0, rimE = 0, rimPh = 0, spin = 0, air = 0, restT = 0;
   let bob = 0, power = 0;
 
@@ -30,16 +31,19 @@
   }
 
   function resetBall() {
-    const restX = geo.cx - geo.rimW * 1.1;
+    /* the ball never waits in the same spot twice, and the spread widens as
+       the score climbs */
+    const spread = geo.w * (0.10 + Math.min(0.22, score * 0.012));
+    const restX = clamp(geo.cx + (Math.random() * 2 - 1) * spread, geo.r * 2, geo.w - geo.r * 2);
     ball = { x: restX, y: geo.floorY - geo.r, vx: 0, vy: 0, scored: false, r: geo.r };
     trail = []; spin = 0; air = 0; restT = 0; phase = 'aim'; drag = null;
   }
 
   function startRound() {
-    shots = 0; makes = 0; tally = [];
-    parts = []; splash = null;
+    score = 0; shots = 0;
+    parts = []; splash = null; hoopT = 0;
     resetBall();
-    K.setResult(res(), '3 shots');
+    K.setResult(res(), 'Score 0 · best ' + best);
   }
 
   function shoot(dx, dy) {
@@ -56,7 +60,7 @@
     ball.scored = false;
     phase = 'fly'; trail = []; air = 0; restT = 0;
     spin = ball.vx * .06;
-    K.setResult(res(), 'Shot ' + (shots + 1) + ' of 3');
+    K.setResult(res(), 'Score ' + score + ' · best ' + best);
     sfx(300 + power * 260, .09, .035, 'sine', 520 + power * 300);
     hap(8);
   }
@@ -64,20 +68,17 @@
   function endShot() {
     if (phase !== 'fly') return;
     shots++;
-    if (ball.scored) makes++;
-    tally.push(!!ball.scored);
+    if (ball.scored) {
+      score++;
+      if (score > best) { best = score; try { store.set('d.bbbest', best); } catch (e) {} }
+    }
     phase = 'pause'; pause = 26;
-    if (shots >= 3) K.setResult(res(), '…');
-    else K.setResult(res(), 'Shot ' + (shots + 1) + ' of 3');
+    K.setResult(res(), 'Score ' + score + ' · best ' + best);
   }
 
   function finish() {
-    phase = 'done';
-    ball.x = geo.cx - geo.rimW * 1.1; ball.y = geo.floorY - geo.r; ball.vx = 0; ball.vy = 0;
-    trail = []; drag = null;
-    const tail = makes === 3 ? 'all three' : makes === 2 ? 'two of three' : makes === 1 ? 'one of three' : 'cold';
-    K.setResult(res(), makes + ' of 3 · ' + tail);
-    sfx(makes >= 2 ? 660 : 240, .2, .05, makes >= 2 ? 'sine' : 'triangle', makes >= 2 ? 990 : 180);
+    resetBall();
+    K.setResult(res(), 'Score ' + score + ' · best ' + best);
   }
 
   function rattle(power) {
@@ -98,18 +99,31 @@
   }
 
   function splashAt(kind) {
-    splash = { x: geo.cx, y: geo.rimY, t: 0, kind };
+    splash = { x: hoopX, y: geo.rimY, t: 0, kind };
     const n = kind === 'make' ? 14 : 8;
     for (let i = 0; i < n; i++) {
       const a = -Math.PI / 2 + (Math.random() - .5) * 2.4;
       const sp = 1.6 + Math.random() * 2.6;
-      parts.push({ x: geo.cx + (Math.random() - .5) * geo.rimW, y: geo.rimY,
+      parts.push({ x: hoopX + (Math.random() - .5) * geo.rimW, y: geo.rimY,
         vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - .8,
         life: 1, r: 1.4 + Math.random() * 2.2, c: kind });
     }
   }
 
   /* ---------- physics ---------- */
+  /* the basket starts sliding once you have five, and keeps getting quicker */
+  function hoopStep(dt) {
+    if (!geo) return;
+    if (score < 5) { hoopA += (0 - hoopA) * .06 * dt; hoopX = geo.cx + Math.sin(0) * hoopA; return; }
+    const speed = Math.min(2.4, 0.85 + (score - 5) * 0.16);
+    /* it starts with a small slide at five and works up to the full sweep */
+    const swingMax = Math.min(geo.w * 0.30, geo.rimW * 2.6);
+    const swing = swingMax * Math.min(1, 0.35 + (score - 5) * 0.055);
+    hoopA += (swing - hoopA) * .04 * dt;
+    hoopT = (hoopT || 0) + speed * 0.0125 * dt;
+    hoopX = geo.cx + Math.sin(hoopT) * hoopA;
+  }
+
   function physics(dt) {
     const b = ball, h = geo.h;
     const n = Math.max(1, Math.ceil(dt)), step = dt / n;
@@ -122,7 +136,7 @@
       /* the crossing is tested per sub-step: at a slow frame rate the ball
          can move further than the rim's thickness in one tick */
       if (!b.scored && b.vy > 0 && py < geo.rimY - .5 && b.y >= geo.rimY &&
-          Math.abs(b.x - geo.cx) < geo.rimW - b.r - 2.5) {
+          Math.abs(b.x - hoopX) < geo.rimW - b.r - 2.5) {
         b.scored = true; crossed = true;
       }
     }
@@ -133,7 +147,7 @@
        can catch iron */
     [-1, 1].forEach(s => {
       if (b.vy < -1.2) return;
-      const px = geo.cx + s * geo.rimW + Math.sin(rimPh) * rimE * 2.4;
+      const px = hoopX + s * geo.rimW + Math.sin(rimPh) * rimE * 2.4;
       const dx = b.x - px, dy = b.y - geo.rimY, d = Math.hypot(dx, dy) || .001;
       if (d < b.r + 2.6) {
         const nx = dx / d, ny = dy / d;
@@ -141,7 +155,7 @@
         const vn = b.vx * nx + b.vy * ny;
         b.vx -= 2 * vn * nx * .58; b.vy -= 2 * vn * ny * .58;
         b.vx *= .92; b.vy *= .96;
-        if (Math.abs(b.vx) < 1.2) b.vx += (b.x < geo.cx ? -1 : 1) * 1.3;
+        if (Math.abs(b.vx) < 1.2) b.vx += (b.x < hoopX ? -1 : 1) * 1.3;
         if (Math.abs(b.vy) < 1.2) b.vy -= 1.1;
         rattle(Math.min(1, Math.hypot(b.vx, b.vy) / 9));
         netT = Math.max(netT, .5); netPh = 0;
@@ -151,11 +165,11 @@
     if (crossed) {
       netT = 1.15; netPh = 0;
       splashAt('make'); swish();
-      K.setResult(res(), makes + 1 >= 3 ? 'Swish' : 'Swish · ' + (makes + 1) + ' of 3');
+      K.setResult(res(), score + 1 >= 5 ? 'Swish · ' + (score + 1) + ' in a row' : 'Swish');
     }
 
     /* never let it perch on the rim: nudge anything that hangs there */
-    const near = Math.abs(b.x - geo.cx) < geo.rimW + b.r + 6 && Math.abs(b.y - geo.rimY) < b.r + 12;
+    const near = Math.abs(b.x - hoopX) < geo.rimW + b.r + 6 && Math.abs(b.y - geo.rimY) < b.r + 12;
     if (near && Math.hypot(b.vx, b.vy) < 1.5) restT += dt; else restT = 0;
     if (restT > 11) {
       b.vx += (Math.random() < .5 ? -1 : 1) * (2 + Math.random() * 1.6);
@@ -172,6 +186,9 @@
   /* ---------- art ---------- */
   function drawBoard(x, flat) {
     const b = geo.board;
+    /* the board, the target square and the rim arms are one assembly: shift it
+       with the rim instead of leaving a backboard behind in the middle */
+    x.save(); x.translate(hoopX - geo.cx, 0);
     if (!flat) {
       x.save(); x.shadowColor = 'rgba(4,0,18,.5)'; x.shadowBlur = 22; x.shadowOffsetY = 12;
       K.rr(x, b.x, b.y, b.w, b.h, 10); x.fillStyle = '#1a1038'; x.fill(); x.restore();
@@ -215,6 +232,7 @@
       x.strokeStyle = flat ? '#241a3a' : 'rgba(230,235,255,.55)';
       x.lineWidth = 3.4; x.stroke();
     });
+    x.restore();
   }
 
   function drawNet(x, flat) {
@@ -226,9 +244,9 @@
     x.lineCap = 'round';
     for (let i = 0; i <= N; i++) {
       const u = i / N;
-      const topX = geo.cx - geo.rimW + 2 * geo.rimW * u;
+      const topX = hoopX - geo.rimW + 2 * geo.rimW * u;
       const topY = geo.rimY + Math.sin(Math.PI * u) * 6;
-      const botX = geo.cx + (topX - geo.cx) * (botR / geo.rimW);
+      const botX = hoopX + (topX - hoopX) * (botR / geo.rimW);
       const cpX = (topX + botX) / 2 + sway * .4;
       const cpY = geo.rimY + len * .55 + bulge * .35;
       x.beginPath(); x.moveTo(topX, topY);
@@ -239,7 +257,7 @@
     for (let k = 1; k <= 3; k++) {
       const s = k / 3, wid = geo.rimW + (botR - geo.rimW) * s;
       const yy = geo.rimY + len * s + bulge * s * s;
-      x.beginPath(); x.ellipse(geo.cx + sway * s, yy, wid * .98, 5 + s * 2, 0, 0, Math.PI);
+      x.beginPath(); x.ellipse(hoopX + sway * s, yy, wid * .98, 5 + s * 2, 0, 0, Math.PI);
       x.strokeStyle = flat ? 'rgba(36,26,58,.34)' : 'rgba(255,255,255,.4)';
       x.lineWidth = 1.2; x.stroke();
     }
@@ -250,14 +268,14 @@
     const wob = Math.sin(rimPh) * rimE * 2.4;
     x.save(); x.lineCap = 'round';
     x.beginPath();
-    if (front) x.ellipse(geo.cx + wob, geo.rimY, geo.rimW, 7.5, 0, 0, Math.PI);
-    else x.ellipse(geo.cx + wob, geo.rimY, geo.rimW, 7.5, 0, Math.PI, TAU);
+    if (front) x.ellipse(hoopX + wob, geo.rimY, geo.rimW, 7.5, 0, 0, Math.PI);
+    else x.ellipse(hoopX + wob, geo.rimY, geo.rimW, 7.5, 0, Math.PI, TAU);
     x.strokeStyle = flat ? '#e2622b' : '#ff6a3d'; x.lineWidth = 5.4; x.stroke();
     x.strokeStyle = flat ? 'rgba(36,26,58,.55)' : 'rgba(90,20,0,.45)'; x.lineWidth = 1.4; x.stroke();
     x.strokeStyle = K.light(flat ? .35 : .45); x.lineWidth = 1.4;
     x.beginPath();
-    if (front) x.ellipse(geo.cx + wob, geo.rimY - 1.2, geo.rimW, 6.4, 0, .2, Math.PI - .2);
-    else x.ellipse(geo.cx + wob, geo.rimY - 1.2, geo.rimW, 6.4, 0, Math.PI + .2, TAU - .2);
+    if (front) x.ellipse(hoopX + wob, geo.rimY - 1.2, geo.rimW, 6.4, 0, .2, Math.PI - .2);
+    else x.ellipse(hoopX + wob, geo.rimY - 1.2, geo.rimW, 6.4, 0, Math.PI + .2, TAU - .2);
     x.stroke();
     x.restore();
   }
@@ -314,10 +332,10 @@
     x.fillStyle = 'rgba(36,26,58,.62)';
     x.font = '800 10px "Bricolage Grotesque",system-ui,sans-serif';
     x.textAlign = 'left'; x.textBaseline = 'middle';
-    x.fillText('MAKES', X + 11, Y + 10);
+    x.fillText('SCORE', X + 11, Y + 10);
     x.fillStyle = '#241a55';
     x.font = '800 14px "Bricolage Grotesque",system-ui,sans-serif';
-    x.fillText(makes + '/' + 3, X + 11, Y + 22);
+    x.fillText(score + (best > score ? '  ·  best ' + best : ''), X + 11, Y + 22);
     for (let i = 0; i < 3; i++) {
       const px = X + w - 30 + i * 9;
       x.beginPath(); x.arc(px, Y + 22, 3, 0, TAU);
@@ -348,7 +366,7 @@
   function drawAim(x, w, h, flat) {
     if (phase !== 'aim' || drag) return;
     const lift = Math.sin(bob) * 5;
-    const ang = Math.atan2(geo.rimY - ball.y, geo.cx - ball.x);
+    const ang = Math.atan2(geo.rimY - ball.y, hoopX - ball.x);
     const x0 = ball.x + Math.cos(ang) * (ball.r + 7), y0 = ball.y + Math.sin(ang) * (ball.r + 7);
     const len = 26 + lift;
     const x1 = x0 + Math.cos(ang) * len, y1 = y0 + Math.sin(ang) * len;
@@ -407,8 +425,9 @@
       if (netT > 0) { netT = Math.max(0, netT - dt * .022); netPh += dt * .32; }
       else netPh = 0;
       if (rimE > 0) { rimE = Math.max(0, rimE - dt * .03); rimPh += dt * .55; }
+      hoopStep(dt);
       if (phase === 'fly') physics(dt);
-      if (phase === 'pause') { pause -= dt; if (pause <= 0) { if (shots >= 3) finish(); else resetBall(); } }
+      if (phase === 'pause') { pause -= dt; if (pause <= 0) finish(); }
 
       parts.forEach(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += .12 * dt; p.life -= .028 * dt; });
       parts = parts.filter(p => p.life > 0);
@@ -425,8 +444,7 @@
       drawParticles(x);
       drawDrag(x, flat);
 
-      if (phase === 'done') K.label(x, 'tap to shoot again', w / 2, h - 14, 10);
-      else if (phase === 'aim') K.label(x, 'flick up to shoot', w / 2, h - 14, 10);
+      if (phase === 'aim') K.label(x, score >= 5 ? 'the basket is moving — flick up to shoot' : 'flick up to shoot', w / 2, h - 14, 10);
     } catch (e) {}
   }
 
@@ -435,10 +453,12 @@
   K && window.DECIDER_GAMES.push({
     id: 'basketball', name: 'Basketball', short: 'Hoops', label: 'Shots', noResult: true, button: false,
     body: `<canvas class="toy" id="bbCv"></canvas>
-      <div class="res" id="bbRes" aria-live="polite"><span class="muted">Three shots — flick up from anywhere</span></div>`,
+      <div class="res" id="bbRes" aria-live="polite"><span class="muted">Flick up from anywhere — the basket starts moving at five</span></div>`,
     init() {
       L = K.loop(frame);
       layout();
+      try { best = +store.get('d.bbbest', 0) || 0; } catch (e) {}
+      K.setResult(res(), 'Score 0 · best ' + best);
       const c = cv();
       c.addEventListener('pointerdown', (e) => {
         if (!geo || phase === 'fly' || phase === 'pause') return;
@@ -461,6 +481,12 @@
     },
     enter() { layout(); L.start(); },
     leave() { drag = null; L.stop(); },
+    status() {
+      return { phase, score, best, shots,
+        hoopX: +hoopX.toFixed(1), hoopHome: geo ? +geo.cx.toFixed(1) : null,
+        hoopSwing: +hoopA.toFixed(1),
+        ballX: ball ? +ball.x.toFixed(1) : null };
+    },
     action() { shoot((Math.random() - .5) * 70, -100 - Math.random() * 50); }
   });
 })();
