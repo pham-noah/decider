@@ -11,7 +11,7 @@
   const hap = (n) => { try { buzz(n); } catch (e) {} };
 
   let L = null, geo = null, ball = null, drag = null, trail = [], parts = [], splash = null;
-  let score = 0, best = 0, shots = 0, phase = 'aim', pause = 0;
+  let score = 0, best = 0, shots = 0, phase = 'aim', pause = 0, frameErr = null;
   let hoopX = 0, hoopA = 0, hoopT = 0;          /* where the rim is now, and how far it swings */
   let netT = 0, netPh = 0, rimE = 0, rimPh = 0, spin = 0, air = 0, restT = 0;
   let bob = 0, power = 0;
@@ -336,12 +336,6 @@
     x.fillStyle = '#241a55';
     x.font = '800 14px "Bricolage Grotesque",system-ui,sans-serif';
     x.fillText(score + (best > score ? '  ·  best ' + best : ''), X + 11, Y + 22);
-    for (let i = 0; i < 3; i++) {
-      const px = X + w - 30 + i * 9;
-      x.beginPath(); x.arc(px, Y + 22, 3, 0, TAU);
-      x.fillStyle = i < tally.length ? (tally[i] ? '#2fbf6b' : 'rgba(36,26,58,.24)') : 'rgba(36,26,58,.12)';
-      x.fill();
-    }
   }
 
   function drawSplash(x) {
@@ -445,7 +439,7 @@
       drawDrag(x, flat);
 
       if (phase === 'aim') K.label(x, score >= 5 ? 'the basket is moving — flick up to shoot' : 'flick up to shoot', w / 2, h - 14, 10);
-    } catch (e) {}
+    } catch (e) { if (!frameErr) { frameErr = e; console.error('basketball frame:', e); } }
   }
 
   const at = (e) => { const r = cv().getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
@@ -485,7 +479,9 @@
       return { phase, score, best, shots,
         hoopX: +hoopX.toFixed(1), hoopHome: geo ? +geo.cx.toFixed(1) : null,
         hoopSwing: +hoopA.toFixed(1),
-        ballX: ball ? +ball.x.toFixed(1) : null };
+        ballX: ball ? +ball.x.toFixed(1) : null,
+        ballY: ball ? +ball.y.toFixed(1) : null, floorY: geo ? +geo.floorY.toFixed(1) : null,
+        frameErr: frameErr ? String(frameErr && frameErr.message) : null };
     },
     action() { shoot((Math.random() - .5) * 70, -100 - Math.random() * 50); }
   });
