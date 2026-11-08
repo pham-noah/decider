@@ -67,6 +67,72 @@
     for (let i = 0; i < n; i++) setTimeout(() => noiseBurst(.09, .075, 3200 + Math.random() * 900, 6, 0), i * 55);
   };
 
+  /* a motor under the reels for the whole spin */
+  let humOsc = null, humGain = null;
+  function humStart() {
+    if (!sound) return;
+    try {
+      AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+      if (AC.state === 'suspended') AC.resume();
+      humStop();
+      const t = AC.currentTime;
+      humOsc = AC.createOscillator(); humOsc.type = 'sawtooth';
+      humOsc.frequency.setValueAtTime(54, t);
+      humOsc.frequency.linearRampToValueAtTime(64, t + .6);
+      humGain = AC.createGain(); humGain.gain.setValueAtTime(.013, t);
+      const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 240;
+      humOsc.connect(lp).connect(humGain).connect(AC.destination); humOsc.start(t);
+    } catch (e) {}
+  }
+  function humStop() {
+    try {
+      if (!humOsc) return;
+      const t = AC.currentTime;
+      humGain.gain.cancelScheduledValues(t);
+      humGain.gain.setValueAtTime(Math.max(.0001, humGain.gain.value), t);
+      humGain.gain.exponentialRampToValueAtTime(.0001, t + .18);
+      humOsc.stop(t + .2); humOsc = null; humGain = null;
+    } catch (e) { humOsc = null; humGain = null; }
+  }
+
+  /* the last reel hanging is the whole point of a slot machine: a rising tone
+     underneath it, louder when the first two already match */
+  function sfxTension(strong) {
+    if (!sound) return;
+    try {
+      AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+      if (AC.state === 'suspended') AC.resume();
+      const t = AC.currentTime, dur = strong ? 1.45 : 1.0;
+      const o = AC.createOscillator(), g = AC.createGain();
+      o.type = strong ? 'square' : 'triangle';
+      o.frequency.setValueAtTime(strong ? 190 : 145, t);
+      o.frequency.exponentialRampToValueAtTime(strong ? 780 : 520, t + dur);
+      g.gain.setValueAtTime(.0001, t);
+      g.gain.exponentialRampToValueAtTime(strong ? .055 : .03, t + dur * .85);
+      g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+      const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2000;
+      o.connect(lp).connect(g).connect(AC.destination);
+      o.start(t); o.stop(t + dur + .02);
+    } catch (e) {}
+  }
+
+  function sfxJingle(bn) {
+    if (!sound) return;
+    try {
+      AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+      if (AC.state === 'suspended') AC.resume();
+      const notes = bn === 3 ? [523, 659, 784, 1047, 1319] : [659, 880, 1047];
+      notes.forEach((f, i) => setTimeout(() => {
+        try {
+          const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+          o.type = 'triangle'; o.frequency.setValueAtTime(f, t);
+          g.gain.setValueAtTime(.10, t); g.gain.exponentialRampToValueAtTime(.0001, t + .38);
+          o.connect(g).connect(AC.destination); o.start(t); o.stop(t + .4);
+        } catch (e) {}
+      }, i * (bn === 3 ? 95 : 115)));
+    } catch (e) {}
+  }
+
   function start(p) {
     if (spinning || !reels.length) return;
     const slRes = document.getElementById('slRes');
@@ -76,7 +142,8 @@
     }
     credits -= BET; lastPay = 0;
     power = Math.max(0, Math.min(1, p == null ? 0.5 : p));
-    spinning = true; winFlash = null; queued = false;
+    spinning = true; winFlash = null; queued = false; tensionDone = false;
+    humStart();
     spinStart = performance.now();
     const base = 520 + power * 1050;                        // harder pull = longer run
     reels.forEach((r, i) => {
@@ -92,6 +159,7 @@
   }
 
   function finish() {
+    humStop();
     const idx = reels.map(r => ((Math.round(r.pos) % pool.length) + pool.length) % pool.length);
     const count = {};
     idx.forEach(i => { count[i] = (count[i] || 0) + 1; });
@@ -111,15 +179,26 @@
     try { buzz(bn === 3 ? [12, 40, 12] : [8, 24]); } catch (e) {}
     K.setResult(res, label + ' ×' + bn + '  +' + pay);
     /* noResult:true — a machine that pays out celebrates here, it does not deal a verdict */
+    sfxJingle(bn);
     if (bn === 3) { sfxCoin(9); try { chime(); confetti(); } catch (e) {} } else sfxCoin(3);
   }
 
-  let tickAt = 0;
+  let tickAt = 0, tensionDone = false;
   function tick(dt, now) {
-    if (spinning && now > tickAt) {
-      tickAt = now + 62 + Math.random() * 34;
-      sfxRatchet(power);
-    }
+    if (spinning) {
+      const left = reels.filter((r) => !r.settled).length;
+      if (left === 1 && !tensionDone) {
+        /* the last reel is the moment: louder if the first two already match */
+        tensionDone = true;
+        const idx = reels.slice(0, 2).map((r) => ((Math.round(r.pos) % pool.length) + pool.length) % pool.length);
+        sfxTension(idx[0] === idx[1]);
+      }
+      if (now > tickAt) {
+        /* ticks thin out as the reels crawl, so the ear hears it slowing */
+        tickAt = now + (left <= 1 ? 104 + Math.random() * 44 : 50 + Math.random() * 26);
+        sfxRatchet(power);
+      }
+    } else if (humOsc) humStop();
     const f = K.fit(cv());
     if (!g || f.w !== g.w || f.h !== g.h) { g = f; LM = layout(); }   // width AND height
     if (!g) return;
