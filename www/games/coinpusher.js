@@ -8,6 +8,7 @@
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
   /* ---------- cabinet ---------- */
+  let lastDrop = null;
   let G = null, L = null;
   let shelf = [], tray = [], won = 0, phase = 0.5, acc = 0, pulse = 0, fed = 0;
   let labels = [];
@@ -85,9 +86,23 @@
 
   /* the feed picks the roomiest slot in the band right in front of the face, so a
      dropped coin never lands inside another one */
-  function freeSpot() {
+  function freeSpot(targetX) {
     const r = G.cr, f = faceOf();
     let best = null, bestGap = -1e9;
+    /* where you pressed in the mouth of the machine is where the coin drops */
+    if (targetX != null) {
+      const x = clamp(targetX, G.l + r, G.r - r);
+      for (const dy of [2.5, 2.5 + r * 1.5, 2.5 + r * 3]) {
+        const y = f + r + dy;
+        let gap = 1e9;
+        for (const c of shelf) {
+          if (Math.abs(c.y - y) > c.r + r + 3) continue;
+          gap = Math.min(gap, Math.hypot(c.x - x, c.y - y) - c.r - r);
+        }
+        if (gap > bestGap) { bestGap = gap; best = { x, y }; }
+      }
+      return best;
+    }
     for (let t = 0; t < 10; t++) {
       const x = G.l + r + Math.random() * (G.r - G.l - r * 2);
       for (const dy of [2.5, 2.5 + r * 1.5, 2.5 + r * 3]) {
@@ -103,11 +118,12 @@
     return best;
   }
 
-  function add(quiet) {
+  function add(quiet, atX) {
     if (!G) return;
     pulse = 1; fed++;
     const r = G.cr;
-    const spot = shelf.length < 90 ? freeSpot() : null;
+    if (atX != null) lastDrop = clamp(atX, G.l + r, G.r - r);
+    const spot = shelf.length < 90 ? freeSpot(atX) : null;
     if (spot) {
       const c = mkCoin(spot.x, spot.y);
       c.region = 'shelf';
@@ -473,8 +489,9 @@
     const r = cv().getBoundingClientRect();
     return { x: e.clientX - r.left, y: e.clientY - r.top };
   };
-  const inSlot = (p) => G && Math.abs(p.x - G.slot.x) <= G.slot.w / 2 + 14 &&
-    Math.abs(p.y - G.slot.y) <= G.slot.h / 2 + 14;
+  /* the whole mouth of the cabinet feeds: press where you want the coin to land */
+  const inSlot = (p) => G && p.x > G.l - 12 && p.x < G.r + 12 &&
+    p.y < G.lip + (G.floor - G.lip) * 0.20;
 
   window.DECIDER_GAMES.push({
     id: 'coinpusher', name: 'Coin Pusher', short: 'Pusher', label: 'Shelf', noResult: true, button: false,
@@ -506,7 +523,7 @@
           return;
         }
         e.preventDefault();
-        add();
+        add(false, p.x);
       });
       if (c.clientWidth) L.start();
     },
@@ -515,7 +532,7 @@
     action() { add(); },
     status() {
       return {
-        won, fed,
+        won, fed, lastDrop,
         shelf: shelf.length, tray: tray.length,
         coins: shelf.map((c) => ({ x: +c.x.toFixed(2), y: +c.y.toFixed(2), r: c.r, at: 'shelf' }))
           .concat(tray.map((c) => ({ x: +c.x.toFixed(2), y: +c.y.toFixed(2), r: c.r, at: 'tray' }))),

@@ -181,9 +181,10 @@
       });
       const up = () => {
         if (!drag) return;
+        /* a light touch used to get a coin-flip direction; now the disc simply
+           stays where you put it, so placement is still the answer */
         if (!drag.live) v = 0;
         drag = null;
-        if (Math.abs(v) < 0.03) v = 0.05 * (Math.random() < .5 ? 1 : -1);
         done = false;
       };
       c.addEventListener('pointerup', up);

@@ -83,7 +83,7 @@
       tx = geo.cx + dx / d * dd; ty = geo.cy + dy / d * dd;
     }
     stuck = null; hit = -1; busy = true;
-    dart = { lx: geo.w / 2, ly: geo.h + 12, tx, ty, t: 0, px: geo.w / 2, py: geo.h + 12, a: -Math.PI / 2 };
+    dart = { lx: geo.w / 2, ly: geo.h + 12, tx, ty, t: 0, px: geo.w / 2, py: geo.h + 12, a: -Math.PI / 2, pw: Math.min(1, Math.max(0, power == null ? .55 : power)) };
     K.setResult(res(), '…');
     try { tone(320, .08, .04, 'sawtooth', 640); } catch (e) {}
   }
@@ -129,10 +129,12 @@
     }
     if (stuck) drawDart(x, stuck.x, stuck.y, stuck.a, .9);
     if (dart) {
-      dart.t += dt / 30;
+      /* the throw you gave it: a soft one hangs and arcs high, a hard one
+         snaps over flat and is home sooner */
+      dart.t += dt / (14 + 26 * (1 - dart.pw));
       const e = Math.min(1, dart.t);
       const px = dart.lx + (dart.tx - dart.lx) * e;
-      const py = dart.ly + (dart.ty - dart.ly) * e - Math.sin(Math.PI * e) * R * .5;
+      const py = dart.ly + (dart.ty - dart.ly) * e - Math.sin(Math.PI * e) * R * (.32 + .24 * dart.pw);
       const a = Math.atan2(py - dart.py, px - dart.px) || dart.a;
       dart.a = a; dart.px = px; dart.py = py;
       drawDart(x, px, py, a, 1.15 - .3 * e);

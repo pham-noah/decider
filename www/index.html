@@ -1118,7 +1118,7 @@ function bottleFx(pl){if(calm)return;const r=pl.getBoundingClientRect(),cx=r.lef
 /* the deck is the button: tap the card to draw */
 (() => { const c = $('#deckcard'); c.addEventListener('click', () => drawCard()); })();
 /* the clock is the button: tap it to start */
-(() => { const w = $('.tmerwrap'); if (w) w.addEventListener('click', () => startClock()); })();
+(() => { const w = $('.tmerwrap'); if (w) w.addEventListener('click', () => { if (tmerBusy) stopClock(); else startClock(); }); })();
 
 
 /* shake */
@@ -1256,24 +1256,40 @@ function drawCard(){
   tone(kind==='truth'?660:420,.16,.08,'triangle');buzz(12);log('Deck',kind+': '+text.slice(0,32))},calm?60:270)}
 
 /* timed call */
-let tmerBusy=false,tmerRaf=0;
+let tmerBusy=false,tmerRaf=0,tmerLast=0,tmerOpts=[];
+function tmerOptions(){
+ const v=($('#tmerlist').value||'Go, Stay, Later').split(',').map(x=>x.trim()).filter(Boolean).slice(0,8);
+ return v.length?v:['Go'];
+}
+/* the option under the needle is the answer, whether it ran out or you stopped it */
+function tmerSettle(pick,stopped){
+ const q=$('#tmerq'),fill=$('#tmerfill'),resEl=$('#tmerres');
+ tmerBusy=false;if(tmerRaf){cancelAnimationFrame(tmerRaf);tmerRaf=0}
+ fill.style.transform='scaleX(1)';
+ q.textContent=pick;show(resEl,(stopped?'Stopped — ':'Time — ')+pick);
+ log('Timer',pick);chime();buzz([30,40,30]);confetti();
+ later(()=>moment(pick,stopped?'You stopped the clock':'The clock decided'));
+}
 function startClock(){
- const opts=($('#tmerlist').value||'Go, Stay, Later').split(',').map(x=>x.trim()).filter(Boolean).slice(0,8);
+ tmerOpts=tmerOptions();
  if(tmerBusy)return;tmerBusy=true;
  const q=$('#tmerq'),fill=$('#tmerfill'),resEl=$('#tmerres'),dur=calm?2600:4200,t0=performance.now();
- resEl.innerHTML='<span class="muted">Decide before the bar runs out…</span>';
- let last=0;
+ resEl.innerHTML='<span class="muted">Tap to stop it on the one you want…</span>';
+ tmerLast=0;q.textContent=tmerOpts[0];
  (function step(now){
   if(cur!=='tmer'){tmerBusy=false;fill.style.transform='scaleX(1)';return}
   const p=Math.min(1,(now-t0)/dur);fill.style.transform='scaleX('+(1-p)+')';
-  const i=Math.floor(p*opts.length*3)%opts.length;
-  if(i!==last){last=i;q.textContent=opts[i];tone(520+i*40,.05,.04,'square')}
+  const i=Math.floor(p*tmerOpts.length*3)%tmerOpts.length;
+  if(i!==tmerLast){tmerLast=i;q.textContent=tmerOpts[i];tone(520+i*40,.05,.04,'square')}
   if(p<1){tmerRaf=requestAnimationFrame(step);return}
-  const pick=opts[Math.floor(rnd()*opts.length)];
-  q.textContent=pick;show(resEl,'Time — '+pick);log('Timer',pick);
-  chime();buzz([30,40,30]);confetti();later(()=>moment(pick,'The clock decided'));
-  tmerBusy=false;fill.style.transform='scaleX(1)';
- })(t0)}
+  /* it ran out: the needle lands somewhere of its own, and that is the answer */
+  tmerLast=Math.floor(Math.random()*tmerOpts.length);
+  q.textContent=tmerOpts[tmerLast];
+  tmerSettle(tmerOpts[tmerLast],false);
+ })(t0);
+}
+/* a tap while it runs stops the clock on whatever it is showing */
+function stopClock(){ if(!tmerBusy)return; tmerSettle(tmerOpts[tmerLast]||tmerOpts[0],true) }
 
 /* accessibility */
 function applyA11y(){const r=document.documentElement;r.dataset.contrast=store.get('d.hc',false)?'high':'normal';r.dataset.motion=calm?'reduce':'full';R.setProperty('--fs',store.get('d.fs',1))}

@@ -216,17 +216,18 @@
         if (d > Math.PI) d -= Math.PI * 2;
         if (d < -Math.PI) d += Math.PI * 2;
         drag.a = a; drag.turned += Math.abs(d); angle += d;
-        if (drag.turned > 1.1) {
-          pending = Math.min(1, drag.turned / (Math.PI * 2));   // how far you actually turned
-          drag = null; one = null; st = 'spin'; spin = 0; spinGoal = Math.PI * 2 * (0.6 + pending * 2.4);
-        }
+        /* the knob just turns with the hand; the spin is fired on release, so a
+           third of a turn and three full turns are not the same draw */
       });
       c.addEventListener('pointerup', () => {
         if (!drag) return;
-        /* tapping the knob — the only control the hint names — used to do nothing */
-        if (drag.turned < 0.25) { angle = 0; spinNow(0.6); }
-        else if (drag.turned < 1.1) { angle = 0; try { tone(240, .05, .03, 'sine', 300); } catch (e) {} }
-        drag = null;
+        const turned = drag.turned;
+        angle = 0; drag = null;
+        if (turned < 0.25) { spinNow(0.18); }
+        else {
+          pending = Math.min(1, turned / (Math.PI * 2.5));
+          one = null; st = 'spin'; spin = 0; spinGoal = Math.PI * 2 * (0.6 + pending * 2.4);
+        }
       });
       c.addEventListener('pointercancel', () => { drag = null; });
       const chips = card.querySelector('#gaCount');

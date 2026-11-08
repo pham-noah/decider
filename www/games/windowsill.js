@@ -3,7 +3,7 @@
 (function () {
   const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT, TAU = Math.PI * 2; const cv = () => document.getElementById('wsCv'), resEl = () => document.getElementById('wsRes');
-  let L = null, g = null, hits = [], drag = null, t = 0, ripples = []; const stars = [], lamp = { on: false, glow: 0 }, plant = { bend: 0, v: 0 };
+  let L = null, g = null, hits = [], drag = null, t = 0, ripples = [], starHit = null; const stars = [], lamp = { on: false, glow: 0 }, plant = { bend: 0, v: 0 };
   const cup = { rock: 0, v: 0, drops: [], wait: 0, puddle: 0 }; const radio = { until: 0, notes: [], spawn: 0 }, drawer = { open: 0, v: 0, want: 0 };
   const clock = { a: -.7, v: 0 }, cat = { swat: 0, v: 0, blink: 0, next: 2.5, tx: 0, ty: 0 };
   const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); } catch (e) {} }; const hap = (n) => { try { buzz(n); } catch (e) {} };
@@ -24,7 +24,11 @@
       { id: 'cat', x: G.ca.x, y: sy - 36, r: w * .09 }];
   }
   function pick(p) {
-    if (!g) return null; const d = g.G.drawer; if (p.x > d.x && p.x < d.x + d.w && p.y > d.y - 6 && p.y < d.y + d.h + drawer.open * g.G.cab.h * .34) return 'drawer'; let best = null, bd = 1.35;
+    if (!g) return null; const d = g.G.drawer; const wn = g.G.win;
+    /* the window is a surface too: it used to be a fifth of the room where a
+       poke did nothing at all */
+    if (p.x > wn.x && p.x < wn.x + wn.w && p.y > wn.y && p.y < wn.y + wn.h) return 'window';
+    if (p.x > d.x && p.x < d.x + d.w && p.y > d.y - 6 && p.y < d.y + d.h + drawer.open * g.G.cab.h * .34) return 'drawer'; let best = null, bd = 1.35;
     for (const o of hits) { const r = Math.hypot(p.x - o.x, p.y - o.y) / o.r; if (r < bd) { bd = r; best = o.id; } }
     return best;
   }
@@ -42,8 +46,17 @@
     } else if (id === 'drawer') {
       drawer.want = drawer.want > .5 ? 0 : 1; sfx(170, .2, .06, 'sawtooth', drawer.want ? 240 : 110); hap(16);
       say(drawer.want ? 'the drawer rolls out — a marble, and a folded note' : 'the drawer slides shut');
+    } else if (id === 'window') {
+      /* the glass answers where you knocked */
+      starHit = { x: p.x, y: p.y, a: 1 };
+      sfx(660, .12, .04, 'sine', 1400); hap(6);
+      say('you tap the glass — a star flares and the moon dims for a moment');
     } else if (id === 'clock') {
-      clock.v += .55; sfx(1240, .04, .035, 'square'); hap(6); say('the hands spin; the afternoon gets away from you');
+      /* where you flick it, and how far from the pin, decides the spin */
+      const c = g.G.clk, dx = p.x - c.x, dy = p.y - c.y;
+      const sp = Math.min(1, Math.hypot(dx, dy) / (c.r * 2.2));
+      clock.v += (dx >= 0 ? 1 : -1) * (.25 + sp * 1.6);
+      sfx(1240, .04, .035, 'square'); hap(6); say('the hands spin; the afternoon gets away from you');
     } else if (id === 'cat') {
       cat.tx = p.x; cat.ty = p.y; cat.v = 9; sfx(780, .07, .05, 'triangle', 1180); hap(8); say('the cat bats at your finger, missing on purpose');
     }
@@ -62,6 +75,7 @@
     cat.v += -cat.swat * .12 * dt; cat.v *= Math.pow(.88, dt); cat.swat = Math.max(0, Math.min(1, cat.swat + cat.v * dt)); cat.next -= dt * .016;
     if (cat.next <= 0) { cat.next = 2.4 + Math.random() * 3; cat.blink = 1; }
     cat.blink = Math.max(0, cat.blink - dt * .14); ripples.forEach(r => { r.r += 42 * dt; r.a -= .028 * dt; }); ripples = ripples.filter(r => r.a > 0);
+    if (starHit) { starHit.a -= .045 * dt; if (starHit.a <= 0) starHit = null; }
     if (t < radio.until) {
       radio.spawn -= dt;
       if (radio.spawn <= 0) { radio.spawn = 9; radio.notes.push({ x: G.ra.x + (Math.random() - .5) * 26, y: G.sy - 58, a: 1, s: 1 + Math.random() * .5 }); }
@@ -205,7 +219,12 @@
     [-1, 1].forEach(s => { for (let i = 0; i < 2; i++) {
       x.beginPath(); x.moveTo(hx + s * 4, hy + 6 + i * 3); x.lineTo(hx + s * (17 + i * 2), hy + 3 + i * 7); x.stroke();
     } });
-    const dir = cat.tx ? ((cat.tx - cx) >= 0 ? 1 : -1) : 1; const px = cx + 5 + dir * (7 + sw * 17), py = sy - 34 - sw * 8;
+    const dir = cat.tx ? ((cat.tx - cx) >= 0 ? 1 : -1) : 1;
+    /* the paw reaches for where you actually touched, not a canned arc */
+    const w2 = Math.max(0, Math.min(1, sw));
+    const restX = cx + 5 + dir * 7, restY = sy - 34;
+    const px = restX + ((cat.tx || restX) - restX) * w2;
+    const py = restY + ((cat.ty || restY) - restY) * w2;
     x.beginPath(); x.moveTo(cx + 3, sy - 34); x.lineTo(px, py); x.strokeStyle = '#ded6ef'; x.lineWidth = 7; x.stroke(); x.beginPath(); x.arc(px, py, 5, 0, TAU); x.fillStyle = '#f2edfc'; x.fill();
   }
   function draw() {
@@ -225,6 +244,14 @@
     ripples.forEach(r => {
       x.beginPath(); x.arc(r.x, r.y, r.r, 0, TAU); x.strokeStyle = 'rgba(255,255,255,' + (r.a * .5) + ')'; x.lineWidth = 1.6; x.stroke();
     });
+    if (starHit) {
+      x.save(); x.globalAlpha = Math.max(0, starHit.a);
+      const rr = 4 + (1 - starHit.a) * 26;
+      x.beginPath(); x.arc(starHit.x, starHit.y, rr, 0, TAU);
+      x.strokeStyle = 'rgba(255,240,200,.9)'; x.lineWidth = 1.6; x.stroke();
+      x.beginPath(); x.arc(starHit.x, starHit.y, 2.4, 0, TAU); x.fillStyle = '#fff6d8'; x.fill();
+      x.restore();
+    }
   }
   function frame(dt) {
     const gg = K.fit(cv()); if (!g || Math.abs(g.w - gg.w) > .5 || Math.abs(g.h - gg.h) > .5) layout(); t += dt; step(dt); if (g) draw();

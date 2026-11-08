@@ -46,10 +46,13 @@
     if (!geo) return;
     if (phase === 'done') startRound();
     if (phase !== 'aim') return;
-    /* the flick *is* the shot: direction from the drag, power from its length */
+    /* the flick *is* the shot: direction from the drag, power from its length.
+       The upward speed used to be clamped to [-13.8, -6.0], which made every
+       drag under 44px the same shot and every drag past 102px the same shot;
+       it now runs the whole way from a lazy lob to a hard line. */
     power = clamp(Math.hypot(dx, dy) / 170, 0, 1);
     ball.vx = clamp(dx * .038, -8, 8);
-    ball.vy = clamp(dy * .135, -13.8, -6.0);
+    ball.vy = -5.5 - power * 9.5;
     ball.scored = false;
     phase = 'fly'; trail = []; air = 0; restT = 0;
     spin = ball.vx * .06;
