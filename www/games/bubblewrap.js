@@ -6,7 +6,7 @@
   const INK = (a) => K.inkColor(a == null ? 1 : a);
   const cv = () => document.getElementById('bw2Cv');
   let L = null, g = null, cells = [], sheet = null, puffs = [], held = false, last = null;
-  const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); } catch (e) {} };
+  const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); K.sfx.pop(); } catch (e) {} };
   const hap = (n) => { try { buzz(n); } catch (e) {} };
 
   function layout() {

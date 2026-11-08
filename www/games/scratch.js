@@ -153,7 +153,7 @@
   function brush() { return Math.max(15, g.w * 0.072); }
 
   function erase(x0, y0, x1, y1) {
-    try { const n = performance.now(); if (n - (erase.t || 0) > 70) { erase.t = n; tone(170 + Math.random() * 60, .035, .02, 'sawtooth', 90); buzz(4); } } catch (e) {}
+    try { const n = performance.now(); if (n - (erase.t || 0) > 70) { erase.t = n; K.sfx.rub(.05, .03, 2800, 1200); buzz(4); } } catch (e) {}
     const m = mask.getContext('2d');
     m.save();
     m.setTransform(g.dpr, 0, 0, g.dpr, 0, 0);
@@ -183,7 +183,7 @@
     done = true;
     K.setResult($('scRes'), label);
     /* noResult:true — a scratch card celebrates locally, it does not hand out a verdict */
-    try { tone(660, .1, .06, 'sine', 990); tone(990, .14, .04, 'sine', 1320); } catch (e) {}
+    try { K.sfx.coin(3); } catch (e) {}
     try { buzz([10, 26, 10]); } catch (e) {}
     try { confetti(); } catch (e) {}
   }

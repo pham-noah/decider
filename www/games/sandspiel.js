@@ -335,7 +335,7 @@
         for (let x = cx - half; x < cx + half; x++) put(Math.round(x), y, SAND, 0);
       }
       dirty = true;
-      try { tone(300, .06, .03, 'sine', 380); } catch (e) {}
+      try { K.sfx.rub(.22, .04, 1800, 700); } catch (e) {}
     }
   });
 })();

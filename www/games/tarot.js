@@ -35,13 +35,13 @@
     if (state === 'deck') {
       state = 'idle';
       K.setResult(document.getElementById('trRes'), 'Tap a card');
-      try { tone(430, .1, .04, 'triangle', 620); } catch (e) {}
+      try { K.sfx.paper(1.1); } catch (e) {}
     }
   }
   function choose(i) {
     if (state !== 'idle' || dealT < 0.9 || i < 0) return;
     pick = i; state = 'flip'; t = 0;
-    try { tone(560, 0.3, 0.05, 'sine', 880); } catch (e) {}
+    try { K.sfx.paper(.8); } catch (e) {}
   }
   /* one tap does whatever the table is waiting for */
   function tap(px, py) {
@@ -56,7 +56,7 @@
     if (t >= 1) {
       const c = picks[pick];
       state = 'shown'; K.setResult(document.getElementById('trRes'), c[0]);
-      try { tone(660, 0.5, 0.05, 'sine', 990); tone(880, 0.45, 0.04, 'triangle', 1320); } catch (e) {}
+      try { K.sfx.paper(.9); K.sfx.clink(.6); } catch (e) {}
     }
   }
   function wrap(x, s, maxW) {

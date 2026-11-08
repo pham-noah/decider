@@ -7,7 +7,7 @@
   const cv = () => document.getElementById('bbCv');
   const res = () => document.getElementById('bbRes');
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-  const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); } catch (e) {} };
+  const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); K.sfx.thud(.45); } catch (e) {} };
   const hap = (n) => { try { buzz(n); } catch (e) {} };
 
   let L = null, geo = null, ball = null, drag = null, trail = [], parts = [], splash = null;

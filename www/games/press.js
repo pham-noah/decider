@@ -5,7 +5,7 @@
   const INK = (a) => K.inkColor(a == null ? 1 : a);
   const cv = () => document.getElementById('prCv');
   let L = null, g = null, big = null, rings = [], active = null;
-  const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); } catch (e) {} };
+  const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); K.sfx.thud(.55); } catch (e) {} };
   const hap = (n) => { try { buzz(n); } catch (e) {} };
 
   function layout() {

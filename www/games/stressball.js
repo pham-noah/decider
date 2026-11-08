@@ -6,7 +6,7 @@
   const INK = (a) => K.inkColor(a == null ? 1 : a);
   const cv = () => document.getElementById('sbCv');
   let L = null, g = null, held = false, sq = 0, sqv = 0, dir = -Math.PI / 2, ax = 0, ay = 0, squeaked = false;
-  const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); } catch (e) {} };
+  const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); K.sfx.squeak(); } catch (e) {} };
   const hap = (n) => { try { buzz(n); } catch (e) {} };
 
   const geo = () => ({ cx: g.w / 2, cy: g.h * .50, r: Math.min(g.w * .33, g.h * .285) });

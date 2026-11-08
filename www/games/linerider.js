@@ -158,7 +158,7 @@
   function crash() {
     if (rider) burst(Math.max(12, Math.min(geo.w - 12, rider.x)), Math.max(12, Math.min(geo.h - 12, rider.y)), 16);
     running = false; paused = false; crashed = true; over = true;
-    try { tone(140, .18, .07, 'sawtooth', 55); } catch (e) {}
+    try { K.sfx.thud(1.1); } catch (e) {}
     try { buzz(45); } catch (e) {}
     sync();
   }
@@ -333,7 +333,7 @@
     if (running) { paused = !paused; sync(); return; }
     if (!rider || over) { crashed = false; over = false; parts = []; if (!spawn()) return; }
     running = true; paused = false;
-    try { tone(280, .14, .045, 'sawtooth', 540); } catch (e) {}
+    try { K.sfx.swish(.2, .05, 900, 2200); } catch (e) {}
     sync();
   }
 

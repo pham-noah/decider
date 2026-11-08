@@ -91,7 +91,7 @@
   let sparks = [], flashes = [], allBeaten = false, lastTick = 0;
   const found = SHAPES.map((_, i) => i === 0);
 
-  const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); } catch (e) {} };
+  const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); K.sfx.clink(.5); } catch (e) {} };
   const hap = (n) => { try { buzz(n); } catch (e) {} };
   const hex = h => {
     if (typeof h !== 'string') return [255, 255, 255];

@@ -76,7 +76,7 @@
     if (state !== 'play') return;
     you.push(deck.pop());
     render(false);
-    try { tone(540, 0.08, 0.05, 'square'); } catch (e) {}
+    try { K.sfx.paper(1.1); } catch (e) {}
     const t = total(you);
     if (t > 21) end('Bust', -1);
     else if (t === 21) setTimeout(() => { if (state === 'play') stand(); }, 460);
@@ -93,7 +93,7 @@
       if (total(dealer) < 17) {
         dealer.push(deck.pop());
         render(true);
-        try { tone(320, 0.08, 0.04, 'triangle'); } catch (e) {}
+        try { K.sfx.paper(.7); } catch (e) {}
         setTimeout(draw, 540);
         return;
       }

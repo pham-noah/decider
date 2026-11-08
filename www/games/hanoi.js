@@ -63,7 +63,7 @@
   /* ---------- interaction ---------- */
   function refuse(i, why) {
     shake[i] = 1;
-    try { tone(120, .12, .05, 'square', 90); } catch (e) {}
+    try { K.sfx.knock(1.1); } catch (e) {}
     try { buzz([18, 40, 18]); } catch (e) {}
     hint = why;
   }
@@ -72,7 +72,7 @@
     const d = towers[i].pop();
     const y0 = towers[i].length * TH;
     held = { d, peg: i, y0: y0 + TH, rise: 0 };
-    try { tone(420, .07, .04, 'sine', 620); } catch (e) {}
+    try { K.sfx.click(.7); } catch (e) {}
     try { buzz(7); } catch (e) {}
     hint = 'tap a post to drop it';
   }
@@ -85,15 +85,15 @@
     held = null;
     moves++; flash[j] = 1;
     say(count());
-    try { tone(300, .06, .04, 'triangle', 380); } catch (e) {}
+    try { K.sfx.knock(.5); } catch (e) {}
     if (!solved && towers[j].length === n && j !== 0) solve(j);
   }
 
   function solve(peg) {
     solved = true; solveAt = peg;
     hint = '';
-    try { tone(660, .18, .06, 'sine', 990); } catch (e) {}
-    try { tone(990, .22, .05, 'sine', 1480); } catch (e) {}
+    try { K.sfx.clink(1.2); } catch (e) {}
+    try { K.sfx.clink(.9); } catch (e) {}
     try { buzz([12, 40, 12, 40, 20]); } catch (e) {}
     for (let i = 0; i < 26; i++) {
       const a = Math.random() * TAU, sp = 0.6 + Math.random() * 1.5;

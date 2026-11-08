@@ -174,7 +174,7 @@
     flashTxt = 0;
     trail = [];
     if (resEl()) K.setResult(resEl(), '…');
-    try { tone(150, .12, .05, 'triangle', 96); } catch (e) {}
+    try { K.sfx.thud(.8); } catch (e) {}
     try { buzz(9); } catch (e) {}
   }
 
@@ -244,8 +244,8 @@
 
     if (resEl()) K.setResult(resEl(), calcScore() + ' · best ' + best);
     try {
-      if (down === 10) tone(660, .22, .07, 'triangle', 990);
-      else tone(330 + down * 22, .13, .05, 'triangle', 460);
+      if (down === 10) K.sfx.crash();
+      else { K.sfx.crash(); }
     } catch (e) {}
     if (down === 10) { try { buzz([14, 34, 20, 34, 26]); } catch (e) {} }
     else if (down >= 7) { try { buzz([10, 50, 10]); } catch (e) {} }
@@ -266,7 +266,7 @@
       const now = performance.now();
       if (now - lastSnd > 45) {   // one clack per impact, not ten
         lastSnd = now;
-        tone(300 + rnd() * 260, .05, .035, 'triangle', 220);
+        K.sfx.knock(.35);
       }
     } catch (e) {}
   }
@@ -289,7 +289,7 @@
         b.gutter = true;
         b.x = Math.sign(b.x) * (HALF + 0.055);
         b.vx = 0;
-        try { tone(110, .16, .05, 'sine', 70); } catch (e) {}
+        try { K.sfx.thud(.6); } catch (e) {}
       }
       if (b.gutter) b.x = Math.sign(b.x) * (HALF + 0.055);
       if (b.z > PIT_Z - 0.02) { b.z = PIT_Z - 0.02; b.live = false; }

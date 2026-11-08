@@ -51,7 +51,7 @@
     pending = under(null, null); held = null; slip = false;
     grabOff = pending ? Math.abs(pending.x - claw.x) / pending.r : 9;
     state = 'down'; timer = 0;
-    K.setResult(document.getElementById('clRes'), '…'); try { tone(300, 0.12, 0.05, 'square', 210); } catch (e) {}
+    K.setResult(document.getElementById('clRes'), '…'); try { K.sfx.click(1.1); } catch (e) {}
   }
   function slipOut() {
     const cap = pending;
@@ -65,7 +65,7 @@
   function miss() {
     state = 'aim'; pending = null;
     K.setResult(document.getElementById('clRes'), 'Nothing');
-    try { tone(150, 0.22, 0.06, 'sawtooth', 90); } catch (e) {}
+    try { K.sfx.thud(1); } catch (e) {}
   }
   function win(cap) {
     score += cap.val || 10;
@@ -85,7 +85,7 @@
       claw.y += 4.8 * dt;
       if (claw.y >= low) {
         claw.y = low; state = 'clamp'; timer = 0;
-        try { tone(170, 0.1, 0.06, 'square'); } catch (e) {}
+        try { K.sfx.snap(); } catch (e) {}
       }
     }
     if (state === 'clamp') {
@@ -96,7 +96,7 @@
           else { slip = true; held = null; }
         }
         state = 'up';
-        try { tone(520, 0.1, 0.05, 'triangle', 640); } catch (e) {}
+        try { K.sfx.coin(2); } catch (e) {}
       }
     }
     if (state === 'up') {

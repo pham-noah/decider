@@ -20,7 +20,7 @@
   function spin(force) {
     v = (force || 1) * (0.42 + Math.random() * 0.35) * (Math.random() < 0.5 ? 1 : -1);
     touched = true; done = false;
-    try { tone(320, .08, .05, 'triangle', 520); } catch (e) {}
+    try { K.sfx.purr(.5, .05); } catch (e) {}
   }
 
   /* a real spinner is a machined plate with three bearings in it, not three

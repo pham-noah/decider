@@ -90,7 +90,7 @@
   /* ---------- motion ---------- */
   function bounce(x, y, vertical) {
     flashes.push({ x, y, life: 1, vertical });
-    try { tone(vertical ? 200 : 240, .05, .022, 'sine', 160); } catch (e) {}
+    try { K.sfx.paper(.5); } catch (e) {}
   }
 
   function update(dt) {
@@ -126,13 +126,13 @@
       }
       if (hit) {
         t.lit = true; t.pulse = 1; lit++;
-        try { tone(520 + ti * 90, .12, .05, 'sine', 900 + ti * 90); } catch (e) {}
+        try { K.sfx.clink(.8); } catch (e) {}
         try { buzz(12); } catch (e) {}
         if (lit === targets.length && !celebrated) {
           celebrated = true;
           try { confetti(); } catch (e) {}
-          try { tone(660, .16, .05, 'sine', 990); } catch (e) {}
-          try { tone(990, .22, .04, 'sine', 1320); } catch (e) {}
+          try { K.sfx.clink(1); } catch (e) {}
+          try { K.sfx.coin(3); } catch (e) {}
           K.setResult(res(), 'All ' + targets.length + ' dots lit — now draw a wilder line');
         } else {
           K.setResult(res(), lit + ' / ' + targets.length + ' dots — draw again to change the line');

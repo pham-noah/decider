@@ -97,7 +97,7 @@
     ring.x = 0; ring.y = Y0; ring.z = Z0; ring.vy = 0; ring.vz = 0;
     state = 'fly'; t0 = performance.now(); rings--; thrown++;
     say('');
-    try { tone(430, .1, .05, 'sine', 720); } catch (e) {}
+    try { K.sfx.swish(.14, .04, 1600, 700); } catch (e) {}
     try { buzz(6); } catch (e) {}
   }
 
@@ -121,7 +121,7 @@
       burst(hit.t.x, hit.t.y, 14, '255,226,150');
       float(streak, hit.t.x, hit.t.y - 14, streak > 1 ? '×' + streak : '+1');
       say('');
-      try { tone(760 + Math.min(9, streak) * 70, .16, .06, 'sine', 1320 + streak * 60); } catch (e) {}
+      try { K.sfx.clink(1 + Math.min(1, streak * .08)); } catch (e) {}
       try { buzz([10, 38, 12]); } catch (e) {}
     } else {
       /* a clean miss: it keeps falling past the row onto the floor behind it */
@@ -129,7 +129,7 @@
       streak = 0; shake = 7;
       state = 'land';
       say('Missed');
-      try { tone(300, .09, .03, 'triangle', 190); } catch (e) {}
+      try { K.sfx.thud(.7); } catch (e) {}
     }
   }
 
@@ -203,7 +203,7 @@
       if (ring.on) ring.x = ring.on.x;      /* it rides the post as the row drifts */
       if (ring.slide >= 1) {
         ring.y = .06;
-        try { tone(620, .1, .04, 'sine', 520); } catch (e) {}
+        try { K.sfx.land(.8); } catch (e) {}
         rest(.6);
       }
     } else if (state === 'land') {
@@ -222,7 +222,7 @@
           ring.y = 0.02;
           if (Math.abs(ring.vy) > 1.1) {
             ring.vy = -ring.vy * .26;
-            try { tone(120, .1, .05, 'triangle', 78); } catch (e) {}
+            try { K.sfx.thud(.5); } catch (e) {}
             try { buzz(9); } catch (e) {}
           } else { ring.vy = 0; ring.vz = 0; rest(.5); }
         }

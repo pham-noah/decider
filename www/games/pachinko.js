@@ -32,7 +32,7 @@
   function startCharge() {
     if (balls.length) return;
     charging = true; charge = 0; autoT = 0;
-    try { tone(170, .06, .04, 'square'); } catch (e) {}
+    try { K.sfx.click(.9); } catch (e) {}
   }
 
   function fire() {
@@ -47,7 +47,7 @@
     const vmin = Math.sqrt(2 * 0.34 * climb * 1.12);
     balls.push({ x: g.laneCx, y: g.shelfY - 12, vx: 0, vy: -(vmin + p * 70), r: g.ballR, phase: 'chute', power: p, age: 0 });
     K.setResult(out(), '…');
-    try { tone(220 + p * 620, .12, .05, 'triangle', 900); } catch (e) {}
+    try { K.sfx.knock(.5 + p * .6); } catch (e) {}
   }
 
   function land(b, g) {
@@ -67,7 +67,7 @@
       if (b.y <= g.topY || b.vy >= 0) {
         b.phase = 'field'; b.y = g.topY; b.x = g.laneX - b.r - 2;
         b.vx = -(1.2 + b.power * 7.4); b.vy = 0.6;
-        try { tone(880, .05, .03, 'sine'); } catch (e) {}
+        K.sfx.ratchet(.5)
       }
       return;
     }

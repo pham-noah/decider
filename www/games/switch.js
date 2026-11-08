@@ -8,7 +8,7 @@
   const EDGE = '#241a3a';                 // machined ink: the same edge on every skin
   const cv = () => document.getElementById('swCv');
   let L = null, g = null, bank = [], drag = null;
-  const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); } catch (e) {} };
+  const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); K.sfx.click(1); } catch (e) {} };
   const hap = (n) => { try { buzz(n); } catch (e) {} };
   const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 

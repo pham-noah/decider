@@ -138,7 +138,7 @@
       tray.push(tc);
       won++;
     }
-    if (!quiet) { try { tone(520 + Math.random() * 180, .05, .035, 'triangle'); } catch (e) {} }
+    if (!quiet) { try { K.sfx.coin(1); } catch (e) {} }
   }
 
   /* ---------- rigid discs ---------- */
@@ -252,7 +252,7 @@
       c.tip = 0;
       tray.push(c);
       won++;
-      try { tone(700 + Math.random() * 240, .05, .03, 'sine', 980); } catch (e) {}
+      try { K.sfx.coin(1); } catch (e) {}
     }
 
     /* the tray: real gravity, and the coins stack on each other */
@@ -518,7 +518,7 @@
               return;
             }
           }
-          try { tone(200, .05, .03, 'sine', 150); } catch (err) {}
+          try { K.sfx.clink(.6); } catch (err) {}
           try { buzz(5); } catch (err) {}
           return;
         }

@@ -124,7 +124,7 @@
           const nowP = performance.now();
           if (nowP - (b.ping || 0) > 55) {
             b.ping = nowP;
-            try { tone(480 + Math.random() * 320, .03, .02, 'triangle'); } catch (e) {}
+            try { K.sfx.knock(.3); } catch (e) {}
             if (!b.buzzed) { b.buzzed = true; try { buzz(5); } catch (e) {} }
             p.flash = 1;
           }
@@ -191,7 +191,7 @@
     action() { drop(); },
     shake(info) {
       const d = info.dir || 1, p = Math.max(.25, Math.min(1, info.power || .5));
-      try { tone(150, .12, .05, 'triangle', 90); } catch (e) {}
+      try { K.sfx.land(1); } catch (e) {}
       if (!balls.length) {   // nothing falling: rattle the whole board
         try { shakeEl(document.querySelector('#plinko .glass'), 6, 260); } catch (e) {}
         return;

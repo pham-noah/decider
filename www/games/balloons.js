@@ -99,8 +99,8 @@
 
   /* the chime that says "fresh grid" without a single word */
   function chime() {
-    try { tone(784, .18, .045, 'sine', 792); } catch (e) {}
-    setTimeout(() => { try { tone(1175, .26, .04, 'sine'); } catch (e) {} }, 90);
+    try { K.sfx.squeak(); } catch (e) {}
+    setTimeout(() => { try { K.sfx.snap(); } catch (e) {} }, 90);
     try { buzz([4, 40, 6]); } catch (e) {}
   }
 
@@ -109,7 +109,7 @@
     b.live = false;
     popped++;
     burst(b);
-    try { tone(520 + Math.random() * 180, .09, .06, 'sine', 250); } catch (e) {}
+    try { K.sfx.pop(); } catch (e) {}
     try { buzz(7); } catch (e) {}
     if (popped >= bs.length) refillIn = 560;
   }

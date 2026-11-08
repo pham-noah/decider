@@ -73,7 +73,7 @@
     busy = true; state = 'flip';
     const my = gen;
     slots.forEach(s => { s.querySelector('.hcFlip').style.transform = 'rotateY(180deg)'; });
-    try { tone(390, 0.16, 0.06, 'triangle', 720); } catch (e) {}
+    try { K.sfx.paper(1.2); } catch (e) {}
     setTimeout(() => { if (my === gen) settle(); }, 780);
   }
 
@@ -83,7 +83,7 @@
     if (a === b) {
       state = 'tie';
       K.setResult($('hcRes'), 'Tie');
-      try { tone(300, 0.18, 0.05, 'sine', 250); } catch (e) {}
+      try { K.sfx.paper(.8); } catch (e) {}
       setTimeout(() => { if (state === 'tie') deal(); }, 1100);
       return;
     }
@@ -97,7 +97,7 @@
     });
     /* names the winning option in full; this toy never hands out a verdict card */
     K.setResult($('hcRes'), `${labels[i]} — ${hand[i].r}${hand[i].s} beats ${hand[j].r}${hand[j].s}`);
-    try { tone(660, 0.28, 0.06, 'sine', 880); } catch (e) {}
+    try { K.sfx.clink(1); } catch (e) {}
   }
 
   function action() {

@@ -7,7 +7,7 @@
   const INK = (a) => K.inkColor(a == null ? 1 : a);
   const cv = () => document.getElementById('knCv');
   let L = null, g = null, a = MIN + (MAX - MIN) * .58, va = 0, drag = null, lastK = -99;
-  const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); } catch (e) {} };
+  const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); K.sfx.ratchet(1); } catch (e) {} };
   const hap = (n) => { try { buzz(n); } catch (e) {} };
 
   const geo = () => ({ cx: g.w / 2, cy: g.h * .46, R: Math.min(g.w * .28, g.h * .255) });

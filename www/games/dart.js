@@ -98,7 +98,7 @@
     busy = true; aim = null;
     dart = { lx: geo.w / 2, ly: geo.h + 14, tx, ty, t: 0, px: geo.w / 2, py: geo.h + 14, a: -Math.PI / 2, pw };
     K.setResult(res(), '…');
-    try { tone(320, .08, .04, 'sawtooth', 640); } catch (e) {}
+    try { K.sfx.swish(.12, .035, 1800, 700); } catch (e) {}
   }
 
   function scoreAt(px, py) {
@@ -144,9 +144,9 @@
     }
     if (darts <= 0) {
       darts = 3; turnDarts = 0;
-      try { tone(300, .1, .04, 'square', 200); } catch (e) {}
+      K.sfx.click(.8)
     } else {
-      try { tone(bust ? 180 : 680, .13, .05, 'sine', bust ? 120 : 1020); } catch (e) {}
+      try { bust ? K.sfx.thud(.9) : K.sfx.knock(1.2); } catch (e) {}
     }
   }
 

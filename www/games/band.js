@@ -7,7 +7,7 @@
   const K = window.DKIT, TAU = Math.PI * 2, N = 46;
   const cv = () => document.getElementById('bdCv');
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-  const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); } catch (e) {} };
+  const sfx = (f, d, v, ty, sl) => { try { tone(f, d, v, ty, sl); K.sfx.snap(); } catch (e) {} };
   const hap = (n) => { try { buzz(n); } catch (e) {} };
 
   let L = null, g = null, posts = [], rest = [], home = null;

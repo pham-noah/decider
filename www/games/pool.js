@@ -59,7 +59,7 @@
     cue.vx = dirx / d * sp; cue.vy = diry / d * sp;
     moving = true; potted = 0;
     K.setResult(res(), '');
-    try { tone(180 + power * 120, .09, .05, 'square', 260); } catch (e) {}
+    try { K.sfx.knock(.6 + power * .8); } catch (e) {}
     try { buzz(6 + power * 10); } catch (e) {}
   }
 
@@ -133,14 +133,14 @@
       b.x = geo.fx + geo.fw * .25; b.y = geo.fy + geo.fh / 2;
       msg = 'scratch  −10'; msgT = 1;
       K.setResult(res(), 'scratch  −10');
-      try { tone(160, .2, .06, 'sawtooth', 110); } catch (e) {}
+      try { K.sfx.thud(1); } catch (e) {}
       return;
     }
     b.potted = true; b.vx = 0; b.vy = 0; potted++;
     score += 10;
     if (score > best) { best = score; try { store.set('d.pobest', best); } catch (e) {} }
     K.setResult(res(), '+' + (10 * potted));
-    try { tone(620 + potted * 60, .12, .05, 'sine', 980); } catch (e) {}
+    try { K.sfx.land(1.1); } catch (e) {}
   }
 
   function draw() {

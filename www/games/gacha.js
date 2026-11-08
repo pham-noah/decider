@@ -44,7 +44,7 @@
     pending = Math.max(0, Math.min(1, typeof power === 'number' ? power : 0.6));
     one = null; st = 'spin'; spin = 0; spinGoal = Math.PI * 2 * (0.6 + pending * 2.4);
     try { K.setResult(out(), '…'); } catch (e) {}
-    try { tone(300, .06, .04, 'triangle'); } catch (e) {}
+    try { K.sfx.ratchet(.8); } catch (e) {}
   }
 
   function release() {
@@ -66,7 +66,7 @@
     /* the rest of the pile shifts into the gap */
     caps.forEach(c => { c.vy += 0.4; c.vx += (Math.random() - .5) * 0.5; });
     st = 'drop';
-    try { tone(170, .1, .05, 'square'); } catch (e) {}
+    try { K.sfx.clink(.6); } catch (e) {}
     try { buzz(16); } catch (e) {}
   }
 
@@ -146,10 +146,10 @@
         one.y = floor;
         if (one.bounces < 1 && one.vy > 2) {
           one.vy = -one.vy * 0.42; one.bounces++;
-          try { tone(280, .07, .05, 'square'); } catch (e) {}
+          try { K.sfx.ratchet(1.1); } catch (e) {}
         } else {
           one.vy = 0; one.settled = true; st = 'settle'; settleT = 0;
-          try { tone(660, .12, .05, 'sine', 880); } catch (e) {}
+          try { K.sfx.clink(1.3); } catch (e) {}
         }
       }
     }
@@ -344,7 +344,7 @@
       });
       pending = p; one = null; st = 'spin'; spin = 0;
       spinGoal = Math.PI * 2 * (0.8 + p * 2.6);
-      try { tone(120, .18, .06, 'square', 70); } catch (e) {}
+      try { K.sfx.thud(1.1); } catch (e) {}
       try { buzz([18, 26, 18]); } catch (e) {}
     }
   });

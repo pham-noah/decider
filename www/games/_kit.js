@@ -23,6 +23,101 @@
   };
 
   /* a rAF loop that only runs while its game is on screen */
+  /* ---------- voices ----------
+     One vocabulary of noises, each fitted to a kind of thing rather than a pitch:
+     a wooden knock, a metal clink, sand pouring, a card flicked, a rubber squeak.
+     Toys call these instead of inventing a tone, so a peg sounds like a peg and a
+     coin sounds like a coin. Everything honours the app's mute. */
+  kit.sfx = (function () {
+    let AC = null, voices = 0, voiceAt = 0;
+    const live = () => {
+      if (typeof sound !== 'undefined' && !sound) return null;
+      try {
+        AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+        if (AC.state === 'suspended') AC.resume();
+        return AC;
+      } catch (e) { return null; }
+    };
+    function budget() {
+      const now = performance.now();
+      if (now - voiceAt > 90) voices = 0;
+      voiceAt = now; voices++;
+      return voices > 7;
+    }
+    function noise(dur, vol, freq, q, sweep) {
+      const ac = live(); if (!ac) return;
+      try {
+        const t = ac.currentTime, n = Math.max(1, Math.floor(ac.sampleRate * dur));
+        const buf = ac.createBuffer(1, n, ac.sampleRate), d = buf.getChannelData(0);
+        for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.4);
+        const src = ac.createBufferSource(); src.buffer = buf;
+        const f = ac.createBiquadFilter(); f.type = 'bandpass';
+        f.frequency.setValueAtTime(freq, t); f.Q.value = q || 1.2;
+        if (sweep) f.frequency.exponentialRampToValueAtTime(Math.max(60, sweep), t + dur);
+        const g = ac.createGain();
+        g.gain.setValueAtTime(vol, t);
+        g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+        src.connect(f).connect(g).connect(ac.destination);
+        src.start(t); src.stop(t + dur + .01);
+      } catch (e) {}
+    }
+    function ping(f, dur, vol, type, slide) {
+      const ac = live(); if (!ac) return;
+      try {
+        const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+        o.type = type || 'sine';
+        o.frequency.setValueAtTime(f, t);
+        if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(24, slide), t + dur);
+        g.gain.setValueAtTime(.0001, t);
+        g.gain.exponentialRampToValueAtTime(vol, t + .008);
+        g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+        o.connect(g).connect(ac.destination); o.start(t); o.stop(t + dur + .01);
+      } catch (e) {}
+    }
+    return {
+      /* a switch or a detent */
+      click(v) { noise(.022, .06 * (v || 1), 3400, 2.8); ping(1800, .03, .03 * (v || 1), 'square', 900); },
+      /* a peg, a disc, a cue ball: wood on wood */
+      knock(v) { noise(.055, .10 * (v || 1), 950, 1.3, 420); ping(210 * (1 + Math.random() * .2), .07, .06 * (v || 1), 'triangle', 150); },
+      /* metal on metal */
+      clink(v) { noise(.045, .07 * (v || 1), 3600, 5, 5200); ping(2400 + Math.random() * 900, .10, .035 * (v || 1), 'sine'); },
+      /* a coin in a tray */
+      coin(n) {
+        for (let i = 0; i < (n || 1); i++) setTimeout(() => {
+          noise(.07, .07, 3400 + Math.random() * 1200, 6);
+          ping(2600 + Math.random() * 1400, .09, .03, 'sine');
+        }, i * 55);
+      },
+      /* a bubble going */
+      pop() { noise(.06, .13, 1100, 1.1, 320); ping(520, .05, .05, 'sine', 900); },
+      /* dull body: something soft landing */
+      thud(v) { noise(.08, .10 * (v || 1), 240, .8, 90); ping(78, .10, .07 * (v || 1), 'sine', 54); },
+      /* a card leaving a pack */
+      paper(v) { noise(.05, .05 * (v || 1), 2600, .9, 1500); },
+      /* rubbing: foil, snow, sand */
+      rub(dur, vol, from, to) { noise(dur || .18, vol || .045, from || 2600, .7, to || 900); },
+      /* a ring settling on a post, a ball in a pocket */
+      land(v) { noise(.07, .08 * (v || 1), 700, 1.1, 260); ping(300, .09, .04 * (v || 1), 'sine', 210); },
+      /* rubber */
+      squeak() { ping(880, .10, .05, 'sine', 1400); noise(.04, .03, 2400, 3); },
+      /* a ratchet, a knob turning, a lever */
+      ratchet(v) { noise(.018, .05 * (v || 1), 2800, 2.6); },
+      /* a motor running under something */
+      purr(dur, vol) { ping(58, dur || .5, (vol || .05), 'sawtooth', 48); noise(dur || .5, (vol || .05) * .3, 260, .8); },
+      /* pins and balls going everywhere */
+      crash() {
+        for (let i = 0; i < 6; i++) setTimeout(() => {
+          noise(.06, .07, 1200 + Math.random() * 2200, 2.2);
+          ping(600 + Math.random() * 900, .08, .03, 'triangle');
+        }, i * 38);
+      },
+      /* air */
+      swish(dur, vol, from, to) { noise(dur || .22, vol || .05, from || 1400, .7, to || 380); },
+      /* a rubber band letting go */
+      snap() { noise(.03, .12, 4200, 2.6); ping(1400, .05, .05, 'square', 620); }
+    };
+  })();
+
   kit.loop = function (fn) {
     let live = false, raf = 0, last = 0;
     const tick = (now) => {
