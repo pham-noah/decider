@@ -14,8 +14,9 @@
   const Z_PEG = 10, Z0 = 4.25, Y0 = 0.95, RING_R = 0.32, CATCH = 0.25, G = 10.5;
 
   let L = null, geo = null, pegs = [], ring = null, drag = null;
-  let state = 'ready', wait = 0, ringsLeft = 3, thrown = 0, caught = 0;
-  let pending = null, t0 = 0, resTxt = '', finalRound = false, trail = [];
+  let state = 'ready', wait = 0, rings = 3, thrown = 0, score = 0, streak = 0, best = 0, over = false;
+  let pending = null, t0 = 0, resTxt = '', trail = [];
+  let sparks = [], floats = [], shake = 0, drift = 0, driftT = 0;
 
   /* ---------- camera ---------- */
   function makeCam(w, h) {
@@ -46,7 +47,7 @@
     pegs = [];
     for (let i = 0; i < 5; i++) {
       const px = (i - 2) * GAP;
-      pegs.push({ x: px, l: String(i + 1), c: PAL[i % PAL.length], hit: false, flash: 0,
+      pegs.push({ x: px, bx: px, l: String(i + 1), c: PAL[i % PAL.length], hit: false, flash: 0,
         b: cm.p(px, 0, Z_PEG), t: cm.p(px, PEG_H, Z_PEG) });
     }
     if (!ring || state === 'ready') resetRing();
@@ -57,11 +58,14 @@
       apex: 1, tilt: 0, spin: 0, vy: 0, vz: 0, on: null };
   }
 
-  function newRound() {
-    ringsLeft = 3; thrown = 0; caught = 0; finalRound = false;
+  /* A rung hands the ring back, so the run ends when you stop hitting — the
+     game is the streak, not three throws. */
+  function startGame() {
+    rings = 3; thrown = 0; score = 0; streak = 0; over = false;
+    drift = 0; driftT = 0; sparks = []; floats = []; shake = 0;
     pegs.forEach((p) => { p.hit = false; p.flash = 0; });
     state = 'ready'; wait = 0; resetRing();
-    say('3 rings · flick up to toss');
+    say('3 rings · a rung gives one back');
   }
 
   function say(t) {
@@ -81,6 +85,7 @@
 
   function toss(px, power, dx) {
     if (!geo) return;
+    if (over) { startGame(); return; }
     if (state !== 'ready') { pending = { px, power, dx }; return; }
     /* identical flicks must not give identical landings */
     const x1 = clamp(aimX(px, dx) + (rnd() - .5) * .13, -ROW * 1.5, ROW * 1.5);
@@ -90,8 +95,8 @@
     ring.T = .9 - .22 * pw; ring.t = 0; ring.tilt = 0; ring.on = null;
     trail = [];
     ring.x = 0; ring.y = Y0; ring.z = Z0; ring.vy = 0; ring.vz = 0;
-    state = 'fly'; t0 = performance.now(); ringsLeft--; thrown++;
-    say('Ring ' + thrown + ' of 3');
+    state = 'fly'; t0 = performance.now(); rings--; thrown++;
+    say('Rung it to get the ring back');
     try { tone(430, .1, .05, 'sine', 720); } catch (e) {}
     try { buzz(6); } catch (e) {}
   }
@@ -106,31 +111,72 @@
     t0 = performance.now();
     if (hit) {
       /* over the post: the ring drops down the shaft and settles at its foot */
-      hit.hit = true; hit.flash = 1; caught++;
+      hit.hit = true; hit.flash = 1;
+      streak++;
+      score += streak;
+      rings = Math.min(3, rings + 1);          /* a rung hands the ring back */
       ring.on = hit; ring.x = hit.x; ring.y = PEG_H + .18; ring.vy = 0; ring.vz = 0;
       ring.slide = 0; state = 'slide';
-      say('Rung peg ' + hit.l);
-      try { tone(880, .16, .06, 'sine', 1320); } catch (e) {}
+      if (score > best) { best = score; try { store.set('d.rtbest', best); } catch (e) {} }
+      burst(hit.t.x, hit.t.y, 14, '255,226,150');
+      float(streak, hit.t.x, hit.t.y - 14, streak > 1 ? '×' + streak : '+1');
+      say(streak > 1 ? streak + ' in a row · ' + score : 'Rung peg ' + hit.l + ' · ' + score);
+      try { tone(760 + Math.min(9, streak) * 70, .16, .06, 'sine', 1320 + streak * 60); } catch (e) {}
       try { buzz([10, 38, 12]); } catch (e) {}
     } else {
       /* a clean miss: it keeps falling past the row onto the floor behind it */
       ring.vy = .5; ring.vz = 1.15;
+      streak = 0; shake = 7;
       state = 'land';
-      say('Missed');
+      say(rings ? 'Missed · ' + rings + ' left' : 'Missed');
       try { tone(300, .09, .03, 'triangle', 190); } catch (e) {}
     }
   }
 
   function rest(t) {
     state = 'wait';
-    if (ringsLeft <= 0) { finalRound = true; wait = Math.max(t, 1.4); say(caught + ' of 3 rung'); }
-    else wait = t;
+    if (rings <= 0) {
+      over = true; wait = Math.max(t, 1.5);
+      say(score + ' points · best ' + best + ' · tap to play again');
+      try { tone(240, .3, .06, 'triangle', 160); } catch (e) {}
+    } else wait = t;
   }
 
   /* ---------- sim, seconds ---------- */
+  /* the row starts sliding once the score gets going, and works up to a real
+     sway: the ring is in the air about .7s, so a late game toss has to lead it */
+  function updatePegs(now) {
+    const ramp = clamp((score - 10) / 26, 0, 1);
+    const amp = ramp > 0 ? 0.09 + 0.30 * ramp : 0;
+    const rate = 0.8 + 1.05 * ramp;
+    driftT = now / 1000;
+    drift = amp ? Math.sin(driftT * rate) * amp : 0;
+    const cam = geo.cam;
+    pegs.forEach((p) => {
+      p.x = p.bx + drift;
+      p.b = cam.p(p.x, 0, Z_PEG);
+      p.t = cam.p(p.x, PEG_H, Z_PEG);
+    });
+  }
+
+  function burst(px, py, n, col) {
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * TAU, sp = 40 + Math.random() * 150;
+      sparks.push({ x: px, y: py, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 30, life: 1, col });
+    }
+  }
+
+  function float(_n, px, py, txt) { floats.push({ x: px, y: py, txt, life: 1 }); }
+
   function step(s) {
     const now = performance.now();
     pegs.forEach((p) => { if (p.flash > 0) p.flash = Math.max(0, p.flash - s * 2.4); });
+    updatePegs(now);
+    if (shake > 0) shake = Math.max(0, shake - s * 34);
+    sparks.forEach((q) => { q.x += q.vx * s; q.y += q.vy * s; q.vy += 380 * s; q.vx *= Math.pow(.4, s); q.life -= s * 1.6; });
+    sparks = sparks.filter((q) => q.life > 0);
+    floats.forEach((f) => { f.y -= 26 * s; f.life -= s * 1.05; });
+    floats = floats.filter((f) => f.life > 0);
 
     if (state === 'ready') {
       /* a small breath, so the ring in hand does not look pasted on */
@@ -154,6 +200,7 @@
       const e = 1 - Math.pow(1 - ring.slide, 2.4);
       ring.y = (PEG_H + .18) - (PEG_H + .18 - .06) * e;
       ring.tilt = 0; ring.spin += s * 1.2;
+      if (ring.on) ring.x = ring.on.x;      /* it rides the post as the row drifts */
       if (ring.slide >= 1) {
         ring.y = .06;
         try { tone(620, .1, .04, 'sine', 520); } catch (e) {}
@@ -183,8 +230,8 @@
     } else if (state === 'wait') {
       wait -= s;
       if (wait <= 0) {
-        if (finalRound) newRound();
-        else { state = 'ready'; resetRing(); say(ringsLeft + (ringsLeft === 1 ? ' ring left' : ' rings left')); }
+        if (over) { state = 'over'; }
+        else { state = 'ready'; resetRing(); say(rings + (rings === 1 ? ' ring left' : ' rings left') + ' · ' + score); }
       }
     }
 
@@ -396,6 +443,7 @@
     if (!geo) return;
     const x = g.x, w = g.w, h = g.h, m = K.surf(x, w, h), cam = geo.cam;
     x.save(); K.rr(x, 0, 0, w, h, m.radius); x.clip();
+    if (shake > 0) x.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
     ground(x, cam, m);
 
     if (ring) {
@@ -420,6 +468,18 @@
     });
     if (!behind && !(ring && ring.on)) drawRing(x, cam, m, 0);
 
+    /* sparks off a rung, and the score that came with it */
+    sparks.forEach((q) => {
+      x.beginPath(); x.arc(q.x, q.y, 2.2 * q.life + .7, 0, TAU);
+      x.fillStyle = 'rgba(' + q.col + ',' + (q.life * .9).toFixed(3) + ')'; x.fill();
+    });
+    floats.forEach((f) => {
+      x.font = '800 13px "Bricolage Grotesque",system-ui,sans-serif';
+      x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.fillStyle = INK(clamp(f.life, 0, 1));
+      x.fillText(f.txt, f.x, f.y);
+    });
+
     /* labels sit on the floor in front of each post */
     pegs.forEach((p) => {
       const l = cam.p(p.x, 0, Z_PEG - 1.6);
@@ -441,13 +501,17 @@
     }
 
     /* HUD: name and rings in hand */
-    K.label(x, 'RING TOSS', 16, 18, 10, 'left');
+    K.label(x, 'RING TOSS', 16, 16, 10, 'left');
+    K.label(x, String(score), 16, 34, 15, 'left');
+    if (best > 0 && best >= score) K.label(x, 'best ' + best, 16 + 26, 34, 10, 'left');
+    if (streak > 1) K.label(x, '×' + streak + ' streak', 16, 50, 10, 'left');
     for (let i = 0; i < 3; i++) {
       const px = w - 16 - i * 15, py = 18;
       x.beginPath(); x.ellipse(px, py, 5.4, 2.4, 0, 0, TAU);
-      x.strokeStyle = i < ringsLeft ? '#ff6fae' : INK(.22); x.lineWidth = 2; x.stroke();
+      x.strokeStyle = i < rings ? '#ff6fae' : INK(.22); x.lineWidth = 2; x.stroke();
     }
     if (drag && state === 'ready') K.label(x, 'let go to throw', w / 2, h - 12, 10);
+    if (over) K.label(x, 'tap to play again', w / 2, h - 12, 11);
 
     x.restore();
   }
@@ -466,7 +530,9 @@
     id: 'ringtoss', name: 'Ring Toss', short: 'Rings', label: 'Pegs', noResult: true, button: false,
     body: '<canvas class="toy" id="rtCv"></canvas><div class="res" id="rtRes" aria-live="polite"><span class="muted">Flick a ring at a post</span></div>',
     init() {
+      try { best = +store.get('d.rtbest', 0) || 0; } catch (e) {}
       layout(); L = K.loop(frame);
+      startGame();
       K.gesture(cv(), {
         onStart(p) { drag = { x: p.x, y: p.y, x0: p.x, y0: p.y }; },
         onMove(p) { if (drag) { drag.x = p.x; drag.y = p.y; } },
@@ -485,7 +551,7 @@
     leave() { drag = null; L.stop(); },
     action() { if (geo) toss(geo.w / 2, .6, 0); },
     status() {
-      return { state, ringsLeft, caught, threw: thrown,
+      return { state, rings, score, streak, best, over, threw: thrown, drift: +drift.toFixed(3),
         pegs: pegs.map((p) => ({ l: p.l, hit: p.hit })),
         ring: ring ? { x: +ring.x.toFixed(3), y: +ring.y.toFixed(3), z: +ring.z.toFixed(3), on: ring.on ? ring.on.l : null } : null };
     }
