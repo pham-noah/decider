@@ -19,7 +19,7 @@
   function layout() {
     const c = cv(); if (!c) return;
     const g = K.fit(c);
-    const rimW = Math.min(g.w * .17, 62), rimY = g.h * .42;
+    const rimW = Math.min(g.w * .135, 50), rimY = g.h * .42;
     const r = Math.max(10, Math.min(15, g.w * .039));
     const bw = rimW * 2 + 40, bh = 72;
     geo = {
@@ -68,17 +68,26 @@
   function endShot() {
     if (phase !== 'fly') return;
     shots++;
+    let line;
     if (ball.scored) {
       score++;
       if (score > best) { best = score; try { store.set('d.bbbest', best); } catch (e) {} }
+      line = 'Score ' + score + ' · best ' + best;
+    } else if (score > 0) {
+      /* a miss ends the run, the best stands, and the next ball comes straight away */
+      line = 'Run over — ' + score + ' in a row · best ' + best;
+      score = 0;
+    } else {
+      line = 'Score 0 · best ' + best;
     }
-    phase = 'pause'; pause = 26;
-    K.setResult(res(), 'Score ' + score + ' · best ' + best);
+    phase = 'pause'; pause = 9;
+    K.setResult(res(), line);
   }
 
   function finish() {
+    /* the line comes from the shot that just ended — a run-over message must
+       not be wiped by serving the next ball */
     resetBall();
-    K.setResult(res(), 'Score ' + score + ' · best ' + best);
   }
 
   function rattle(power) {
@@ -144,9 +153,9 @@
 
     /* the rim is two posts, not a funnel: it kicks the ball away. A ball
        still climbing passes the rim mouth cleanly — only a dropping ball
-       can catch iron */
+       can catch iron. A ball that is already through does not touch them. */
     [-1, 1].forEach(s => {
-      if (b.vy < -1.2) return;
+      if (b.scored || b.vy < -1.2) return;
       const px = hoopX + s * geo.rimW + Math.sin(rimPh) * rimE * 2.4;
       const dx = b.x - px, dy = b.y - geo.rimY, d = Math.hypot(dx, dy) || .001;
       if (d < b.r + 2.6) {
@@ -163,6 +172,10 @@
     });
 
     if (crossed) {
+      /* through the hoop: it slides down the netting instead of carrying on
+         across the rim, so it visibly drops out of the bottom */
+      b.vx *= .18;
+      if (b.vy < 3) b.vy = 3;
       netT = 1.15; netPh = 0;
       splashAt('make'); swish();
       K.setResult(res(), score + 1 >= 5 ? 'Swish · ' + (score + 1) + ' in a row' : 'Swish');
@@ -177,6 +190,9 @@
       restT = 0; rattle(.4);
     }
 
+    /* a make is done the moment it is clear of the net — no waiting for it to
+       finish falling so the next ball comes quicker */
+    if (b.scored && b.y > geo.rimY + 78) { endShot(); return; }
     if (b.y > h + 44 || air > 190) {
       if (!b.scored) { splashAt('miss'); sfx(150, .12, .03, 'triangle', 110); }
       endShot();
