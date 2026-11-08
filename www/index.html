@@ -697,7 +697,7 @@ function flick(){const n=performance.now(),gap=n-lastFlick;lastFlick=n;const amp
 function landFx(wi){if(calm)return;flash={i:wi,t0:performance.now()};(function fl(){draw();if(flash&&performance.now()-flash.t0<1100)requestAnimationFrame(fl);else{flash=null;draw()}})();
  $('.wwrap').animate([{transform:'scale(1)'},{transform:'scale(1.06)',offset:.25},{transform:'scale(.985)',offset:.55},{transform:'scale(1)'}],{duration:620,easing:'ease-out'});
  $('#ptr').animate([{transform:'translateX(-50%) rotate(-32deg)'},{transform:'translateX(-50%) rotate(0)'}],{duration:520,easing:'cubic-bezier(.2,1.7,.4,1)'});tone(90,.22,.22,'sine',45)}
-function spin(pw=.6,dir=1){if(spinning||opts.length<2)return;const windup=!calm&&arguments.length===0;spinning=true;spinBegin();
+function spin(pw=.6,dir=1){if(spinning||opts.length<2)return;const windup=!calm&&arguments.length===0;spinning=true;spinBegin();const ep=viewEpoch;
  const tot=opts.reduce((a,o)=>a+o.w,0);let r=rnd()*tot,wi=0;for(;wi<opts.length-1;wi++){r-=opts[wi].w;if(r<0)break}
  let a=0;for(let i=0;i<wi;i++)a+=opts[i].w/tot;const f=a+opts[wi].w/tot*(.12+.76*rnd());
  const st=rot,tn=Math.round(3+pw*6)+Math.floor(rnd()*2),delta=dir>0?((((-f*TAU-st)%TAU)+TAU)%TAU)+TAU*tn:-(((((f*TAU+st)%TAU)+TAU)%TAU)+TAU*tn),dur=calm?1800:3600+pw*3600,t0=performance.now(),WU=windup?340:0,off=windup?-dir*.22:0,T=st+delta;let last=idxAt(rot),launched=false;
@@ -712,7 +712,8 @@ function spin(pw=.6,dir=1){if(spinning||opts.length<2)return;const windup=!calm&
   const showM=()=>{if($('.view.on').id==='wheel')moment(w,'Wheel')};if(calm)moment(w,'Wheel');else setTimeout(showM,800);
   if(rmAfter&&opts.length>2)setTimeout(()=>delOpt(wi,true),calm?1500:2300);
   const SET=calm?0:420,t1=performance.now();
-  (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;rot=T+dir*.028*Math.exp(-5*u)*Math.sin(u*Math.PI*3);if(u>=1)rot=T;spinPaint();if(u<1)requestAnimationFrame(settle);else{spinning=false;spinFinish()}})(t1)})(t0)}
+  (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;rot=T+dir*.028*Math.exp(-5*u)*Math.sin(u*Math.PI*3);if(u>=1)rot=T;spinPaint();if(ep!==viewEpoch){spinning=false;$('#wres').innerHTML='<span class="muted">Flick the wheel to spin</span>';return}
+  if(u<1)requestAnimationFrame(settle);else{spinning=false;spinFinish()}})(t1)})(t0)}
 const save=()=>store.set('d.opts',opts);
 function renderOpts(){const L=$('#olist');L.innerHTML='';
  opts.forEach((o,i)=>{const r=document.createElement('div');r.className='orow';
@@ -761,7 +762,7 @@ function flipMany(){
  },(coins.length-1)*step+dur+180);
 }
 renderCoins();
-function flipCoin(){if(ccoins>1){flipMany();return}if(flipping)return;flipping=true;
+function flipCoin(){if(ccoins>1){flipMany();return}if(flipping)return;flipping=true;const ep=viewEpoch;
  const res=rnd()<.5?0:1,cur=(ang/180)%2,to=ang+360*(5+Math.floor(rnd()*3))+((res-cur+2)%2)*180,dur=calm?700:2100,WU=calm?0:150;
  $('#cres').innerHTML='<span class="muted">…</span>';
  if(WU){$('.cwrap').animate([{transform:'scale(1,1)'},{transform:'scale(1.12,.8)',offset:.7},{transform:'scale(.94,1.1)'}],{duration:WU,easing:'ease-out'});tone(220,.15,.06,'triangle',140);buzz(8)}
@@ -769,7 +770,7 @@ function flipCoin(){if(ccoins>1){flipMany();return}if(flipping)return;flipping=t
  $('#cn').animate([{transform:`rotateX(${ang}deg)`},{transform:`rotateX(${to}deg)`}],{duration:dur,delay:WU,easing:'cubic-bezier(.25,.6,.25,1)',fill:'both'});
  $('#arc').animate([{transform:'translateY(0) scale(1)',easing:'cubic-bezier(.2,.7,.4,1)'},{transform:'translateY(-120px) scale(1.4)',offset:.42,easing:'cubic-bezier(.6,0,.9,.5)'},{transform:'translateY(0) scale(1)',offset:.88,easing:'ease-out'},{transform:'translateY(-14px) scale(1.04)',offset:.94},{transform:'translateY(0) scale(1)'}],{duration:dur,delay:WU});
  $('#csh').animate([{transform:'scale(1)',opacity:.9},{transform:'scale(.45)',opacity:.35,offset:.42},{transform:'scale(1)',opacity:.9,offset:.88},{transform:'scale(1)',opacity:.9}],{duration:dur,delay:WU});
- setTimeout(()=>{ang=to;const a=$('#cn');a.getAnimations().forEach(x=>x.cancel());a.style.transform=`rotateX(${to}deg)`;flipping=false;
+ setTimeout(()=>{if(ep!==viewEpoch){flipping=false;$('#cres').innerHTML='<span class="muted">'+coinsHint()+'</span>';return}ang=to;const a=$('#cn');a.getAnimations().forEach(x=>x.cancel());a.style.transform=`rotateX(${to}deg)`;flipping=false;
   const n=names();let msg=n[res];if(hope>=0)msg+=hope===res?' — you got what you hoped for':' — notice how that feels';show($('#cres'),msg);$('#cres').style.fontSize='clamp(20px,4.5vw,30px)';chime();buzz([25,35,25]);if(hope===res)confetti();log('Coin',n[res]);coinLand();
   later(()=>moment(n[res],hope<0?'Coin':hope===res?'You got what you hoped for':'Notice how that feels'))},dur+WU)}
 function coinLand(){if(calm)return;const r=$('#cn').getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
@@ -1095,7 +1096,7 @@ function renderBottle(){const S=$('#bst');S.querySelectorAll('.bd').forEach(e=>e
   else if(b.id==='brnd'){brnd=!brnd;store.set('d.brnd',brnd)}
   else bn=parseInt(b.textContent);
   renderBottle()})}
-function spinBottle(pw=.6,dir=1){if(bSpin)return;$('#bt').classList.add('nofx');const windup=!calm&&arguments.length===0;bSpin=true;$$('.bd').forEach(e=>e.classList.remove('hit','dim'));$('#bres').innerHTML='<span class="muted">…</span>';
+function spinBottle(pw=.6,dir=1){if(bSpin)return;const ep=viewEpoch;$('#bt').classList.add('nofx');const windup=!calm&&arguments.length===0;bSpin=true;$$('.bd').forEach(e=>e.classList.remove('hit','dim'));$('#bres').innerHTML='<span class="muted">…</span>';
  const w=Math.floor(rnd()*bn),sec=360/bn,tgt=brnd?rnd()*360:(w*sec+(rnd()-.5)*sec*.6),st=bAng,tn=Math.round(3+pw*6)+Math.floor(rnd()*2),delta=dir>0?(((tgt-st)%360)+360)%360+360*tn:-((((st-tgt)%360)+360)%360+360*tn),dur=calm?1500:3200+pw*3200,t0=performance.now(),bt=$('#bt'),WU=windup?320:0,off=windup?-dir*26:0,T=st+delta;let last=-1,launched=false;
  const setR=a=>{bAng=a;bt.style.transform=`translate(-50%,-50%) rotate(${a}deg)`};
  if(windup){tone(300,.3,.04,'triangle',170);buzz(10)}
@@ -1112,7 +1113,8 @@ function spinBottle(pw=.6,dir=1){if(bSpin)return;$('#bt').classList.add('nofx');
   if(pl)bottleFx(pl);else{const r=$('#bst').getBoundingClientRect();sparks(r.left+r.width/2,r.top+r.height/2,PAL[0],18,10)}
   later(()=>moment(m,'Bottle',null,party&&!brnd?w*360/bn+180:null));
   const SET=calm?0:450,t1=performance.now();
-  (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;setR(T+dir*3.2*Math.exp(-5*u)*Math.sin(u*Math.PI*3));if(u>=1)setR(T);if(u<1)requestAnimationFrame(settle);else{bSpin=false;$('#bt').classList.remove('nofx')}})(t1)})(t0)}
+  (function settle(n2){const u=SET?Math.min(1,(n2-t1)/SET):1;setR(T+dir*3.2*Math.exp(-5*u)*Math.sin(u*Math.PI*3));if(u>=1)setR(T);if(ep!==viewEpoch){bSpin=false;$('#bt').classList.remove('nofx');$('#bres').innerHTML='<span class="muted">Drag the bottle to spin it</span>';return}
+  if(u<1)requestAnimationFrame(settle);else{bSpin=false;$('#bt').classList.remove('nofx')}})(t1)})(t0)}
 function bottleFx(pl){if(calm)return;const r=pl.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,c=getComputedStyle(pl).backgroundColor;
  ringAt(cx,cy,'#ffffff',200);setTimeout(()=>ringAt(cx,cy,c,320),120);sparks(cx,cy,c,24,11);sparks(cx,cy,'#ffffff',14,8);tone(110,.2,.2,'sine',55);shakeEl($('#bottle .center'),5,380)}
 /* the deck is the button: tap the card to draw */
@@ -1417,8 +1419,18 @@ store.set('d.pin',pin);   // first boot keeps the defaults
 if(!pin.length)pin=['wheel'];
 const GRID='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>';
 function closeAll(){$('#all').classList.remove('open')}
+let viewEpoch=0;
+/* leaving a decider mid-throw cancels it there and then: nothing lands into a
+   view nobody is looking at */
+function abandonView(v){
+ if(!v)return;
+ if(v==='wheel'&&spinning){spinning=false;$('#wres').innerHTML='<span class="muted">Flick the wheel to spin</span>'}
+ if(v==='coin'&&flipping){flipping=false;$('#cres').innerHTML='<span class="muted">'+coinsHint()+'</span>'}
+ if(v==='bottle'&&bSpin){bSpin=false;$('#bt').classList.remove('nofx');$('#bres').innerHTML='<span class="muted">Drag the bottle to spin it</span>'}
+}
 function goTo(v){
  if(!document.getElementById(v))return;
+ if(v!==cur){viewEpoch++;try{abandonView(cur)}catch(e){}}
  cur=v;
  freset();$$('.moment').forEach(e=>e.remove());closePop();closeAll();
  closeSheets();

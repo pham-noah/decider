@@ -159,16 +159,29 @@
     }
   }
 
+  /* a capsule is a ball: lit from the top left, darker at the bottom rim, with
+     the seam of the two halves running across it */
   function cap(x, cx, cy, r, rot, ci) {
-    x.save(); x.translate(cx, cy); x.rotate(rot);
-    x.beginPath(); x.arc(0, 0, r, 0, Math.PI * 2);
-    x.fillStyle = '#fffaf2'; x.fill();
-    x.beginPath(); x.arc(0, 0, r, Math.PI, Math.PI * 2); x.closePath();
-    x.fillStyle = PAL[ci % PAL.length]; x.fill();
-    x.beginPath(); x.moveTo(-r, 0); x.lineTo(r, 0);
-    x.strokeStyle = 'rgba(20,10,50,.22)'; x.lineWidth = Math.max(1, r * 0.1); x.stroke();
-    x.beginPath(); x.arc(-r * 0.34, -r * 0.36, r * 0.24, 0, Math.PI * 2);
-    x.fillStyle = INK(.8); x.fill();
+    const col = PAL[ci % PAL.length];
+    x.save(); x.translate(cx, cy);
+    const ball = x.createRadialGradient(-r * .36, -r * .42, r * .10, 0, -r * .05, r * 1.08);
+    ball.addColorStop(0, '#ffffff');
+    ball.addColorStop(.22, col);
+    ball.addColorStop(.72, col);
+    ball.addColorStop(1, 'rgba(26,12,58,.62)');
+    x.beginPath(); x.arc(0, 0, r, 0, Math.PI * 2); x.fillStyle = ball; x.fill();
+    x.beginPath(); x.arc(0, 0, r - .4, 0, Math.PI * 2);
+    x.strokeStyle = 'rgba(24,12,56,.30)'; x.lineWidth = Math.max(.7, r * .08); x.stroke();
+    /* the seam, turned with the capsule */
+    x.save(); x.rotate(rot);
+    x.beginPath(); x.ellipse(0, 0, r * .94, r * .26, 0, 0, Math.PI * 2);
+    x.strokeStyle = 'rgba(255,255,255,.30)'; x.lineWidth = Math.max(.6, r * .06); x.stroke();
+    x.restore();
+    /* the specular and its hot spot */
+    x.beginPath(); x.ellipse(-r * .34, -r * .40, r * .30, r * .19, -.6, 0, Math.PI * 2);
+    x.fillStyle = 'rgba(255,255,255,.70)'; x.fill();
+    x.beginPath(); x.ellipse(-r * .12, -r * .54, r * .10, r * .07, -.6, 0, Math.PI * 2);
+    x.fillStyle = 'rgba(255,255,255,.95)'; x.fill();
     x.restore();
   }
 
