@@ -181,7 +181,10 @@ input[type=text]:focus-visible,button:focus-visible{box-shadow:0 0 0 3px rgba(12
 .stat b{display:block;font-size:28px;font-weight:800;letter-spacing:-.03em}
 .hrow{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--edge);font-size:15px}
 .hrow span:last-child{color:var(--ink2);font-size:13px;white-space:nowrap}
-.dock{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;padding:6px;border-radius:999px;z-index:7;max-width:calc(100% - 24px);overflow-x:auto;scrollbar-width:none}.dock::-webkit-scrollbar{display:none}
+.dock{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;padding:6px;border-radius:999px;z-index:7;max-width:calc(100% - 24px);overflow-x:auto;scrollbar-width:none}
+.dock{transition:opacity .22s ease}
+.dock.swap{opacity:0}
+:root[data-motion="reduce"] .dock{transition:none}.dock::-webkit-scrollbar{display:none}
 .dock button{flex:0 1 auto;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:relative;z-index:1;border:0;background:none;padding:12px 20px;border-radius:999px;font-weight:600;font-size:15px;color:var(--ink2);transition:color .3s}
 .dock #gear,.dock #allbtn{flex:none}
 .dock button.on{color:#241a55}
@@ -1419,7 +1422,7 @@ store.set('d.pin',pin);   // first boot keeps the defaults
 if(!pin.length)pin=['wheel'];
 const GRID='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>';
 function closeAll(){$('#all').classList.remove('open')}
-let viewEpoch=0;
+let viewEpoch=0,dockT=0;
 /* leaving a decider mid-throw cancels it there and then: nothing lands into a
    view nobody is looking at */
 function abandonView(v){
@@ -1435,6 +1438,7 @@ function goTo(v){
  freset();$$('.moment').forEach(e=>e.remove());closePop();closeAll();
  closeSheets();
  $$('.view').forEach(x=>x.classList.toggle('on',x.id===v));
+ const dk=$('#dock');if(dk){dk.classList.add('swap');clearTimeout(dockT);dockT=setTimeout(()=>dk.classList.remove('swap'),170)}
  $$('.dock button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
  $('#allbtn').classList.toggle('on',v!=='hist'&&!pin.includes(v));
  pill();tip(v);renderFav();tone(700,.08,.05,'sine',900);draw();if(window.__viewHook)try{window.__viewHook(v)}catch(e){}
