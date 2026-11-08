@@ -5,6 +5,9 @@
   const cv = () => document.getElementById('clCv');
   let L = null, g = null, caps = [], falls = [], pending = null, held = null;
   let state = 'aim', timer = 0, drag = false, lw = 0, lh = 0;
+  /* a grab is only as good as your aim: tap near the middle of a capsule and it
+     holds, catch it by the edge and the claw lets go on the way up */
+  let score = 0, best = 0, slip = false, grabOff = 0;
   const claw = { x: 0, y: 0, open: 1 };
   const hangY = () => g.h * 0.2, floorY = () => g.h * 0.845, chuteX = () => g.w * 0.855;
   function build() {
@@ -12,14 +15,19 @@
     g = K.fit(c);
     const labels = K.prizes.slice(0, 5);
     const r = Math.max(15, Math.min(25, g.w * 0.068));
+    /* one capsule per option: six capsules for five options double-weighted the first */
+    const count = Math.max(2, Math.min(9, labels.length));
+    /* fill the cabinet instead of leaving it half empty: front row widest */
+    const rows = count <= 3 ? [count] : count <= 5 ? [3, count - 3] : [4, 3, count - 7];
     const slots = [];
-    [4, 3, 2].forEach((n, row) => {
+    rows.forEach((n, row) => {
+      if (n <= 0) return;
       const gap = r * 2.06, x0 = g.w * 0.44 - ((n - 1) * gap) / 2;
       for (let i = 0; i < n; i++) slots.push({ x: x0 + i * gap, y: floorY() - r * 0.8 - row * r * 1.6 });
     });
-    /* one capsule per option: six capsules for five options double-weighted the first */
-    const count = Math.max(2, Math.min(9, labels.length));
-    caps = slots.slice(0, count).map((s, i) => ({ x: s.x, y: s.y, r, label: labels[i], col: PAL[i % PAL.length], got: false }));
+    caps = slots.slice(0, count).map((s, i) => ({ x: s.x, y: s.y, r, label: labels[i], col: PAL[i % PAL.length], got: false,
+      /* 4 in the front row, 3 behind, 2 at the back: 10, 20, 30 */
+      val: s.y < floorY() - r * 3 ? 30 : s.y < floorY() - r * 1.6 ? 20 : 10 }));
     state = 'aim'; timer = 0; pending = held = null; falls = []; claw.x = g.w * 0.44; claw.y = hangY(); claw.open = 1;
   }
   function under(px, py) {
@@ -37,16 +45,32 @@
   }
   function grab(px, py) {
     if (!g || state !== 'aim') return;
-    pending = under(px, py); held = null; state = 'down'; timer = 0;
+    /* the claw travels to where you tapped, so the grab is decided by the claw's
+       line — not by which capsule your finger happened to be nearest */
+    if (px != null) claw.x = Math.max(g.w * 0.13, Math.min(g.w * 0.80, px));
+    pending = under(null, null); held = null; slip = false;
+    grabOff = pending ? Math.abs(pending.x - claw.x) / pending.r : 9;
+    state = 'down'; timer = 0;
     K.setResult(document.getElementById('clRes'), '…'); try { tone(300, 0.12, 0.05, 'square', 210); } catch (e) {}
   }
+  function slipOut() {
+    const cap = pending;
+    if (cap) falls.push({ x: cap.x, y: claw.y + cap.r * 1.4, vy: 1.2, r: cap.r, col: cap.col });
+    slip = false; pending = null; state = 'aim';
+    K.setResult(document.getElementById('clRes'), 'Slipped');
+    try { tone(200, 0.2, 0.06, 'sawtooth', 120); } catch (e) {}
+    try { buzz(14); } catch (e) {}
+  }
+
   function miss() {
     state = 'aim'; pending = null;
     K.setResult(document.getElementById('clRes'), 'Nothing');
     try { tone(150, 0.22, 0.06, 'sawtooth', 90); } catch (e) {}
   }
   function win(cap) {
-    state = 'refill'; K.setResult(document.getElementById('clRes'), cap.label);
+    score += cap.val || 10;
+    if (score > best) { best = score; try { store.set('d.clbest', best); } catch (e) {} }
+    state = 'refill'; K.setResult(document.getElementById('clRes'), cap.label + '  +' + (cap.val || 10));
     setTimeout(refill, 700);
   }
   function refill() {
@@ -67,14 +91,22 @@
     if (state === 'clamp') {
       timer += dt; claw.open = Math.max(0.08, 1 - timer / 12);
       if (timer > 18) {
-        if (pending) { held = pending; held.got = true; }
+        if (pending) {
+          if (grabOff < 0.42) { held = pending; held.got = true; }
+          else { slip = true; held = null; }
+        }
         state = 'up';
         try { tone(520, 0.1, 0.05, 'triangle', 640); } catch (e) {}
       }
     }
     if (state === 'up') {
       claw.y -= 3.8 * dt;
-      if (claw.y <= hangY()) { claw.y = hangY(); held ? (state = 'move') : miss(); }
+      if (claw.y <= hangY()) {
+        claw.y = hangY();
+        if (held) state = 'move';
+        else if (slip) slipOut();
+        else miss();
+      }
     }
     if (state === 'move') {
       claw.x += (chuteX() - claw.x) * 0.1 * dt;
@@ -133,6 +165,8 @@
     x.fillStyle = K.mat().flat ? '#e6dfcc' : 'rgba(255,255,255,.10)'; x.fill();
     x.strokeStyle = INK(.4); x.lineWidth = 1.2; x.stroke();
     K.label(x, 'GRAB', w / 2, h * 0.074, Math.max(10, h * 0.032));
+    K.label(x, String(score), 16, 22, 15, 'left');
+    if (best > score) K.label(x, 'best ' + best, 16, 40, 9, 'left');
 
     // rail
     const railY = h * 0.13;
@@ -171,8 +205,9 @@
     id: 'claw', name: 'Claw', short: 'Claw', label: 'Prizes', noResult: true, button: false,
     body: `<canvas class="toy" id="clCv" style="max-height:min(62vh,max(240px,calc(100svh - 530px)))"></canvas>
       <div class="res" id="clRes" aria-live="polite" style="min-height:40px;font-size:calc(clamp(22px,5.2vw,30px)*var(--fs,1))"><span class="muted">Tap a capsule</span></div>`,
-    tune: `<div class="lbl">Every capsule hides one of your options. Drag, grab, hope.</div>`,
+    tune: `<div class="lbl">Front row 10, middle 20, back 30. Grab it clean or it slips.</div>`,
     init() {
+      try { best = +store.get('d.clbest', 0) || 0; } catch (e) {}
       L = K.loop(dt => { step(dt); draw(); });
       const c = cv();
       let downX = 0, downY = 0, moved = 0;

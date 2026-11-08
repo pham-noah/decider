@@ -6,6 +6,10 @@
   const res = () => document.getElementById('dtRes');
   let L = null, labels = [], geo = null, aim = null, aiming = false, drag0 = { x: 0, y: 0 };
   let tAim = 0, wob = { x: 0, y: 0 }, dart = null, stuck = null, hit = -1, busy = false;
+  /* darts scores: a single is 10, the double and triple bands double and treble it,
+     bull is 50 and the outer bull 25. Three darts to a turn. */
+  const SINGLE = 10;
+  let score = 0, best = 0, darts = 3, lastPts = 0;
 
   const pick = (n) => { const b = K.options(n); return Array.from({ length: n }, (_, i) => b[i % b.length]); };
 
@@ -34,6 +38,12 @@
       x.beginPath(); x.moveTo(cx, cy); x.arc(cx, cy, R * .865, a0, a0 + st); x.closePath();
       x.fillStyle = i % 2 ? PAL[i % PAL.length] : 'rgba(38,28,86,.9)'; x.fill();
     }
+    /* the double and triple bands, drawn where land() scores them */
+    [[.44, .50], [.70, .76]].forEach(([a, b]) => {
+      x.beginPath(); x.arc(cx, cy, R * b, 0, TAU); x.arc(cx, cy, R * a, 0, TAU, true);
+      x.fillStyle = 'rgba(255,253,248,.18)'; x.fill();
+      x.strokeStyle = INK(.32); x.lineWidth = 1; x.stroke();
+    });
     if (hit >= 0) {
       const a0 = -Math.PI / 2 + hit * st;
       x.beginPath(); x.moveTo(cx, cy); x.arc(cx, cy, R * .865, a0, a0 + st); x.closePath();      x.fillStyle = K.mat().flat ? '#f1ebda' : 'rgba(255,255,255,.14)'; x.fill();
@@ -102,8 +112,22 @@
     hit = Math.min(n - 1, Math.floor(rel / st));
     stuck = { x: d.tx, y: d.ty, a: d.a };
     aim = null; busy = false;
-    K.setResult(res(), labels[hit]);
-    try { tone(680, .13, .05, 'sine', 1020); } catch (e) {}
+
+    const rr = Math.hypot(d.tx - cx, d.ty - cy) / R;
+    let pts = SINGLE, zone = '';
+    if (rr <= .10) { pts = 50; zone = 'BULL '; }
+    else if (rr <= .20) { pts = 25; zone = 'bull '; }
+    else if (rr >= .44 && rr <= .50) { pts = SINGLE * 3; zone = 'TRIPLE '; }
+    else if (rr >= .70 && rr <= .76) { pts = SINGLE * 2; zone = 'DOUBLE '; }
+    score += pts; lastPts = pts;
+    if (score > best) { best = score; try { store.set('d.dtbest', best); } catch (e) {} }
+    darts--;
+    K.setResult(res(), zone + labels[hit] + '  +' + pts);
+    try { tone(zone ? 860 : 680, .13, .05, 'sine', zone ? 1180 : 1020); } catch (e) {}
+    if (darts <= 0) {
+      darts = 3;
+      try { chime(); } catch (e) {}
+    }
   }
 
   function frame(dt) {
@@ -118,6 +142,12 @@
       wob = { x: Math.sin(tAim) * R * .035, y: Math.cos(tAim * 1.4) * R * .032 };
     }
     drawBoard(x);
+    K.label(x, String(score), 16, 22, 16, 'left');
+    if (best > score) K.label(x, 'best ' + best, 16, 40, 10, 'left');
+    for (let i = 0; i < 3; i++) {
+      x.beginPath(); x.arc(w - 16 - i * 13, 20, 2.6, 0, TAU);
+      x.fillStyle = i < darts ? INK(.9) : INK(.2); x.fill();
+    }
     if (aim) {
       const p = { x: aim.x + wob.x, y: aim.y + wob.y };
       x.save(); x.setLineDash([4, 6]); x.strokeStyle = INK(.55); x.lineWidth = 1.5;
@@ -152,6 +182,7 @@
     id: 'dart', name: 'Dart', short: 'Dart', label: 'Board', noResult: true, button: false,
     body: `<canvas class="toy" id="dtCv"></canvas><div class="res" id="dtRes" aria-live="polite"><span class="muted">Drag to aim</span></div><button class="btn" id="dtGo">Throw</button>`,
     init(card) {
+      try { best = +store.get('d.dtbest', 0) || 0; } catch (e) {}
       /* one label per sector, and as many sectors as divide evenly: 6 stays a
          dartboard, 4/5 options get their own sectors instead of a 1.2x bias */
       const opts = K.options(6);
