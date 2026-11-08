@@ -1,196 +1,210 @@
-/* Dart — drag to aim, release to throw; the sector the dart sticks in decides. */
+/* Dart — a real board, real numbers, and 501 down. Double to finish.
+ * Drag from the throw line to aim, release to throw: the throw's power decides how
+ * much the hand's tremor moves the dart, so a hard flat throw is the accurate one. */
 (function () {
-  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const K = window.DKIT, TAU = Math.PI * 2;
+  const INK = (a) => K.inkColor(a == null ? 1 : a);
   const cv = () => document.getElementById('dtCv');
   const res = () => document.getElementById('dtRes');
-  let L = null, labels = [], geo = null, aim = null, aiming = false, drag0 = { x: 0, y: 0 };
-  let tAim = 0, wob = { x: 0, y: 0 }, dart = null, stuck = null, hit = -1, busy = false;
-  /* darts scores: a single is 10, the double and triple bands double and treble it,
-     bull is 50 and the outer bull 25. Three darts to a turn. */
-  const SINGLE = 10;
-  let score = 0, best = 0, darts = 3, lastPts = 0;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
-  const pick = (n) => { const b = K.options(n); return Array.from({ length: n }, (_, i) => b[i % b.length]); };
+  /* standard order, clockwise from the top */
+  const ORDER = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
+  /* real board proportions, as a fraction of the outer wire radius */
+  const BULL = .037, BULL_OUT = .094, TRIP_IN = .582, TRIP_OUT = .629, DUB_IN = .953;
+
+  let L = null, geo = null, aim = null, aiming = false, drag0 = { x: 0, y: 0 };
+  let tAim = 0, wob = { x: 0, y: 0 }, dart = null, stuck = [], busy = false;
+  let score = 501, darts = 3, best = 0, turnDarts = 0, flash = '', flashT = 0;
 
   function layout() {
     const c = cv(); if (!c) return;
     const g = K.fit(c), R = Math.min(g.w * .44, g.h * .40);
-    geo = { w: g.w, h: g.h, cx: g.w / 2, cy: g.h * .47, R, n: labels.length, st: TAU / labels.length };
-  }
-  /* small text pill, shrunk to fit the sector */
-  function pill(x, px, py, t, max, size, bg, fg) {
-    x.font = `700 ${size}px "Bricolage Grotesque",system-ui,sans-serif`;
-    let s = t;
-    while (s.length > 1 && x.measureText(s).width > max - 12) s = s.slice(0, -1);
-    if (s !== t) s = s.trim() + '…';
-    const tw = Math.min(max, x.measureText(s).width + 12), th = size + 8;
-    K.rr(x, px - tw / 2, py - th / 2, tw, th, th / 2);
-    x.fillStyle = bg; x.fill(); x.fillStyle = fg; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(s, px, py + .5);
+    geo = { w: g.w, h: g.h, cx: g.w / 2, cy: g.h * .47, R, st: TAU / 20 };
   }
 
+  /* ---------- board ---------- */
   function drawBoard(x) {
-    const { cx, cy, R, n, st } = geo;
-    x.save(); x.shadowColor = 'rgba(36,26,85,.22)'; x.shadowBlur = 26; x.shadowOffsetY = 12;
-    x.beginPath(); x.arc(cx, cy, R, 0, TAU); x.fillStyle = '#fffdf8'; x.fill(); x.restore();
-    for (let i = 0; i < n; i++) {
-      const a0 = -Math.PI / 2 + i * st;
-      x.beginPath(); x.moveTo(cx, cy); x.arc(cx, cy, R * .865, a0, a0 + st); x.closePath();
-      x.fillStyle = i % 2 ? PAL[i % PAL.length] : 'rgba(38,28,86,.9)'; x.fill();
+    const { cx, cy, R, st } = geo;
+    x.save();
+    x.shadowColor = 'rgba(10,4,28,.45)'; x.shadowBlur = 22; x.shadowOffsetY = 10;
+    x.beginPath(); x.arc(cx, cy, R * 1.13, 0, TAU); x.fillStyle = '#2a1f14'; x.fill();
+    x.restore();
+    x.beginPath(); x.arc(cx, cy, R, 0, TAU); x.fillStyle = '#f6efdf'; x.fill();
+
+    for (let i = 0; i < 20; i++) {
+      const a0 = -Math.PI / 2 - st / 2 + i * st;
+      x.beginPath(); x.moveTo(cx, cy); x.arc(cx, cy, R, a0, a0 + st); x.closePath();
+      x.fillStyle = i % 2 === 0 ? '#221a12' : '#f3ead6'; x.fill();
     }
-    /* the double and triple bands, drawn where land() scores them */
-    [[.44, .50], [.70, .76]].forEach(([a, b]) => {
-      x.beginPath(); x.arc(cx, cy, R * b, 0, TAU); x.arc(cx, cy, R * a, 0, TAU, true);
-      x.fillStyle = 'rgba(255,253,248,.18)'; x.fill();
-      x.strokeStyle = INK(.32); x.lineWidth = 1; x.stroke();
+    /* triple and double bands: red on the dark wedges, green on the light */
+    for (let i = 0; i < 20; i++) {
+      const a0 = -Math.PI / 2 - st / 2 + i * st;
+      const col = i % 2 === 0 ? '#c8323c' : '#2f8f4e';
+      [[TRIP_IN, TRIP_OUT], [DUB_IN, 1]].forEach(([ri, ro]) => {
+        x.beginPath(); x.arc(cx, cy, R * ro, a0, a0 + st); x.arc(cx, cy, R * ri, a0 + st, a0, true);
+        x.closePath(); x.fillStyle = col; x.fill();
+      });
+    }
+    x.strokeStyle = 'rgba(20,14,8,.45)'; x.lineWidth = 1;
+    [BULL, BULL_OUT, TRIP_IN, TRIP_OUT, DUB_IN, 1].forEach((r) => {
+      x.beginPath(); x.arc(cx, cy, R * r, 0, TAU); x.stroke();
     });
-    if (hit >= 0) {
-      const a0 = -Math.PI / 2 + hit * st;
-      x.beginPath(); x.moveTo(cx, cy); x.arc(cx, cy, R * .865, a0, a0 + st); x.closePath();      x.fillStyle = K.mat().flat ? '#f1ebda' : 'rgba(255,255,255,.14)'; x.fill();
-      x.strokeStyle = INK(.95); x.lineWidth = 3; x.stroke();
+    for (let i = 0; i < 20; i++) {
+      const a = -Math.PI / 2 - st / 2 + i * st;
+      x.beginPath(); x.moveTo(cx + Math.cos(a) * R * BULL_OUT, cy + Math.sin(a) * R * BULL_OUT);
+      x.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); x.stroke();
     }
-    /* score ring with sector numbers */
-    x.beginPath(); x.arc(cx, cy, R * .865, 0, TAU); x.arc(cx, cy, R, 0, TAU, true); x.fillStyle = 'rgba(38,28,86,.94)'; x.fill();
-    x.fillStyle = INK(1); x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.font = `800 ${Math.max(7, R * .058)}px "Bricolage Grotesque",system-ui,sans-serif`;
-    for (let i = 0; i < n; i++) {
-      const a = -Math.PI / 2 + (i + .5) * st;
-      x.fillText(String(i + 1), cx + Math.cos(a) * R * .932, cy + Math.sin(a) * R * .932);
+    x.beginPath(); x.arc(cx, cy, R * BULL_OUT, 0, TAU); x.fillStyle = '#2f8f4e'; x.fill();
+    x.beginPath(); x.arc(cx, cy, R * BULL, 0, TAU); x.fillStyle = '#c8323c'; x.fill();
+
+    x.fillStyle = '#f6efdf'; x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.font = '800 ' + Math.max(8, R * .085) + 'px "Bricolage Grotesque",system-ui,sans-serif';
+    for (let i = 0; i < 20; i++) {
+      const a = -Math.PI / 2 + i * st;
+      x.fillText(String(ORDER[i]), cx + Math.cos(a) * R * 1.065, cy + Math.sin(a) * R * 1.065);
     }
-    const chord = 2 * R * .60 * Math.sin(st / 2);
-    for (let i = 0; i < n; i++) {
-      const a = -Math.PI / 2 + (i + .5) * st;
-      pill(x, cx + Math.cos(a) * R * .60, cy + Math.sin(a) * R * .60, labels[i],
-        Math.min(86, chord * .92), Math.max(8, Math.min(11, R * .075)), '#fffdf8', '#241a55');
+
+    if (flashT > 0) {
+      x.save(); x.globalAlpha = Math.min(1, flashT);
+      x.fillStyle = INK(1); x.font = '800 ' + Math.max(10, R * .1) + 'px "Bricolage Grotesque",system-ui,sans-serif';
+      x.textAlign = 'center'; x.fillText(flash, cx, cy + R * 1.26);
+      x.restore();
     }
-    x.beginPath(); x.arc(cx, cy, R * .10, 0, TAU); x.fillStyle = '#fffdf8'; x.fill();
-    x.strokeStyle = 'rgba(38,28,86,.65)'; x.lineWidth = 2; x.stroke();
-    x.beginPath(); x.arc(cx, cy, R * .034, 0, TAU); x.fillStyle = 'rgba(38,28,86,.85)'; x.fill();
   }
 
   function drawDart(x, px, py, ang, s) {
-    x.save(); x.translate(px, py); x.rotate(ang); x.scale(s, s); x.lineCap = 'round'; x.beginPath(); x.moveTo(-17, 0); x.lineTo(9, 0);
-    x.strokeStyle = '#2b1b5e'; x.lineWidth = 2.4; x.stroke(); x.beginPath(); x.moveTo(19, 0); x.lineTo(8, -4.5); x.lineTo(8, 4.5); x.closePath();
-    x.fillStyle = '#eef2ff'; x.fill(); x.strokeStyle = '#2b1b5e'; x.lineWidth = 1; x.stroke();
-    x.beginPath(); x.moveTo(-17, 0); x.lineTo(-23, -7); x.lineTo(-10, -3); x.closePath(); x.fillStyle = PAL[0]; x.fill();
-    x.beginPath(); x.moveTo(-17, 0); x.lineTo(-23, 7); x.lineTo(-10, 3); x.closePath(); x.fill(); x.restore();
+    x.save(); x.translate(px, py); x.rotate(ang); x.scale(s, s); x.lineCap = 'round';
+    x.beginPath(); x.moveTo(-19, 0); x.lineTo(10, 0);
+    x.strokeStyle = '#d9dbe8'; x.lineWidth = 2.2; x.stroke();
+    x.beginPath(); x.moveTo(10, 0); x.lineTo(20, 0);
+    x.strokeStyle = '#eef2ff'; x.lineWidth = 2.6; x.stroke();
+    x.beginPath(); x.moveTo(14, -4); x.lineTo(20, 0); x.lineTo(14, 4); x.closePath();
+    x.fillStyle = '#cdd3e6'; x.fill();
+    x.beginPath(); x.moveTo(-19, 0); x.lineTo(-26, -7); x.lineTo(-11, -3); x.closePath(); x.fillStyle = '#ff5f7a'; x.fill();
+    x.beginPath(); x.moveTo(-19, 0); x.lineTo(-26, 7); x.lineTo(-11, 3); x.closePath(); x.fillStyle = '#ff8fa3'; x.fill();
+    x.restore();
   }
 
+  /* ---------- throwing ---------- */
   function fire(power) {
     if (busy || !geo) return;
-    const R = geo.R;
+    const R = geo.R, pw = clamp(power == null ? .55 : power, 0, 1);
     if (!aim) aim = { x: geo.cx, y: geo.cy };
-    // a hard throw flies straight; a soft one wanders with the hand's tremor
-    const slop = 1 - Math.min(1, Math.max(0, power == null ? .55 : power)) * .85;
-    /* wob is already in px: multiplying it by R made the error scale with R², so at
-       tablet size the board landed 200px from the crosshair the player was watching */
-    let tx = aim.x + wob.x * slop;
-    let ty = aim.y + wob.y * slop;
+    const slop = 1 - pw * .88;
+    let tx = aim.x + wob.x * slop, ty = aim.y + wob.y * slop;
     const dx = tx - geo.cx, dy = ty - geo.cy, d = Math.hypot(dx, dy) || 1;
-    if (d > R * .92) {
-      /* a wild throw should be a miss, not a clamped hit on the rim */
-      const dd = Math.min(d, R * 1.18);
-      tx = geo.cx + dx / d * dd; ty = geo.cy + dy / d * dd;
-    }
-    stuck = null; hit = -1; busy = true;
-    dart = { lx: geo.w / 2, ly: geo.h + 12, tx, ty, t: 0, px: geo.w / 2, py: geo.h + 12, a: -Math.PI / 2, pw: Math.min(1, Math.max(0, power == null ? .55 : power)) };
+    if (d > R * 1.3) { tx = geo.cx + dx / d * R * 1.3; ty = geo.cy + dy / d * R * 1.3; }
+    busy = true; aim = null;
+    dart = { lx: geo.w / 2, ly: geo.h + 14, tx, ty, t: 0, px: geo.w / 2, py: geo.h + 14, a: -Math.PI / 2, pw };
     K.setResult(res(), '…');
     try { tone(320, .08, .04, 'sawtooth', 640); } catch (e) {}
   }
 
+  function scoreAt(px, py) {
+    const dx = px - geo.cx, dy = py - geo.cy, d = Math.hypot(dx, dy) / geo.R;
+    if (d <= BULL) return { pts: 50, name: 'BULL', dbl: true };
+    if (d <= BULL_OUT) return { pts: 25, name: '25', dbl: false };
+    if (d > 1.02) return { pts: 0, name: 'MISS', dbl: false };
+    const ang = Math.atan2(dy, dx) + Math.PI / 2;
+    const rel = ((ang % TAU) + TAU) % TAU;
+    const idx = Math.floor(rel / geo.st) % 20;
+    const num = ORDER[idx];
+    if (d >= TRIP_IN && d <= TRIP_OUT) return { pts: num * 3, name: 'T' + num, dbl: false };
+    if (d >= DUB_IN) return { pts: num * 2, name: 'D' + num, dbl: true };
+    return { pts: num, name: String(num), dbl: false };
+  }
+
   function land(d) {
-    const { cx, cy, n, st, R } = geo;
-    /* every dart won a label, even one stuck in the score ring */
-    if (Math.hypot(d.tx - cx, d.ty - cy) > R * 0.94) {
-      stuck = null; aim = null; busy = false; hit = -1;
-      K.setResult(res(), 'Off the board');
-      try { tone(150, .16, .05, 'triangle', 100); } catch (e) {}
+    busy = false;
+    const hitp = scoreAt(d.tx, d.ty);
+    stuck.push({ x: d.tx, y: d.ty, a: d.a });
+    if (stuck.length > 3) stuck.shift();
+    const before = score;
+    let out = hitp.pts, bust = false;
+    if (out > 0) {
+      const after = score - out;
+      /* double out: under zero, left on one, or zero without a double is a bust */
+      if (after < 0 || after === 1 || (after === 0 && !hitp.dbl)) bust = true;
+      if (bust) out = 0;
+    }
+    if (!bust) score = Math.max(0, score - out);
+    darts--; turnDarts++;
+    if (bust) score = before;
+    flash = bust ? 'BUST' : hitp.name;
+    flashT = 1;
+    K.setResult(res(), bust ? 'bust' : hitp.name + '  −' + out);
+
+    if (!bust && score === 0) {
+      if (!best || turnDarts < best) { best = turnDarts; try { store.set('d.dtbest', best); } catch (e) {} }
+      K.setResult(res(), 'checkout · ' + turnDarts + ' darts');
+      try { chime(); confetti(); } catch (e) {}
+      score = 501; darts = 3; turnDarts = 0; stuck = [];
       return;
     }
-    const ang = Math.atan2(d.ty - cy, d.tx - cx);
-    const rel = ((ang + Math.PI / 2) % TAU + TAU) % TAU;
-    hit = Math.min(n - 1, Math.floor(rel / st));
-    stuck = { x: d.tx, y: d.ty, a: d.a };
-    aim = null; busy = false;
-
-    const rr = Math.hypot(d.tx - cx, d.ty - cy) / R;
-    let pts = SINGLE, zone = '';
-    if (rr <= .10) { pts = 50; zone = 'BULL '; }
-    else if (rr <= .20) { pts = 25; zone = 'bull '; }
-    else if (rr >= .44 && rr <= .50) { pts = SINGLE * 3; zone = 'TRIPLE '; }
-    else if (rr >= .70 && rr <= .76) { pts = SINGLE * 2; zone = 'DOUBLE '; }
-    score += pts; lastPts = pts;
-    if (score > best) { best = score; try { store.set('d.dtbest', best); } catch (e) {} }
-    darts--;
-    K.setResult(res(), zone + labels[hit] + '  +' + pts);
-    try { tone(zone ? 860 : 680, .13, .05, 'sine', zone ? 1180 : 1020); } catch (e) {}
     if (darts <= 0) {
-      darts = 3;
-      try { chime(); } catch (e) {}
+      darts = 3; turnDarts = 0;
+      try { tone(300, .1, .04, 'square', 200); } catch (e) {}
+    } else {
+      try { tone(bust ? 180 : 680, .13, .05, 'sine', bust ? 120 : 1020); } catch (e) {}
     }
   }
 
   function frame(dt) {
     const g = K.fit(cv());
-    if (!geo || Math.abs(geo.w - g.w) > .5) layout();
+    if (!geo || Math.abs(geo.w - g.w) > .5 || Math.abs(geo.h - g.h) > .5) layout();
     if (!geo) return;
     const x = g.x, w = g.w, h = g.h, R = geo.R;
     x.clearRect(0, 0, w, h);
     K.surf(x, w, h);
+    if (flashT > 0) flashT = Math.max(0, flashT - dt * .02);
     if (aiming) {
-      tAim += dt * .55;
-      wob = { x: Math.sin(tAim) * R * .035, y: Math.cos(tAim * 1.4) * R * .032 };
+      tAim += dt * .5;
+      wob = { x: Math.sin(tAim) * R * .04, y: Math.cos(tAim * 1.35) * R * .036 };
     }
     drawBoard(x);
-    K.label(x, String(score), 16, 22, 16, 'left');
-    if (best > score) K.label(x, 'best ' + best, 16, 40, 10, 'left');
-    for (let i = 0; i < 3; i++) {
-      x.beginPath(); x.arc(w - 16 - i * 13, 20, 2.6, 0, TAU);
-      x.fillStyle = i < darts ? INK(.9) : INK(.2); x.fill();
-    }
+    stuck.forEach((s) => drawDart(x, s.x, s.y, s.a, .92));
     if (aim) {
       const p = { x: aim.x + wob.x, y: aim.y + wob.y };
-      x.save(); x.setLineDash([4, 6]); x.strokeStyle = INK(.55); x.lineWidth = 1.5;
+      x.save(); x.setLineDash([4, 6]); x.strokeStyle = INK(.5); x.lineWidth = 1.3;
       x.beginPath(); x.moveTo(w / 2, h + 4); x.lineTo(p.x, p.y); x.stroke();
-      x.setLineDash([]); x.strokeStyle = INK(.95); x.lineWidth = 2; x.beginPath(); x.arc(p.x, p.y, R * .115, 0, TAU); x.stroke();
-      x.beginPath(); x.moveTo(p.x - 24, p.y); x.lineTo(p.x - 8, p.y); x.moveTo(p.x + 8, p.y); x.lineTo(p.x + 24, p.y);
-      x.moveTo(p.x, p.y - 24); x.lineTo(p.x, p.y - 8); x.moveTo(p.x, p.y + 8); x.lineTo(p.x, p.y + 24); x.stroke();
-      x.beginPath(); x.arc(p.x, p.y, 2.5, 0, TAU); x.fillStyle = INK(1); x.fill(); x.restore();
+      x.setLineDash([]); x.strokeStyle = INK(.92); x.lineWidth = 2;
+      x.beginPath(); x.arc(p.x, p.y, R * .07, 0, TAU); x.stroke();
+      x.beginPath(); x.moveTo(p.x - 18, p.y); x.lineTo(p.x - 6, p.y); x.moveTo(p.x + 6, p.y); x.lineTo(p.x + 18, p.y);
+      x.moveTo(p.x, p.y - 18); x.lineTo(p.x, p.y - 6); x.moveTo(p.x, p.y + 6); x.lineTo(p.x, p.y + 18); x.stroke();
+      x.restore();
     }
-    if (stuck) drawDart(x, stuck.x, stuck.y, stuck.a, .9);
     if (dart) {
-      /* the throw you gave it: a soft one hangs and arcs high, a hard one
-         snaps over flat and is home sooner */
-      dart.t += dt / (14 + 26 * (1 - dart.pw));
+      dart.t += dt / (13 + 26 * (1 - dart.pw));
       const e = Math.min(1, dart.t);
       const px = dart.lx + (dart.tx - dart.lx) * e;
-      const py = dart.ly + (dart.ty - dart.ly) * e - Math.sin(Math.PI * e) * R * (.32 + .24 * dart.pw);
+      const py = dart.ly + (dart.ty - dart.ly) * e - Math.sin(Math.PI * e) * R * (.30 + .22 * dart.pw);
       const a = Math.atan2(py - dart.py, px - dart.px) || dart.a;
       dart.a = a; dart.px = px; dart.py = py;
       drawDart(x, px, py, a, 1.15 - .3 * e);
       if (dart.t >= 1) { const d = dart; dart = null; land(d); }
     }
+    K.label(x, String(score), 16, 24, 20, 'left');
+    if (best) K.label(x, 'best ' + best + ' darts', 16, 45, 10, 'left');
+    for (let i = 0; i < 3; i++) {
+      x.beginPath(); x.arc(w - 16 - i * 13, 20, 2.8, 0, TAU);
+      x.fillStyle = i < darts ? INK(.9) : INK(.2); x.fill();
+    }
   }
 
   const at = (e) => { const r = cv().getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
   function setAim(p) {
-    const dx = p.x - geo.cx, dy = p.y - geo.cy, d = Math.hypot(dx, dy), lim = geo.R * .94;
+    const dx = p.x - geo.cx, dy = p.y - geo.cy, d = Math.hypot(dx, dy), lim = geo.R * 1.05;
     aim = d > lim ? { x: geo.cx + dx / d * lim, y: geo.cy + dy / d * lim } : p;
   }
 
   K && window.DECIDER_GAMES.push({
-    id: 'dart', name: 'Dart', short: 'Dart', label: 'Board', noResult: true, button: false,
-    body: `<canvas class="toy" id="dtCv"></canvas><div class="res" id="dtRes" aria-live="polite"><span class="muted">Drag to aim</span></div><button class="btn" id="dtGo">Throw</button>`,
-    init(card) {
+    id: 'dart', name: 'Darts', short: 'Darts', label: 'Board', noResult: true, button: false,
+    body: `<canvas class="toy" id="dtCv"></canvas><div class="res" id="dtRes" aria-live="polite"><span class="muted">Drag to aim</span></div>`,
+    init() {
       try { best = +store.get('d.dtbest', 0) || 0; } catch (e) {}
-      /* one label per sector, and as many sectors as divide evenly: 6 stays a
-         dartboard, 4/5 options get their own sectors instead of a 1.2x bias */
-      const opts = K.options(6);
-      const sectors = opts.length && 6 % opts.length === 0 ? 6 : opts.length;
-      labels = Array.from({ length: sectors }, (_, i) => opts[i % opts.length]);
       L = K.loop(frame);
       layout();
-      card.querySelector('#dtGo').onclick = () => fire(0.55);
       cv().addEventListener('pointerdown', (e) => {
         if (busy || !geo) return;
         aiming = true; drag0 = at(e); setAim(drag0);
@@ -201,16 +215,16 @@
         if (!aiming) return;
         aiming = false;
         const p = at(e), run = Math.hypot(p.x - drag0.x, p.y - drag0.y);
-        fire(Math.max(0, Math.min(1, run / (geo ? geo.w * 0.55 : 200))));
+        fire(clamp(run / (geo ? geo.w * .5 : 200), 0, 1));
       });
       cv().addEventListener('pointercancel', () => { aiming = false; });
     },
     enter() { layout(); L.start(); },
     leave() { aiming = false; L.stop(); },
     action() {
-      /* aiming at dead centre made Space throw the same sector every time */
-      if (geo) aim = { x: geo.cx + (Math.random() - .5) * geo.R * 1.1, y: geo.cy + (Math.random() - .5) * geo.R * 1.1 };
-      fire();
-    }
+      if (geo) aim = { x: geo.cx + (Math.random() - .5) * geo.R * .9, y: geo.cy + (Math.random() - .5) * geo.R * .9 };
+      fire(.7);
+    },
+    status() { return { score, darts, best, turn: turnDarts, stuck: stuck.length }; }
   });
 })();
