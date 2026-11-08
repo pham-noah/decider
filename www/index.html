@@ -12,40 +12,40 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/favicon.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="fonts.css?v=cf0b85a907">
+<link rel="stylesheet" href="fonts.css?v=016a76ea19">
 <!-- games:start -->
-<script src="games/_kit.js?v=cf0b85a907"></script>
-<script src="games/balloons.js?v=cf0b85a907"></script>
-<script src="games/band.js?v=cf0b85a907"></script>
-<script src="games/basketball.js?v=cf0b85a907"></script>
-<script src="games/blackjack.js?v=cf0b85a907"></script>
-<script src="games/blek.js?v=cf0b85a907"></script>
-<script src="games/bowling.js?v=cf0b85a907"></script>
-<script src="games/bubblewrap.js?v=cf0b85a907"></script>
-<script src="games/claw.js?v=cf0b85a907"></script>
-<script src="games/coinpusher.js?v=cf0b85a907"></script>
-<script src="games/dart.js?v=cf0b85a907"></script>
-<script src="games/pool.js?v=cf0b85a907"></script>
-<script src="games/fidget.js?v=cf0b85a907"></script>
-<script src="games/gacha.js?v=cf0b85a907"></script>
-<script src="games/hanoi.js?v=cf0b85a907"></script>
-<script src="games/highcard.js?v=cf0b85a907"></script>
-<script src="games/knob.js?v=cf0b85a907"></script>
-<script src="games/linerider.js?v=cf0b85a907"></script>
-<script src="games/pachinko.js?v=cf0b85a907"></script>
-<script src="games/plinko.js?v=cf0b85a907"></script>
-<script src="games/press.js?v=cf0b85a907"></script>
-<script src="games/ringtoss.js?v=cf0b85a907"></script>
-<script src="games/sandspiel.js?v=cf0b85a907"></script>
-<script src="games/scratch.js?v=cf0b85a907"></script>
-<script src="games/slots.js?v=cf0b85a907"></script>
-<script src="games/stressball.js?v=cf0b85a907"></script>
-<script src="games/switch.js?v=cf0b85a907"></script>
-<script src="games/tarot.js?v=cf0b85a907"></script>
-<script src="games/vignettes.js?v=cf0b85a907"></script>
-<script src="games/windowsill.js?v=cf0b85a907"></script>
+<script src="games/_kit.js?v=016a76ea19"></script>
+<script src="games/balloons.js?v=016a76ea19"></script>
+<script src="games/band.js?v=016a76ea19"></script>
+<script src="games/basketball.js?v=016a76ea19"></script>
+<script src="games/blackjack.js?v=016a76ea19"></script>
+<script src="games/blek.js?v=016a76ea19"></script>
+<script src="games/bowling.js?v=016a76ea19"></script>
+<script src="games/bubblewrap.js?v=016a76ea19"></script>
+<script src="games/claw.js?v=016a76ea19"></script>
+<script src="games/coinpusher.js?v=016a76ea19"></script>
+<script src="games/dart.js?v=016a76ea19"></script>
+<script src="games/pool.js?v=016a76ea19"></script>
+<script src="games/fidget.js?v=016a76ea19"></script>
+<script src="games/gacha.js?v=016a76ea19"></script>
+<script src="games/hanoi.js?v=016a76ea19"></script>
+<script src="games/highcard.js?v=016a76ea19"></script>
+<script src="games/knob.js?v=016a76ea19"></script>
+<script src="games/linerider.js?v=016a76ea19"></script>
+<script src="games/pachinko.js?v=016a76ea19"></script>
+<script src="games/plinko.js?v=016a76ea19"></script>
+<script src="games/press.js?v=016a76ea19"></script>
+<script src="games/ringtoss.js?v=016a76ea19"></script>
+<script src="games/sandspiel.js?v=016a76ea19"></script>
+<script src="games/scratch.js?v=016a76ea19"></script>
+<script src="games/slots.js?v=016a76ea19"></script>
+<script src="games/stressball.js?v=016a76ea19"></script>
+<script src="games/switch.js?v=016a76ea19"></script>
+<script src="games/tarot.js?v=016a76ea19"></script>
+<script src="games/vignettes.js?v=016a76ea19"></script>
+<script src="games/windowsill.js?v=016a76ea19"></script>
 <!-- games:end -->
-<script src="native-bridge.js?v=cf0b85a907"></script>
+<script src="native-bridge.js?v=016a76ea19"></script>
 <style>
 *{box-sizing:border-box;margin:0}
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--ink:#1d1340;--ink2:rgba(29,19,64,.82);--base:#ece7ff;--g1:rgba(255,255,255,.8);--g2:rgba(255,255,255,.48);--edge:rgba(255,255,255,.85);--sh:rgba(70,40,140,.22);--field:rgba(255,255,255,.62);--b1:#ff5fa2;--b2:#6f8bff;--b3:#2fe0c4;--b4:#ffb347;--a1:#ff5fa2;--a2:#7b6cff;color-scheme:light}
@@ -632,8 +632,63 @@ const rnd=()=>{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]/
 const mqRM=matchMedia('(prefers-reduced-motion:reduce)');let calm=mqRM.matches||store.get('d.rm2',false);
 const TAU=Math.PI*2,PAL=['#ff6fae','#ffb347','#ffe066','#5eead4','#69a7ff','#a78bfa','#fb7185','#4ade80'];
 let sound=store.get('d.snd',true),AC;
-function tone(f,d,v,type,slide){if(!sound)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(AC.destination);o.start();o.stop(t+d)}catch(e){}}
-let tickF=1300;const tick=()=>{tone(tickF+Math.random()*120,.05,.07,'triangle',tickF/2);tone(160,.03,.05,'square')};
+/* ---- the voice of the app ----
+   A bare oscillator sounds like a test tone, not a thing happening: every pop,
+   knock and click a toy makes had no body and no attack. toneP is the old single
+   oscillator (the wheel and the coin keep their own), and tone() is that plus a
+   noise transient for the attack and a sub-octave for weight, which is what makes
+   a tap sound like it hit something. Voices are budgeted so a rapid run of taps
+   cannot turn into a wash. */
+function toneP(f,d,v,type,slide){if(!sound)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(AC.destination);o.start();o.stop(t+d)}catch(e){}}
+let toneVoices=0,toneVoiceAt=0;
+function tone(f,d,v,type,slide){
+ if(!sound)return;
+ try{
+  AC=AC||new(window.AudioContext||window.webkitAudioContext)();
+  if(AC.state==='suspended')AC.resume();
+  const t=AC.currentTime;
+  const now=performance.now();
+  if(now-toneVoiceAt>90)toneVoices=0;
+  toneVoiceAt=now;toneVoices++;
+  const busy=toneVoices>6;
+  /* the tone itself, with a slightly softer attack so it is not a click */
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.type=type||'sine';
+  o.frequency.setValueAtTime(f,t);
+  if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(24,slide),t+d);
+  g.gain.setValueAtTime(.0001,t);
+  g.gain.exponentialRampToValueAtTime(Math.max(.0002,v),t+Math.min(.012,d*.3));
+  g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  o.connect(g).connect(AC.destination);
+  o.start(t);o.stop(t+d+.01);
+  if(busy)return;
+  /* weight: a quiet octave below on anything that lasts */
+  if(d>.09&&f>150){
+   const s=AC.createOscillator(),sg=AC.createGain();
+   s.type='sine';s.frequency.setValueAtTime(f*.5,t);
+   sg.gain.setValueAtTime(.0001,t);
+   sg.gain.exponentialRampToValueAtTime(v*.45,t+.01);
+   sg.gain.exponentialRampToValueAtTime(.0001,t+d*.85);
+   s.connect(sg).connect(AC.destination);s.start(t);s.stop(t+d*.9+.01);
+  }
+  /* attack: a very short noise kiss banded around the tone, so a hit has an edge */
+  if(v>.025){
+   const nd=Math.min(.05,Math.max(.008,d*.35));
+   const n=Math.max(1,Math.floor(AC.sampleRate*nd));
+   const buf=AC.createBuffer(1,n,AC.sampleRate),dd=buf.getChannelData(0);
+   for(let i=0;i<n;i++)dd[i]=(Math.random()*2-1)*Math.pow(1-i/n,3);
+   const src=AC.createBufferSource();src.buffer=buf;
+   const flt=AC.createBiquadFilter();flt.type='bandpass';
+   flt.frequency.setValueAtTime(Math.min(9000,Math.max(400,f*3)),t);flt.Q.value=1.6;
+   const ng=AC.createGain();
+   ng.gain.setValueAtTime(Math.min(.06,v*.8),t);
+   ng.gain.exponentialRampToValueAtTime(.0001,t+nd);
+   src.connect(flt).connect(ng).connect(AC.destination);
+   src.start(t);src.stop(t+nd+.01);
+  }
+ }catch(e){}
+}
+let tickF=1300;const tick=()=>{toneP(tickF+Math.random()*120,.05,.07,'triangle',tickF/2);toneP(160,.03,.05,'square')};
 const chime=()=>{tone(130,.4,.16,'sine',55);[660,880,1320].forEach((f,i)=>setTimeout(()=>tone(f,.55,.1),i*95))};
 let buzzT=0;
 /* the spin buzzes on every wedge it passes; on a phone that is 30-60 vibrator calls a
@@ -732,10 +787,10 @@ function spin(pw=.6,dir=1){if(spinning||opts.length<2)return;const windup=!calm&
  const tot=opts.reduce((a,o)=>a+o.w,0);let r=rnd()*tot,wi=0;for(;wi<opts.length-1;wi++){r-=opts[wi].w;if(r<0)break}
  let a=0;for(let i=0;i<wi;i++)a+=opts[i].w/tot;const f=a+opts[wi].w/tot*(.12+.76*rnd());
  const st=rot,tn=Math.round(3+pw*6)+Math.floor(rnd()*2),delta=dir>0?((((-f*TAU-st)%TAU)+TAU)%TAU)+TAU*tn:-(((((f*TAU+st)%TAU)+TAU)%TAU)+TAU*tn),dur=calm?1800:3600+pw*3600,t0=performance.now(),WU=windup?340:0,off=windup?-dir*.22:0,T=st+delta;let last=idxAt(rot),launched=false;
- $('#wres').innerHTML='<span class="muted">…</span>';if(windup){tone(300,.3,.04,'triangle',170);buzz(10)}
+ $('#wres').innerHTML='<span class="muted">…</span>';if(windup){toneP(300,.3,.04,'triangle',170);buzz(10)}
  (function step(now){const el=now-t0;
   if(el<WU){const w=el/WU;rot=st+off*(1-Math.pow(1-w,3));spinPaint();requestAnimationFrame(step);return}
-  if(!launched){launched=true;last=idxAt(rot);if(windup){tone(180,.6,.05,'sawtooth',900);buzz(18)}}
+  if(!launched){launched=true;last=idxAt(rot);if(windup){toneP(180,.6,.05,'sawtooth',900);buzz(18)}}
   const p=Math.min(1,(el-WU)/dur);rot=st+delta*(1-Math.pow(1-p,5))+off*(1-Math.min(1,p*7));
   const i=idxAt(rot);if(i!==last){last=i;tick();flick();buzz(5)}spinPaint();
   if(p<1){requestAnimationFrame(step);return}
@@ -782,7 +837,7 @@ function flipMany(){
  coins.forEach((c,i)=>setTimeout(()=>{
   const heads=rnd()<.5;res[i]=heads;c.textContent='?';c.classList.remove('heads');
   c.animate([{transform:'rotateY(0)'},{transform:'rotateY(900deg)'}],{duration:dur,easing:'cubic-bezier(.3,.7,.3,1)',fill:'both'});
-  setTimeout(()=>{c.textContent=heads?'H':'T';c.classList.toggle('heads',heads);c.animate([{transform:'scale(1.25,.8)'},{transform:'scale(1)'}],{duration:300,easing:'cubic-bezier(.2,1.6,.4,1)'});tone(heads?720:420,.12,.06,'triangle');buzz(8)},dur-40)
+  setTimeout(()=>{c.textContent=heads?'H':'T';c.classList.toggle('heads',heads);c.animate([{transform:'scale(1.25,.8)'},{transform:'scale(1)'}],{duration:300,easing:'cubic-bezier(.2,1.6,.4,1)'});toneP(heads?720:420,.12,.06,'triangle');buzz(8)},dur-40)
  },i*step));
  setTimeout(()=>{
   const h=res.filter(Boolean).length,t=coins.length-h,[A,B]=names();
@@ -796,8 +851,8 @@ renderCoins();
 function flipCoin(){if(ccoins>1){flipMany();return}if(flipping)return;flipping=true;const ep=viewEpoch;
  const res=rnd()<.5?0:1,cur=(ang/180)%2,to=ang+360*(5+Math.floor(rnd()*3))+((res-cur+2)%2)*180,dur=calm?700:2100,WU=calm?0:150;
  $('#cres').innerHTML='<span class="muted">…</span>';
- if(WU){$('.cwrap').animate([{transform:'scale(1,1)'},{transform:'scale(1.12,.8)',offset:.7},{transform:'scale(.94,1.1)'}],{duration:WU,easing:'ease-out'});tone(220,.15,.06,'triangle',140);buzz(8)}
- setTimeout(()=>tone(500,.25,.08,'sine',900),WU);
+ if(WU){$('.cwrap').animate([{transform:'scale(1,1)'},{transform:'scale(1.12,.8)',offset:.7},{transform:'scale(.94,1.1)'}],{duration:WU,easing:'ease-out'});toneP(220,.15,.06,'triangle',140);buzz(8)}
+ setTimeout(()=>toneP(500,.25,.08,'sine',900),WU);
  $('#cn').animate([{transform:`rotateX(${ang}deg)`},{transform:`rotateX(${to}deg)`}],{duration:dur,delay:WU,easing:'cubic-bezier(.25,.6,.25,1)',fill:'both'});
  $('#arc').animate([{transform:'translateY(0) scale(1)',easing:'cubic-bezier(.2,.7,.4,1)'},{transform:'translateY(-120px) scale(1.4)',offset:.42,easing:'cubic-bezier(.6,0,.9,.5)'},{transform:'translateY(0) scale(1)',offset:.88,easing:'ease-out'},{transform:'translateY(-14px) scale(1.04)',offset:.94},{transform:'translateY(0) scale(1)'}],{duration:dur,delay:WU});
  $('#csh').animate([{transform:'scale(1)',opacity:.9},{transform:'scale(.45)',opacity:.35,offset:.42},{transform:'scale(1)',opacity:.9,offset:.88},{transform:'scale(1)',opacity:.9}],{duration:dur,delay:WU});
@@ -807,7 +862,7 @@ function flipCoin(){if(ccoins>1){flipMany();return}if(flipping)return;flipping=t
 function coinLand(){if(calm)return;const r=$('#cn').getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
  ringAt(cx,r.bottom-16,'#ffd36a',230);sparks(cx,cy,'#ffd36a',24,11);sparks(cx,cy,'#ffffff',10,7);shakeEl($('#coin .center'),5,380);
  $('.cwrap').animate([{transform:'scale(1,1)'},{transform:'scale(1.08,.88)',offset:.3},{transform:'scale(.98,1.04)',offset:.6},{transform:'scale(1,1)'}],{duration:440,easing:'ease-out'});
- tone(2300,.45,.07,'sine');setTimeout(()=>tone(3450,.3,.04,'sine'),70);tone(120,.12,.12,'sine',60)}
+ toneP(2300,.45,.07,'sine');setTimeout(()=>toneP(3450,.3,.04,'sine'),70);toneP(120,.12,.12,'sine',60)}
 
 /* dice — cute 3D cubes that settle on exactly one readable panel.
    Geometry: six .dface panels on ±X/±Y/±Z; a face is "to the front" when its
@@ -1130,10 +1185,10 @@ function renderBottle(){const S=$('#bst');S.querySelectorAll('.bd').forEach(e=>e
 function spinBottle(pw=.6,dir=1){if(bSpin)return;const ep=viewEpoch;$('#bt').classList.add('nofx');const windup=!calm&&arguments.length===0;bSpin=true;$$('.bd').forEach(e=>e.classList.remove('hit','dim'));$('#bres').innerHTML='<span class="muted">…</span>';
  const w=Math.floor(rnd()*bn),sec=360/bn,tgt=brnd?rnd()*360:(w*sec+(rnd()-.5)*sec*.6),st=bAng,tn=Math.round(3+pw*6)+Math.floor(rnd()*2),delta=dir>0?(((tgt-st)%360)+360)%360+360*tn:-((((st-tgt)%360)+360)%360+360*tn),dur=calm?1500:3200+pw*3200,t0=performance.now(),bt=$('#bt'),WU=windup?320:0,off=windup?-dir*26:0,T=st+delta;let last=-1,launched=false;
  const setR=a=>{bAng=a;bt.style.transform=`translate(-50%,-50%) rotate(${a}deg)`};
- if(windup){tone(300,.3,.04,'triangle',170);buzz(10)}
+ if(windup){toneP(300,.3,.04,'triangle',170);buzz(10)}
  (function s(now){const el=now-t0;
   if(el<WU){setR(st+off*(1-Math.pow(1-el/WU,3)));requestAnimationFrame(s);return}
-  if(!launched){launched=true;last=-1;if(windup){tone(180,.6,.05,'sawtooth',900);buzz(18)}}
+  if(!launched){launched=true;last=-1;if(windup){toneP(180,.6,.05,'sawtooth',900);buzz(18)}}
   const p=Math.min(1,(el-WU)/dur);setR(st+delta*(1-Math.pow(1-p,4.5))+off*(1-Math.min(1,p*7)));
   const i=Math.round((((bAng%360)+360)%360)/(brnd?15:sec))%(brnd?24:bn);if(i!==last){if(last>=0){tick();buzz(4)}last=i}
   if(p<1){requestAnimationFrame(s);return}
@@ -1568,7 +1623,7 @@ $$('.dock button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v==='whe
 pill();renderHist();draw();
 document.addEventListener('pointermove',e=>{const g=e.target.closest&&e.target.closest('.glass');if(!g)return;const r=g.getBoundingClientRect();g.style.setProperty('--mx',(e.clientX-r.left)+'px');g.style.setProperty('--my',(e.clientY-r.top)+'px')});
 </script>
-<script src="app-nav.js?v=cf0b85a907"></script>
+<script src="app-nav.js?v=016a76ea19"></script>
 <script>
 /* PWA offline support: skipped in the Capacitor/Tauri wrappers, which bundle the files */
 if('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && location.hostname!=='tauri.localhost' && !(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()) && !window.__TAURI_INTERNALS__){
