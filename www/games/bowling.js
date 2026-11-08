@@ -45,8 +45,13 @@
       w, h, halfNear, yNear, yFar, KV, SF,
       s(u) { return 1 / (1 + KV * u); },
       u(z) {
-        if (z <= DECK_Z) return clamp((z + 1.2) / (DECK_Z + 1.2), 0, 1) * 0.64;
-        return 0.64 + clamp((z - DECK_Z) / (PIT_Z - DECK_Z), 0, 1) * 0.36;
+        /* One smooth depth curve end to end, shaped so the far end keeps enough
+           screen to read the rack. It used to be two straight pieces meeting at
+           the deck line, where the pixel scale stepped 11× and a ball moving at
+           constant speed looked like it bolted for the pins. This curve's slope
+           changes continuously, so the change in apparent speed is a ramp. */
+        const t = clamp((z + 1.2) / (PIT_Z + 1.2), 0, 1);
+        return 1 - Math.pow(1 - t, 0.45);
       },
       p(x, z) {
         const u = this.u(z), s = this.s(u);
