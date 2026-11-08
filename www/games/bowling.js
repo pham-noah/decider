@@ -211,7 +211,8 @@
     msg = down === 0 ? 'GUTTER' : strike ? 'STRIKE' : spare ? 'SPARE' : '';
     if (msg) flashTxt = strike ? 2.2 : 1.2;
 
-    /* what comes next: deadwood on the second ball, ten fresh in the tenth */
+    /* what comes next: deadwood on the second ball, a fresh rack whenever the
+       rack was cleared (a strike, a spare, or the tenth frame's bonus ball) */
     let fresh = false;
     if (fi < 9) {
       if (firstBall && !strike) bi = 1;
@@ -219,8 +220,11 @@
     } else if (fr.length === 1) {
       bi = 1; fresh = strike;
     } else if (fr.length === 2) {
-      const bonus = fr[0] === 10 || (fr[0] + fr[1]) === 10;
-      if (bonus) { bi = 2; fresh = fr[1] === 10; }
+      const spareNow = fr[0] !== 10 && (fr[0] + fr[1]) === 10;
+      const bonus = fr[0] === 10 || spareNow;
+      /* a strike or a spare empties the rack, so the bonus ball stands ten up;
+         a strike followed by an open ball is played on that deadwood */
+      if (bonus) { bi = 2; fresh = fr[1] === 10 || spareNow; }
       else gameOver = true;
     } else gameOver = true;
 
