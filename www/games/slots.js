@@ -7,6 +7,10 @@
   const cv = () => document.getElementById('slCv');
   const TAU = Math.PI * 2;
   let L = null, g = null, pool = [], reels = [], spinning = false, spinStart = 0, power = 0.5;
+  /* a machine without a score is a toy that forgets you: credits, a bet per pull,
+     and the best bankroll you have reached */
+  const BET = 10, PAY_PAIR = 14, PAY_TRIPLE = 90, BUY_IN = 100;
+  let credits = BUY_IN, bestBank = 0, lastPay = 0;
   let LM = null;                       // lever metrics, refreshed every frame
   let pull = 0, pulling = false, armed = false, startX = 0, startY = 0, winFlash = null, queued = false;
 
@@ -29,6 +33,12 @@
 
   function start(p) {
     if (spinning || !reels.length) return;
+    const slRes = document.getElementById('slRes');
+    if (credits < BET) {
+      credits = BUY_IN;
+      K.setResult(slRes, 'Bought back in · ' + credits);
+    }
+    credits -= BET; lastPay = 0;
     power = Math.max(0, Math.min(1, p == null ? 0.5 : p));
     spinning = true; winFlash = null; queued = false;
     spinStart = performance.now();
@@ -53,14 +63,17 @@
     Object.keys(count).forEach(k => { if (count[k] > bn) { bn = count[k]; best = +k; } });
     const res = document.getElementById('slRes');
     if (bn === 1) {
-      K.setResult(res, 'No match');
+      K.setResult(res, 'No match · ' + credits);
       try { tone(220, .22, .07, 'sine', 140); } catch (e) {}
       return;
     }
     const label = pool[best];
+    const pay = bn === 3 ? PAY_TRIPLE : PAY_PAIR;
+    credits += pay; lastPay = pay;
+    if (credits > bestBank) { bestBank = credits; try { store.set('d.slbest', bestBank); } catch (e) {} }
     winFlash = { label: best, t: 0, bn };
     try { buzz(bn === 3 ? [12, 40, 12] : [8, 24]); } catch (e) {}
-    K.setResult(res, bn === 3 ? label + ' ×3' : label + ' ×2');
+    K.setResult(res, label + ' ×' + bn + '  +' + pay + ' · ' + credits);
     /* noResult:true — a machine that pays out celebrates here, it does not deal a verdict */
     if (bn === 3) { try { chime(); confetti(); } catch (e) {} }
   }
@@ -257,7 +270,9 @@
     x.fillStyle = m.flat ? '#e6dfcc' : 'rgba(0,0,0,.26)'; x.fill();
     x.strokeStyle = m.flat ? (m.outline || '#241a3a') : K.light(.14);
     x.lineWidth = m.flat ? 1.2 : 1; x.stroke();
-    for (let i = 0; i < 3; i++) {
+    K.label(x, credits + ' CREDITS' + (bestBank > credits ? '  ·  best ' + bestBank : ''),
+      (mx + reelRight) / 2, trayY + trayH * 0.36, 12);
+    for (let i = 0; i < 0; i++) {
       const cx2 = (mx + reelRight) / 2 + (i - 1) * 26, cy2 = trayY + trayH * 0.36;
       x.beginPath(); x.ellipse(cx2, cy2, 9, 7.4, 0, 0, TAU);
       if (m.flat) {
@@ -270,7 +285,7 @@
         x.fillStyle = cg; x.fill();
       }
     }
-    K.label(x, 'PAIR ×2 · TRIPLE ×3', (mx + reelRight) / 2, trayY + trayH * 0.76, 10);
+    K.label(x, 'PAIR +' + PAY_PAIR + ' · TRIPLE +' + PAY_TRIPLE + ' · ' + BET + ' a pull', (mx + reelRight) / 2, trayY + trayH * 0.76, 10);
 
     drawLever(x, now, M, m);
   }
@@ -364,6 +379,7 @@
     body: `<canvas class="toy" id="slCv"></canvas>
       <div class="res" id="slRes" aria-live="polite"><span class="muted">Pull the lever</span></div>`,
     init() {
+      try { bestBank = +store.get('d.slbest', 0) || 0; } catch (e) {}
       L = K.loop(tick);
       g = K.fit(cv());
       pool = ['🍒','🍋','🔔','⭐','🍀'];   // slot symbols, never the wheel's options
@@ -412,6 +428,10 @@
       L.start();
     },
     leave() { armed = false; pulling = false; queued = false; L.stop(); },
-    action() { if (!spinning) start(0.5); else queued = true; }
+    action() { if (!spinning) start(0.5); else queued = true; },
+    status() {
+      return { spinning, credits, best: bestBank, lastPay,
+        reels: reels.map((r) => pool[((Math.round(r.pos) % pool.length) + pool.length) % pool.length]) };
+    }
   });
 })();
