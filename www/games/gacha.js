@@ -6,7 +6,7 @@
   const cv = () => document.getElementById('gaCv'), out = () => document.getElementById('gaRes');
   let L = null, G = null, caps = [], labels = [], n = 26, lastR = 0;
   let knob = { x: 0, y: 0, r: 22 }, angle = 0, st = 'idle', spin = 0, spinGoal = 0;
-  let settleT = 0, drag = null, one = null, prize = 0, pending = 0.6, domeTurn = 0;
+  let settleT = 0, drag = null, one = null, prize = 0, pending = 0.6, domeTurn = 0, refill = 0;
 
   function geom() {
     const c = cv(); if (!c) return null;
@@ -31,8 +31,12 @@
         ok = caps.every(c => Math.hypot(c.x - px, c.y - py) > cr * 1.5);
       }
       caps.push({ x: px, y: py, r: cr * (0.84 + Math.random() * 0.28), rot: Math.random() * 6.28,
-        ci: Math.floor(Math.random() * labels.length), ph: Math.random() * 6.28 });
+        ci: Math.floor(Math.random() * labels.length), ph: Math.random() * 6.28,
+        vx: (Math.random() - .5) * .6, vy: (Math.random() - .5) * .6 });
     }
+    /* let the pile fall into the bottom of the dome before anyone sees it */
+    if (g.capsR == null) g.capsR = cr;
+    for (let k = 0; k < 90; k++) capsStep(1, g);
   }
 
   function spinNow(power) {
@@ -48,7 +52,19 @@
     // the drum turns with the knob: a hard turn carries the next capsules past the flap
     domeTurn = (domeTurn + 1 + Math.round(pending * 5)) % Math.max(1, caps.length);
     prize = caps.length ? caps[domeTurn].ci : 0;
-    one = { x: g.flap.x, y: g.flap.y, r: Math.max(8, g.domeR * 0.13), ci: prize, vy: 1.1, bounces: 0, rot: 0, settled: false };
+    let sx = g.flap.x, sy = g.flap.y;
+    if (caps.length > 1) {
+      /* the capsule that leaves is the one that was in the dome, from the spot
+         it had turned to — and the pile closes over the hole it left */
+      const c = caps[domeTurn];
+      const a = spin * 0.9, dx = c.x - g.cx, dy = c.y - g.domeCy;
+      sx = g.cx + dx * Math.cos(a) - dy * Math.sin(a);
+      sy = g.domeCy + dx * Math.sin(a) + dy * Math.cos(a);
+      caps.splice(domeTurn, 1);
+    }
+    one = { x: sx, y: sy, r: Math.max(8, g.domeR * 0.13), ci: prize, vy: 1.1, bounces: 0, rot: 0, settled: false };
+    /* the rest of the pile shifts into the gap */
+    caps.forEach(c => { c.vy += 0.4; c.vx += (Math.random() - .5) * 0.5; });
     st = 'drop';
     try { tone(170, .1, .05, 'square'); } catch (e) {}
     try { buzz(16); } catch (e) {}
@@ -59,14 +75,69 @@
     K.setResult(out(), label);
   }
 
+  /* the capsules are a real pile inside the dome: they fall, they roll against
+     the glass, they shove each other, and the drum carries them round while it
+     turns. This is what the dome was missing — before it was a still field with
+     a sine wobble. */
+  function capsStep(dt, g) {
+    if (!g) g = G;
+    if (!g) return;
+    const R = g.domeR, cx = g.cx, cy = g.domeCy;
+    const spinning = st === 'spin';
+    const stirring = !!drag;                                 /* the knob is being turned */
+    for (const c of caps) {
+      c.vy += 0.045 * dt;                                  /* they fall to the bottom */
+      if (spinning || stirring) {
+        /* carried by the drum, and shoved outward a little as it turns */
+        const dx = c.x - cx, dy = c.y - cy;
+        const w = 0.055 * dt * Math.min(1, 0.4 + c.r / R) * (spinning ? 1 : 0.55);
+        c.vx += -dy * w * 0.35; c.vy += dx * w * 0.35;
+        c.rot += 0.10 * dt + Math.abs(c.vx) * 0.02 * dt;
+        if (stirring) { c.vx += (Math.random() - .5) * 0.06 * dt; c.vy += (Math.random() - .5) * 0.06 * dt; }
+      }
+      c.vx *= Math.pow(.955, dt); c.vy *= Math.pow(.955, dt);
+      c.x += c.vx * dt; c.y += c.vy * dt;
+      /* the glass */
+      const dx = c.x - cx, dy = c.y - cy, d = Math.hypot(dx, dy) || 1;
+      const lim = R - c.r - 1.5;
+      if (d > lim) {
+        const nx = dx / d, ny = dy / d;
+        c.x = cx + nx * lim; c.y = cy + ny * lim;
+        const vn = c.vx * nx + c.vy * ny;
+        if (vn > 0) { c.vx -= nx * vn * 1.45; c.vy -= ny * vn * 1.45; }
+        c.rot += (c.vx * nx + c.vy * ny) * 0.01 * dt;
+      }
+    }
+    /* capsules are solid to each other, so the pile actually packs */
+    for (let i = 0; i < caps.length; i++) {
+      for (let j = i + 1; j < caps.length; j++) {
+        const a = caps[i], b = caps[j];
+        const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy);
+        const mn = (a.r + b.r) * 0.94;
+        if (d >= mn || d < 0.0001) continue;
+        const nx = dx / d, ny = dy / d, push = (mn - d) * 0.5;
+        a.x -= nx * push; a.y -= ny * push;
+        b.x += nx * push; b.y += ny * push;
+        const vn = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+        if (vn < 0) {
+          const imp = vn * 0.55;
+          a.vx += nx * imp; a.vy += ny * imp;
+          b.vx -= nx * imp; b.vy -= ny * imp;
+        }
+      }
+    }
+  }
+
   function update(dt) {
     const g = G;
     if (st === 'spin') {
       angle += 0.23 * dt; spin += 0.23 * dt;
-      caps.forEach(c => { c.jx = (c.jx || 0) * Math.pow(.90, dt); c.jy = (c.jy || 0) * Math.pow(.90, dt); });
-      caps.forEach(c => { c.rot += 0.02 * dt; });
       if (spin >= spinGoal) release();
     }
+    capsStep(dt, g);
+    /* the machine gets restocked once the dome runs low */
+    if (g && st === 'idle' && caps.length < 9) { refill = (refill || 0) + dt; if (refill > 60) { refill = 0; n = 26; pack(g); } }
+    else refill = 0;
     if (st === 'drop' && one) {
       one.vy += 0.52 * dt; one.y += one.vy * dt; one.rot += 0.05 * dt;
       one.x += (g.tray.x - one.x) * 0.1 * dt;
@@ -144,7 +215,7 @@
     x.save(); x.beginPath(); x.arc(g.cx, g.domeCy, g.domeR, 0, Math.PI * 2);
     x.fillStyle = INK(.26); x.fill();
     x.clip();
-    const amp = st === 'spin' ? 3.6 : 1.4;
+    const amp = st === 'spin' ? 1.1 : 0.45;
     /* turn the field with the knob, so the capsule that drops is visibly carried
        to the flap instead of appearing out of an idle dome */
     if (st === 'spin') { x.translate(g.cx, g.domeCy); x.rotate(spin * 0.9); x.translate(-g.cx, -g.domeCy); }
@@ -240,6 +311,11 @@
     enter() { labels = K.prizes.slice(0, 5); if (G) pack(G); L.start(); },
     leave() { L.stop(); drag = null; },
     action() { spinNow(0.6); },
+    status() {
+      return { st, spin: +spin.toFixed(2), capsules: caps.length,
+        first: caps[0] ? { x: +caps[0].x.toFixed(1), y: +caps[0].y.toFixed(1) } : null,
+        prize, pending: +pending.toFixed(2) };
+    },
     shake(info) {
       if (st !== 'idle') return;
       const p = Math.max(.35, Math.min(1, info.power || .6));
