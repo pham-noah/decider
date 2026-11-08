@@ -31,6 +31,42 @@
 
   const easeOutBack = (u, s) => 1 + (s + 1) * Math.pow(u - 1, 3) + s * Math.pow(u - 1, 2);
 
+  /* ---------- sound ----------
+     tone() gives a pure oscillator, which is fine for a chime and wrong for a
+     slot machine. These are filtered noise bursts: a ratchet tick, a reel
+     thunk, coins dropping in the tray. */
+  function noiseBurst(dur, vol, freq, q, tone, sweep) {
+    if (!sound) return;
+    try {
+      AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+      if (AC.state === 'suspended') AC.resume();
+      const t = AC.currentTime, n = Math.max(1, Math.floor(AC.sampleRate * dur));
+      const buf = AC.createBuffer(1, n, AC.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.6);
+      const src = AC.createBufferSource(); src.buffer = buf;
+      const flt = AC.createBiquadFilter(); flt.type = 'bandpass';
+      flt.frequency.setValueAtTime(freq, t); flt.Q.value = q || 1.1;
+      if (sweep) flt.frequency.exponentialRampToValueAtTime(sweep, t + dur);
+      const g = AC.createGain(); g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+      src.connect(flt).connect(g).connect(AC.destination);
+      src.start(t); src.stop(t + dur);
+      if (tone) {
+        const o = AC.createOscillator(), og = AC.createGain();
+        o.type = 'triangle'; o.frequency.setValueAtTime(tone, t);
+        og.gain.setValueAtTime(vol * .5, t); og.gain.exponentialRampToValueAtTime(.0001, t + dur);
+        o.connect(og).connect(AC.destination); o.start(t); o.stop(t + dur);
+      }
+    } catch (e) {}
+  }
+
+  const sfxPull = () => { noiseBurst(.10, .10, 900, 1.4, 90, 320); };
+  const sfxRatchet = (p) => { noiseBurst(.028, .05 + p * .03, 2400 + p * 1600, 2.6, 0); };
+  const sfxStop = (i, p) => { noiseBurst(.075, .10 + p * .04, 520 - i * 90, 1.0, 150 - i * 22, 180); };
+  const sfxCoin = (n) => {
+    for (let i = 0; i < n; i++) setTimeout(() => noiseBurst(.09, .075, 3200 + Math.random() * 900, 6, 0), i * 55);
+  };
+
   function start(p) {
     if (spinning || !reels.length) return;
     const slRes = document.getElementById('slRes');
@@ -52,7 +88,7 @@
       r.t0 = 0; r.p0 = r.pos;
     });
     K.setResult(document.getElementById('slRes'), '…');
-    try { tone(300, .12, .05, 'square', 700); } catch (e) {}
+    sfxPull();
   }
 
   function finish() {
@@ -64,7 +100,7 @@
     const res = document.getElementById('slRes');
     if (bn === 1) {
       K.setResult(res, 'No match');
-      try { tone(220, .22, .07, 'sine', 140); } catch (e) {}
+      noiseBurst(.16, .09, 300, .8, 110, 70);
       return;
     }
     const label = pool[best];
@@ -75,10 +111,15 @@
     try { buzz(bn === 3 ? [12, 40, 12] : [8, 24]); } catch (e) {}
     K.setResult(res, label + ' ×' + bn + '  +' + pay);
     /* noResult:true — a machine that pays out celebrates here, it does not deal a verdict */
-    if (bn === 3) { try { chime(); confetti(); } catch (e) {} }
+    if (bn === 3) { sfxCoin(9); try { chime(); confetti(); } catch (e) {} } else sfxCoin(3);
   }
 
+  let tickAt = 0;
   function tick(dt, now) {
+    if (spinning && now > tickAt) {
+      tickAt = now + 62 + Math.random() * 34;
+      sfxRatchet(power);
+    }
     const f = K.fit(cv());
     if (!g || f.w !== g.w || f.h !== g.h) { g = f; LM = layout(); }   // width AND height
     if (!g) return;
@@ -92,14 +133,14 @@
             r.phase = 'ease'; r.t0 = now; r.p0 = r.pos;
             /* without the rnd a full-power pull landed on the same three labels every time */
             r.target = Math.ceil(r.pos) + 2 + (i === 2 && power > 0.6 ? 1 : 0) + Math.floor(rnd() * 2);
-            try { tone(520 - i * 70, .06, .04, 'square', 300); } catch (e) {}
+            sfxStop(i, power);
           }
         } else if (r.phase === 'ease') {
           const u = Math.min(1, (now - r.t0) / r.dur);
           r.pos = r.p0 + (r.target - r.p0) * easeOutBack(u, r.back);
           if (u >= 1) {
             r.pos = r.target; r.phase = 'done'; r.settled = true;
-            try { tone(620 - i * 90, .10, .05, 'square', 330); } catch (e) {}
+            noiseBurst(.06, .08, 720 - i * 110, 1.6, 260 - i * 40, 190);
           }
         }
         r.spd = (r.pos - prev) / Math.max(.001, dt);
@@ -414,7 +455,7 @@
         if (spinning) { pull = 0; return; }
         // a real pull keeps its strength; a tap or a nudge is an average pull
         start(p > 0.08 ? p : 0.5);
-        if (p > 0.08) { try { tone(180, .06, .05, 'square', 120); } catch (e) {} }
+        if (p > 0.08) noiseBurst(.05, .06 + p * .05, 420, 1.2, 70, 140);
       };
       c.addEventListener('pointerup', release);
       c.addEventListener('pointercancel', () => { armed = false; pulling = false; if (!spinning) pull = 0; });

@@ -1,5 +1,5 @@
 // Simple offline cache for the PWA build. Bump CACHE when you ship changes.
-const CACHE = "decider-1ff6fa6107";
+const CACHE = "decider-dde205a908";
 const FILES = [
   "./", "index.html", "fonts.css", "manifest.json", "native-bridge.js", "app-nav.js",
   "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png",
