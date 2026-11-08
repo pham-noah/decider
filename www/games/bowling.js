@@ -22,14 +22,43 @@
 
   let L = null, geo = null, pins = [], ball = null, drag = null, trail = [];
   let phase = 'aim', wait = 0, thrown = 0, since = 0, flashTxt = 0, lastSnd = 0;
-  let run = 0, best = 0, homeX = 0, dropOff = 0;
-  /* two sweeping bars — angle, then power — and they run faster the longer
-     the run gets */
+  /* ten frames, two balls a frame (three in the tenth), strike and spare
+     bonuses, standard scoring */
+  let scores = [], fi = 0, bi = 0, best = 0, homeX = 0, dropOff = 0;
+  let preStanding = 10, pendingFresh = true, gameOver = false;
+  /* two sweeping bars — angle, then power — and they run faster the higher
+     the score gets */
   let stage = 'angle', sweep = 0, lockAng = 0, lockPow = .55;
-  const sweepSpeed = () => .85 + 1.35 * diff();
-  /* a consecutive run: every pin adds, a gutter ends it, and the game gets
-     harder the further the run goes */
-  const diff = () => clamp(run / 70, 0, 1);
+  const sweepSpeed = () => .85 + 1.15 * diff();
+  const diff = () => clamp(calcScore() / 180, 0, 1);
+
+  /* a frame is the rolls in it; scoring is the real thing, bonuses included */
+  function calcScore() {
+    if (!scores.length) return 0;
+    const flat = (from) => {
+      const out = [];
+      for (let i = from; i <= 9; i++) for (const r of (scores[i] || [])) out.push(r);
+      return out;
+    };
+    let total = 0;
+    for (let i = 0; i < 9; i++) {
+      const fr = scores[i] || [];
+      if (!fr.length) break;
+      if (fr[0] === 10) {
+        const nx = flat(i + 1);
+        if (nx.length < 2) return total;
+        total += 10 + nx[0] + nx[1];
+      } else if (fr.length >= 2) {
+        if (fr[0] + fr[1] === 10) {
+          const nx = flat(i + 1);
+          if (!nx.length) return total;
+          total += 10 + nx[0];
+        } else total += fr[0] + fr[1];
+      } else return total;
+    }
+    const t = scores[9] || [];
+    return total + t.reduce((a, b) => a + b, 0);
+  }
   let msg = '';
 
   /* ---------- camera ----------
@@ -127,11 +156,12 @@
     ballHome();
     ball.x = clamp(prm.startX, -HALF + BALL_R * 1.15, HALF - BALL_R * 1.15);
     ball.z = 0.55;
-    const sp = 8.0 + prm.power * 3.3;
+    const sp = 6.0 + prm.power * 7.0;
     ball.vz = sp * Math.cos(prm.lean);
     ball.vx = sp * Math.sin(prm.lean) * 0.9;
     ball.hook = prm.hook;
     ball.sp = sp;               /* the speed the throw gave it, held for the lane */
+    preStanding = pins.filter((p) => p.stand).length;
     ball.live = true;
     phase = 'roll'; since = 0; thrown++;
     flashTxt = 0;
@@ -148,34 +178,60 @@
     throwBall(prm);
   }
 
-  function resetRack() {
-    rack();
+  function resetRack(fresh) {
+    if (fresh) rack();
+    else pins = pins.filter((p) => p.stand);      /* deadwood stays, fallen stay off */
     /* the ball never waits in the same place twice, and the spread widens as
-       the run grows */
+       the score climbs */
     homeX = (rnd() - .5) * 2 * HALF * (0.30 + 0.58 * diff());
     ballHome();
     phase = 'aim'; wait = 0; since = 0;
     stage = 'angle'; sweep = 0;
     trail = [];
-    dropOff = 190;                 /* the basket sets the rack down */
+    dropOff = fresh ? 190 : 0;                   /* the basket sets the rack down */
+  }
+
+  function newGame() {
+    scores = Array.from({ length: 10 }, () => []);
+    fi = 0; bi = 0; gameOver = false; pendingFresh = true;
+    rack(); resetRack(true);
   }
 
   function finish() {
-    phase = 'done'; wait = 1.8 - 0.9 * diff();
-    const down = pins.filter((p) => !p.stand).length;
-    const up = 10 - down;
-    /* the run: pins accumulate, a gutter ends it and the best run is kept */
-    const ending = down === 0;
-    if (down > 0) run += down;
-    if (ending) {
-      if (run > best) { best = run; try { store.set('d.bowlbest', best); } catch (e) {} }
-      run = 0;
-    } else if (run > best) {
-      best = run; try { store.set('d.bowlbest', best); } catch (e) {}
+    phase = 'done'; wait = 1.6;
+    const left = pins.filter((p) => p.stand).length;
+    const down = Math.max(0, preStanding - left);
+    const fr = scores[fi] || (scores[fi] = []);
+    const firstBall = fr.length === 0;
+    fr.push(down);
+
+    const frameTotal = fr.reduce((a, b) => a + b, 0);
+    const strike = firstBall && down === 10;
+    const spare = !strike && fr.length === 2 && frameTotal === 10;
+    msg = down === 0 ? 'GUTTER' : strike ? 'STRIKE' : spare ? 'SPARE' : '';
+    if (msg) flashTxt = strike ? 2.2 : 1.2;
+
+    /* what comes next: deadwood on the second ball, ten fresh in the tenth */
+    let fresh = false;
+    if (fi < 9) {
+      if (firstBall && !strike) bi = 1;
+      else { fi += 1; bi = 0; fresh = true; }
+    } else if (fr.length === 1) {
+      bi = 1; fresh = strike;
+    } else if (fr.length === 2) {
+      const bonus = fr[0] === 10 || (fr[0] + fr[1]) === 10;
+      if (bonus) { bi = 2; fresh = fr[1] === 10; }
+      else gameOver = true;
+    } else gameOver = true;
+
+    if (gameOver) {
+      const sc = calcScore();
+      if (sc > best) { best = sc; try { store.set('d.bowlgame', best); } catch (e) {} }
+      msg = 'GAME ' + sc; flashTxt = 3.2; wait = 3.2;
     }
-    msg = down === 10 ? 'STRIKE' : ending ? 'RUN OVER' : '';
-    if (msg) flashTxt = down === 10 ? 2.2 : 1.2;
-    if (resEl()) K.setResult(resEl(), down + ' down · run ' + run + ' · best ' + best);
+    pendingFresh = fresh;
+
+    if (resEl()) K.setResult(resEl(), down + ' down · frame ' + (fi + 1) + ' · score ' + calcScore());
     try {
       if (down === 10) tone(660, .22, .07, 'triangle', 990);
       else tone(330 + down * 22, .13, .05, 'triangle', 460);
@@ -630,7 +686,7 @@
 
   function drawHUD(x, m) {
     const down = pins.filter((p) => !p.stand).length;
-    K.label(x, 'RUN ' + run + ' · BEST ' + best, geo.w - 14, 20, 11, 'right');
+    K.label(x, 'FR ' + (fi + 1) + '/10 · ' + calcScore() + ' · best ' + best, geo.w - 14, 20, 11, 'right');
     if (phase === 'aim') {
       /* the angle track, across the bottom */
       const w = geo.w, h = geo.h;
@@ -677,7 +733,7 @@
     const out = [];
     if (!prm) return out;
     let px = prm.startX, pz = 0.55;
-    const sp = 8.0 + prm.power * 3.3;
+    const sp = 6.0 + prm.power * 7.0;
     let vx = sp * Math.sin(prm.lean) * 0.9, vz = sp * Math.cos(prm.lean);
     const h = 0.02;
     for (let i = 0; i < 120; i++) {
@@ -729,7 +785,7 @@
       const g = K.fit(c);
       if (!geo || Math.abs(geo.w - g.w) > .5 || Math.abs(geo.h - g.h) > .5) layout();
       const sdt = Math.min(.05, dt / 60);
-      if (phase === 'done') { wait -= sdt; if (wait <= 0) resetRack(); }
+      if (phase === 'done') { wait -= sdt; if (wait <= 0) { if (gameOver) newGame(); else resetRack(pendingFresh); } }
       if (phase === 'aim') {
         /* a bar that sweeps end to end and back: tap to freeze it */
         sweep += sdt * sweepSpeed();
@@ -754,13 +810,13 @@
       '<div class="res" id="bwRes" aria-live="polite"><span class="muted">Tap to set the angle, tap to set the power</span></div>',
     init() {
       layout();
-      try { best = +store.get('d.bowlbest', 0) || 0; } catch (e) {}
-      run = 0; homeX = 0; dropOff = 0;
+      try { best = +store.get('d.bowlgame', 0) || 0; } catch (e) {}
+      newGame();
       L = K.loop(frame);
       const c = cv();
       c.addEventListener('pointerdown', (e) => {
         /* a touch during the wait for the rack re-racks it now — never a dead zone */
-        if (phase === 'done') { resetRack(); return; }
+        if (phase === 'done') { if (gameOver) newGame(); else resetRack(pendingFresh); return; }
         if (phase !== 'aim' || !geo) { try { K.press(300); } catch (err) {} return; }
         try { c.setPointerCapture(e.pointerId); } catch (err) {}
         if (stage === 'angle') {
@@ -786,8 +842,10 @@
     },
     status() {
       return {
-        phase, thrown,
-        down: pins.filter((p) => !p.stand).length,
+        phase, thrown, frame: fi + 1, ballInFrame: bi + 1, score: calcScore(),
+        pow: +lockPow.toFixed(2), ang: +lockAng.toFixed(3),
+        rolls: scores.map((f) => f.slice()), gameOver,
+        down: pins.filter((p) => p.stand).length === 0 ? pins.length : pins.filter((p) => !p.stand).length,
         standing: pins.filter((p) => p.stand).map((p) => p.num),
         rack: pins.length,
         ball: ball ? { x: +ball.x.toFixed(3), z: +ball.z.toFixed(3), live: ball.live, gutter: ball.gutter } : null
