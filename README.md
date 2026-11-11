@@ -8,6 +8,8 @@ Edit **only `www/`**. The version lives in `package.json` (Tauri and Android rea
 
 Downloads: [releases](https://github.com/pham-noah/decider/releases) (Windows installer/MSI, Android APK/AAB).
 
+[Discord](https://discord.gg/tz42eZyNtD) — questions, bug reports and release news.
+
 The bar pins four games; the grid button opens the rest, and its stars move a game on or off the bar —
 so a seventh game costs nothing. Every game has the same options dock as the wheel: a handle above the bar
 that slides up to hold its setup. Pinch and double-tap zoom are off, and the app owns the viewport (no page
