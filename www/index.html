@@ -12,40 +12,41 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/favicon.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="fonts.css?v=36e3a0a2e8">
+<link rel="stylesheet" href="fonts.css?v=affcfd35ef">
 <!-- games:start -->
-<script src="games/_kit.js?v=36e3a0a2e8"></script>
-<script src="games/balloons.js?v=36e3a0a2e8"></script>
-<script src="games/band.js?v=36e3a0a2e8"></script>
-<script src="games/basketball.js?v=36e3a0a2e8"></script>
-<script src="games/blackjack.js?v=36e3a0a2e8"></script>
-<script src="games/blek.js?v=36e3a0a2e8"></script>
-<script src="games/bowling.js?v=36e3a0a2e8"></script>
-<script src="games/bubblewrap.js?v=36e3a0a2e8"></script>
-<script src="games/claw.js?v=36e3a0a2e8"></script>
-<script src="games/coinpusher.js?v=36e3a0a2e8"></script>
-<script src="games/dart.js?v=36e3a0a2e8"></script>
-<script src="games/pool.js?v=36e3a0a2e8"></script>
-<script src="games/fidget.js?v=36e3a0a2e8"></script>
-<script src="games/gacha.js?v=36e3a0a2e8"></script>
-<script src="games/hanoi.js?v=36e3a0a2e8"></script>
-<script src="games/highcard.js?v=36e3a0a2e8"></script>
-<script src="games/knob.js?v=36e3a0a2e8"></script>
-<script src="games/linerider.js?v=36e3a0a2e8"></script>
-<script src="games/pachinko.js?v=36e3a0a2e8"></script>
-<script src="games/plinko.js?v=36e3a0a2e8"></script>
-<script src="games/press.js?v=36e3a0a2e8"></script>
-<script src="games/ringtoss.js?v=36e3a0a2e8"></script>
-<script src="games/sandspiel.js?v=36e3a0a2e8"></script>
-<script src="games/scratch.js?v=36e3a0a2e8"></script>
-<script src="games/slots.js?v=36e3a0a2e8"></script>
-<script src="games/stressball.js?v=36e3a0a2e8"></script>
-<script src="games/switch.js?v=36e3a0a2e8"></script>
-<script src="games/tarot.js?v=36e3a0a2e8"></script>
-<script src="games/vignettes.js?v=36e3a0a2e8"></script>
-<script src="games/windowsill.js?v=36e3a0a2e8"></script>
+<script src="games/_kit.js?v=affcfd35ef"></script>
+<script src="games/balloons.js?v=affcfd35ef"></script>
+<script src="games/band.js?v=affcfd35ef"></script>
+<script src="games/basketball.js?v=affcfd35ef"></script>
+<script src="games/blackjack.js?v=affcfd35ef"></script>
+<script src="games/blek.js?v=affcfd35ef"></script>
+<script src="games/bowling.js?v=affcfd35ef"></script>
+<script src="games/bubblewrap.js?v=affcfd35ef"></script>
+<script src="games/claw.js?v=affcfd35ef"></script>
+<script src="games/coinpusher.js?v=affcfd35ef"></script>
+<script src="games/dart.js?v=affcfd35ef"></script>
+<script src="games/fidget.js?v=affcfd35ef"></script>
+<script src="games/gacha.js?v=affcfd35ef"></script>
+<script src="games/hanoi.js?v=affcfd35ef"></script>
+<script src="games/highcard.js?v=affcfd35ef"></script>
+<script src="games/knob.js?v=affcfd35ef"></script>
+<script src="games/linerider.js?v=affcfd35ef"></script>
+<script src="games/pachinko.js?v=affcfd35ef"></script>
+<script src="games/plinko.js?v=affcfd35ef"></script>
+<script src="games/pool.js?v=affcfd35ef"></script>
+<script src="games/press.js?v=affcfd35ef"></script>
+<script src="games/ringtoss.js?v=affcfd35ef"></script>
+<script src="games/sandspiel.js?v=affcfd35ef"></script>
+<script src="games/scratch.js?v=affcfd35ef"></script>
+<script src="games/skipping.js?v=affcfd35ef"></script>
+<script src="games/slots.js?v=affcfd35ef"></script>
+<script src="games/stressball.js?v=affcfd35ef"></script>
+<script src="games/switch.js?v=affcfd35ef"></script>
+<script src="games/tarot.js?v=affcfd35ef"></script>
+<script src="games/vignettes.js?v=affcfd35ef"></script>
+<script src="games/windowsill.js?v=affcfd35ef"></script>
 <!-- games:end -->
-<script src="native-bridge.js?v=36e3a0a2e8"></script>
+<script src="native-bridge.js?v=affcfd35ef"></script>
 <style>
 *{box-sizing:border-box;margin:0}
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--ink:#1d1340;--ink2:rgba(29,19,64,.82);--base:#ece7ff;--g1:rgba(255,255,255,.8);--g2:rgba(255,255,255,.48);--edge:rgba(255,255,255,.85);--sh:rgba(70,40,140,.22);--field:rgba(255,255,255,.62);--b1:#ff5fa2;--b2:#6f8bff;--b3:#2fe0c4;--b4:#ffb347;--a1:#ff5fa2;--a2:#7b6cff;color-scheme:light}
@@ -298,10 +299,30 @@ main{height:100%;overflow:hidden;display:flex;flex-direction:column}
 .tmerq{font-size:clamp(34px,10vw,58px);font-weight:800;letter-spacing:-.02em;min-height:1.1em}
 .tmerbar{width:100%;height:14px;border-radius:999px;background:var(--field);overflow:hidden;border:1px solid var(--edge)}
 .tmerbar i{display:block;height:100%;width:100%;border-radius:999px;background:linear-gradient(90deg,var(--a1),var(--a2));transform-origin:left}
+/* face-off: one match on screen at a time, played out round by round */
+.fwrap{display:grid;gap:12px;justify-items:center;width:min(100%,460px)}
+.fround{font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--ink2);min-height:1.2em}
+.fmatch{display:grid;grid-template-columns:minmax(0,1fr) 40px minmax(0,1fr);align-items:center;gap:8px;width:100%;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.fside{display:grid;place-items:center;padding:24px 10px;border-radius:22px;border:1.5px solid var(--edge);background:var(--field);font-weight:800;font-size:clamp(15px,4.4vw,21px);line-height:1.15;color:inherit;text-align:center;overflow-wrap:anywhere;min-height:clamp(92px,16vh,150px);transition:transform .32s cubic-bezier(.3,1.5,.4,1),box-shadow .3s,opacity .3s}
+.ffield{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:100%}
+.fpill{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid var(--edge);background:var(--field);transition:opacity .3s,transform .3s}
+.fpill.cur{background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;border-color:rgba(255,255,255,.6);text-shadow:0 1px 2px rgba(0,0,0,.22)}
+.fpill.gone{opacity:.3;text-decoration:line-through}
+.fside.win{background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;border-color:rgba(255,255,255,.6);text-shadow:0 1px 2px rgba(0,0,0,.25);box-shadow:0 12px 28px rgba(90,60,200,.38);transform:translateY(-3px) scale(1.03)}
+.fside.lose{opacity:.38;transform:scale(.95)}
+.fvs{display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--ink2)}
+#fcoin{width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 32% 26%,#fff,#ffe9a8 34%,#d99a22 72%,#8a5c10);box-shadow:0 4px 10px rgba(0,0,0,.32),inset 0 0 0 1.5px rgba(255,255,255,.65);transform-style:preserve-3d}
+.fmatch.tossing #fcoin{animation:ftoss .62s cubic-bezier(.3,.7,.4,1) both}
+@keyframes ftoss{0%{transform:translateY(0) rotateY(0) scale(1)}45%{transform:translateY(-16px) rotateY(540deg) scale(1.14)}100%{transform:translateY(0) rotateY(1080deg) scale(1)}}
 /* all-games picker */
 #all{position:fixed;z-index:25;background:linear-gradient(140deg,rgba(255,255,255,.95),rgba(243,239,255,.92));left:50%;bottom:calc(90px + max(env(safe-area-inset-bottom,0px),22px));width:min(100% - 20px,540px);max-height:min(72vh,560px);overflow:auto;padding:18px 18px 14px;transform:translate(-50%,24px);opacity:0;pointer-events:none;transition:opacity .22s,transform .38s cubic-bezier(.3,1.3,.4,1)}
 #all.open{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .allhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.allfind{display:grid;gap:10px;margin-top:12px}
+#allq{width:100%;padding:11px 16px;border-radius:999px;border:1px solid var(--edge);background:var(--field);color:inherit;font:inherit;font-weight:600;font-size:14px}
+#allq::-webkit-search-cancel-button{filter:invert(.4)}
+#allkind{margin:0}
+#allkind .chip{font-size:13px;padding:7px 14px}
 .allgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px;margin-top:14px}
 .gtile{position:relative;display:grid;place-items:center;gap:6px;padding:18px 26px 14px 12px;border-radius:20px;border:1px solid var(--edge);background:var(--field);font-weight:700;font-size:clamp(12.5px,3.3vw,15px);line-height:1.2;color:inherit;text-align:center;overflow-wrap:anywhere}
 .gtile.on{background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;border-color:rgba(255,255,255,.6);text-shadow:0 1px 2px rgba(0,0,0,.25)}
@@ -570,6 +591,21 @@ h2{font-size:calc(20px*var(--fs,1))}
  </div>
 </section>
 
+<section class="view" id="face">
+ <div class="glass center">
+  <div class="fwrap" id="fwrap">
+   <div class="fround" id="fround"></div>
+   <div class="fmatch" id="fmatch" role="button" tabindex="0" aria-label="Toss for this match">
+    <div class="fside" id="fA"><span></span></div>
+    <div class="fvs"><i id="fcoin"></i></div>
+    <div class="fside" id="fB"><span></span></div>
+   </div>
+   <div class="ffield" id="ffield"></div>
+   <div class="res" id="fres" aria-live="polite"><span class="muted">Tap to toss</span></div>
+  </div>
+ </div>
+</section>
+
 <section class="view" id="hist">
  <div class="glass panel">
   <h2>Settings</h2>
@@ -618,6 +654,10 @@ h2{font-size:calc(20px*var(--fs,1))}
 <div class="glass" id="toast" role="status"></div>
 <div class="glass" id="all" role="dialog" aria-modal="true" aria-label="All games">
  <div class="allhead"><h2 style="margin:0">All games</h2><button class="x" id="allclose" aria-label="Close">×</button></div>
+ <div class="allfind">
+  <input type="search" id="allq" placeholder="Find a game" aria-label="Find a game" autocomplete="off">
+  <div class="chips" id="allkind"><button class="chip on" data-k="all">All</button><button class="chip" data-k="decide">Deciders</button><button class="chip" data-k="toy">Toys</button></div>
+ </div>
  <div class="allgrid" id="allgrid"></div>
  <p class="muted" style="margin-top:12px;font-size:13px">Tap a game to open it. The star keeps four of them on the bar.</p>
 </div>
@@ -1379,6 +1419,110 @@ function startClock(){
 /* a tap while it runs stops the clock on whatever it is showing */
 function stopClock(){ if(!tmerBusy)return; tmerSettle(tmerOpts[tmerLast]||tmerOpts[0],true) }
 
+/* ---- face-off ----
+   The wheel answers one draw: for five options it spins once and one of them
+   wins outright, which is fine for picking and wrong for a decision between
+   people. Face-off plays the same option list out as a bracket, one match on
+   screen at a time: each tie is a toss, the winner stays lit, the next pair
+   comes up, and the last one standing gets the app's own result card. The
+   draw is reshuffled every time, so the same list never meets in the same
+   order twice. */
+let F=null,fBusy=false,fPending=false;
+const fOpts=()=>(opts||[]).map(o=>o.l).filter(x=>x&&String(x).trim()).slice(0,16);
+const fSig=()=>fOpts().join('\u0001');
+function faceStart(){
+  const list=fOpts();
+  if(list.length<2){F=null;facePaint();return}
+  for(let i=list.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));const t=list[i];list[i]=list[j];list[j]=t}
+  F={players:list,round:1,matches:[],mi:0,champ:null,sig:fSig()};
+  faceRound();
+}
+function faceRound(){
+  const ps=F.players.slice();
+  F.matches=[];
+  for(let i=0;i<ps.length;i+=2)F.matches.push({a:ps[i],b:ps[i+1]||null,w:ps[i+1]?null:ps[i]});
+  F.mi=0;
+  faceNext();
+}
+function faceNext(){
+  while(F.mi<F.matches.length&&F.matches[F.mi].w)F.mi++;
+  if(F.mi>=F.matches.length){
+    F.players=F.matches.map(m=>m.w);
+    if(F.players.length<=1){faceWin(F.players[0]);return}
+    F.round++;faceRound();return;
+  }
+  facePaint();
+}
+function facePaint(){
+  const A=$('#fA'),B=$('#fB');
+  A.classList.remove('win','lose');B.classList.remove('win','lose');
+  if(!F){
+    $('#fround').textContent='';
+    A.firstChild.textContent='Add options';
+    B.firstChild.textContent='in the wheel';
+    $('#ffield').innerHTML='';
+    $('#fres').innerHTML='<span class="muted">Needs 2 options</span>';
+    return;
+  }
+  const m=F.matches[F.mi]||{};
+  $('#fround').textContent='Round '+F.round+' · '+(Math.min(F.mi+1,F.matches.length))+'/'+F.matches.length;
+  A.firstChild.textContent=m.a||'';
+  B.firstChild.textContent=m.b||'';
+  /* the field still in it, with the pair on screen lit and anyone who has just
+     gone out struck through, so the bracket is readable without a tree */
+  const gone={};
+  F.matches.forEach(x=>{ if(x.w&&x.b){
+    const loser=x.w===x.a?x.b:x.a; gone[loser]=1;
+  }});
+  $('#ffield').innerHTML=F.players.map(p=>{
+    const cls='fpill'+(p===m.a||p===m.b?' cur':'')+(gone[p]?' gone':'');
+    return '<span class="'+cls+'">'+esc(p)+'</span>';
+  }).join('');
+  $('#fres').innerHTML='<span class="muted">Tap to toss</span>';
+}
+function faceWin(name){
+  F.champ=name;
+  $('#fround').textContent='Champion';
+  show($('#fres'),name);
+  try{chime()}catch(e){}
+  try{buzz([30,40,30])}catch(e){}
+  try{confetti()}catch(e){}
+  try{log('Face-off',name)}catch(e){}
+  try{moment(name,'Face-off')}catch(e){}
+}
+function faceToss(){
+  if(!F||F.champ||F.sig!==fSig()){faceStart();return}
+  if(fBusy){fPending=true;return}
+  const m=F.matches[F.mi];if(!m||!m.b)return;
+  fBusy=true;const ep=viewEpoch;
+  const win=rnd()<.5?m.a:m.b;
+  const fm=$('#fmatch');fm.classList.add('tossing');
+  $('#fres').innerHTML='<span class="muted">…</span>';
+  let n=0;const tk=setInterval(()=>{n++;try{tone(620+n*80,.03,.035,'square')}catch(e){}try{buzz(4)}catch(e){}if(n>7)clearInterval(tk)},70);
+  setTimeout(()=>{
+    clearInterval(tk);
+    if(ep!==viewEpoch){fBusy=false;fm.classList.remove('tossing');return}
+    fm.classList.remove('tossing');
+    m.w=win;
+    const A=$('#fA'),B=$('#fB'),wa=win===m.a;
+    A.classList.toggle('win',wa);B.classList.toggle('win',!wa);
+    A.classList.toggle('lose',!wa);B.classList.toggle('lose',wa);
+    try{tone(wa?880:660,.18,.09,'triangle')}catch(e){}
+    try{buzz([14,26,14])}catch(e){}
+    fBusy=false;
+    setTimeout(()=>{
+      if(ep!==viewEpoch)return;
+      F.mi++;faceNext();
+      if(fPending){fPending=false;if(!F.champ)setTimeout(faceToss,calm?60:180)}
+    },calm?260:640);
+  },calm?70:640);
+}
+function faceEnter(){
+  if(!F||F.champ||F.sig!==fSig())faceStart();else facePaint();
+}
+$('#fwrap').onclick=faceToss;
+$('#fwrap').addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();faceToss()}});
+
 /* accessibility */
 function applyA11y(){const r=document.documentElement;r.dataset.contrast=store.get('d.hc',false)?'high':'normal';r.dataset.motion=calm?'reduce':'full';R.setProperty('--fs',store.get('d.fs',1))}
 bindTg('#hc',()=>store.get('d.hc',false),v=>{store.set('d.hc',v);applyA11y()});
@@ -1473,7 +1617,7 @@ function pill(){const b=$('.dock button.on'),p=$('#pill');if(!b||!p)return;if(ma
 let cur='wheel';
 /* the bar holds four pinned games plus two fixed buttons, so adding a game never widens it */
 const GAMES=[{v:'wheel',n:'Wheel'},{v:'coin',n:'Coin'},{v:'dice',n:'Dice'},{v:'fingers',n:'Fingers'},{v:'bottle',n:'Bottle'},{v:'oracle',n:'Oracle'},
- {v:'deck',n:'Truth or dare',s:'Truth / dare'},{v:'tmer',n:'Timed call',s:'Timer'}];
+ {v:'deck',n:'Truth or dare',s:'Truth / dare'},{v:'tmer',n:'Timed call',s:'Timer'},{v:'face',n:'Face-off',s:'VS'}];
 /* ---- plug-in games: each module in www/games/*.js registers itself ---- */
 (function plugInGames(){
  const mods=window.DECIDER_GAMES||[];if(!mods.length)return;
@@ -1525,7 +1669,7 @@ function goTo(v){
  const dk=$('#dock');if(dk){dk.classList.add('swap');clearTimeout(dockT);dockT=setTimeout(()=>dk.classList.remove('swap'),170)}
  $$('.dock button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
  $('#allbtn').classList.toggle('on',v!=='hist'&&!pin.includes(v));
- pill();tip(v);renderFav();tone(700,.08,.05,'sine',900);draw();if(window.__viewHook)try{window.__viewHook(v)}catch(e){}
+ pill();tip(v);renderFav();tone(700,.08,.05,'sine',900);if(v==='face')try{faceEnter()}catch(e){}draw();if(window.__viewHook)try{window.__viewHook(v)}catch(e){}
 }
 function renderDock(){
  const d=$('#dock'),gear=$('#gear');
@@ -1541,9 +1685,22 @@ function renderDock(){
  });
  d.querySelectorAll('button[data-v]').forEach(b=>b.onclick=()=>goTo(b.dataset.v));
 }
+/* the cabinet is past thirty tiles, so the picker carries its own search and
+   splits the deciders from the toys: a name typed in the field narrows the grid
+   as it goes, and the chips are the two halves of the app */
+let allQ='',allK='all';
+const isDecider=v=>!(window.DECIDER_GAMES||[]).some(g=>g.id===v);
 function renderAll(){
  const g=$('#allgrid');g.innerHTML='';
- GAMES.forEach(x=>{
+ const q=allQ.trim().toLowerCase();
+ const list=GAMES.filter(x=>{
+  if(allK==='decide'&&!isDecider(x.v))return false;
+  if(allK==='toy'&&isDecider(x.v))return false;
+  if(q&&(x.n+' '+(x.s||'')).toLowerCase().indexOf(q)<0)return false;
+  return true;
+ });
+ if(!list.length){g.innerHTML='<p class="muted" style="grid-column:1/-1;margin:6px 0">Nothing by that name</p>';return}
+ list.forEach(x=>{
   const t=document.createElement('button');t.className='gtile'+(x.v===cur?' on':'');t.type='button';
   t.innerHTML='<span>'+x.n+'</span>';
   const on=pin.includes(x.v),star=document.createElement('button');
@@ -1553,6 +1710,16 @@ function renderAll(){
   t.appendChild(star);t.onclick=()=>goTo(x.v);g.appendChild(t);
  });
 }
+(() => {
+ const q=$('#allq'),k=$('#allkind');
+ if(!q||!k)return;
+ q.oninput=()=>{allQ=q.value;renderAll()};
+ k.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{
+  allK=b.dataset.k;
+  k.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
+  renderAll();
+ });
+})();
 function togglePin(v){
  if(pin.includes(v)){
   if(pin.length<2)return toast('Keep at least one on the bar');
@@ -1623,7 +1790,7 @@ $$('.dock button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v==='whe
 pill();renderHist();draw();
 document.addEventListener('pointermove',e=>{const g=e.target.closest&&e.target.closest('.glass');if(!g)return;const r=g.getBoundingClientRect();g.style.setProperty('--mx',(e.clientX-r.left)+'px');g.style.setProperty('--my',(e.clientY-r.top)+'px')});
 </script>
-<script src="app-nav.js?v=36e3a0a2e8"></script>
+<script src="app-nav.js?v=affcfd35ef"></script>
 <script>
 /* PWA offline support: skipped in the Capacitor/Tauri wrappers, which bundle the files */
 if('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && location.hostname!=='tauri.localhost' && !(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()) && !window.__TAURI_INTERNALS__){
