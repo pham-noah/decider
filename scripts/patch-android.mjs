@@ -30,6 +30,52 @@ if (existsSync(manifest)) {
   writeFileSync(manifest, s);
 }
 
+/* ---- 1c. the updater: permission, a FileProvider path, and the plugin that installs what the app downloads ---- */
+const pkg = JSON.parse(readFileSync("capacitor.config.json", "utf8")).appId;
+const javaDir = `android/app/src/main/java/${pkg.replace(/\./g, "/")}`;
+const apkPaths = "android/app/src/main/res/xml/file_paths.xml";
+if (existsSync(apkPaths)) {
+  let s = readFileSync(apkPaths, "utf8");
+  if (!s.includes('name="updates"')) {
+    s = s.replace(/(<cache-path[^>]*\/>)/, '$1\n    <files-path name="updates" path="updates/" />');
+    writeFileSync(apkPaths, s);
+  }
+}
+if (existsSync(manifest)) {
+  let s = readFileSync(manifest, "utf8");
+  if (!s.includes("REQUEST_INSTALL_PACKAGES")) {
+    // a <uses-permission> belongs to <manifest>, not to <application>: AAPT rejects it in the wrong place
+    s = s.replace(
+      /(<manifest[^>]*>)/,
+      `$1\n    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />`,
+    );
+    writeFileSync(manifest, s);
+  }
+}
+if (existsSync(javaDir)) {
+  const template = readFileSync("android-template/ApkInstallerPlugin.java", "utf8").replace(/__PACKAGE__/g, pkg);
+  writeFileSync(`${javaDir}/ApkInstallerPlugin.java`, template);
+  // the generated MainActivity is an empty BridgeActivity: register the plugin before super.onCreate, or the
+  // bridge has already handed its plugin list to the web view
+  writeFileSync(
+    `${javaDir}/MainActivity.java`,
+    `package ${pkg};
+
+import android.os.Bundle;
+
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(ApkInstallerPlugin.class);
+        super.onCreate(savedInstanceState);
+    }
+}
+`,
+  );
+}
+
 /* ---- 2 + 3. build.gradle ---- */
 const gradle = "android/app/build.gradle";
 if (existsSync(gradle)) {

@@ -1553,7 +1553,43 @@ function openExt(url){
 $$('.hrow.link').forEach(b=>b.onclick=()=>openExt(b.dataset.url));
 function semver(t){const m=String(t).match(/(\d+)\.(\d+)\.(\d+)/);return m?[+m[1],+m[2],+m[3]]:null}
 function newer(a,b){const x=semver(a),y=semver(b);if(!x||!y)return false;for(let i=0;i<3;i++)if(x[i]!==y[i])return x[i]>y[i];return false}
-let updBusy=false,updAt=null;
+let updBusy=false,updAt=null,installBusy=false;
+/* the Android build can finish the job the check starts: download the release APK and open the system installer.
+   A browser, the PWA and the desktop build have no installer to open, so they keep the release-page link. */
+function apkInstaller(){
+ try{const C=window.Capacitor;
+  if(!C||!C.isNativePlatform||!C.isNativePlatform()||(C.getPlatform&&C.getPlatform()!=='android'))return null;
+  return (C.Plugins&&C.Plugins.ApkInstaller)||null}catch(e){return null}
+}
+function pickApk(assets){
+ const apks=(assets||[]).filter(a=>a&&/\.apk$/i.test(a.name||'')&&a.browser_download_url);
+ if(!apks.length)return null;
+ return apks.find(a=>/arm64/i.test(a.name))||apks.find(a=>!/store/i.test(a.name))||apks[0];
+}
+async function installApk(A,rel){
+ const msg=$('#updmsg'),link=$('#updlink');
+ if(installBusy)return;installBusy=true;link.replaceChildren();
+ let h=null;
+ try{
+  const st=await A.status().catch(()=>({allowed:true}));
+  msg.textContent='Downloading…';
+  if(A.addListener)h=await A.addListener('progress',p=>{msg.textContent=p&&p.total>0?'Downloading… '+Math.round(p.received/p.total*100)+'%':'Downloading…'});
+  const d=await A.download({url:rel.browser_download_url,name:rel.name,size:rel.size||0});
+  if(h){await h.remove().catch(()=>{});h=null}
+  if(!st.allowed){
+   msg.textContent='Allow Decider to install unknown apps in the screen that just opened, then tap Download and install again.';
+   await A.openSettings();
+  }else{
+   msg.textContent='Android is asking whether to install. Say yes and Decider restarts on the new version.';
+   await A.install({path:d.path});
+  }
+ }catch(e){
+  msg.textContent='The download did not finish. '+(e&&e.message?e.message:'Try again later.');
+ }finally{
+  if(h)try{await h.remove()}catch(e){}
+  installBusy=false;
+ }
+}
 async function checkPwa(){
  if(!('serviceWorker' in navigator))return false;
  try{const r=await navigator.serviceWorker.getRegistration();if(!r)return false;await r.update();
@@ -1580,8 +1616,10 @@ async function checkUpdates(manual){
   updAt=Date.now();store.set('d.updAt',updAt);
   if(newer(tag,APP_VERSION)){
    msg.textContent='Version '+tag+' is available.';
-   const b=document.createElement('button');b.className='chip';b.textContent='See what’s new';
-   b.onclick=()=>openExt(j.html_url||REPO_URL+'/releases/latest');
+   const A=apkInstaller(),apk=A?pickApk(j.assets):null,b=document.createElement('button');
+   b.className='chip';
+   if(A&&apk){b.textContent='Download and install';b.onclick=()=>installApk(A,apk)}
+   else{b.textContent='See what’s new';b.onclick=()=>openExt(j.html_url||REPO_URL+'/releases/latest')}
    $('#updlink').replaceChildren(b);$('#gear').classList.add('new');
    if(!manual)toast('Version '+tag+' of Decider is available');
   }else{
