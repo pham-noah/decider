@@ -17,8 +17,8 @@ Coin Pusher, Bowling, Ring Toss, Skipping stone, Basketball, Tarot, Hanoi, Blek,
 Rider, Sandspiel, Windowsill, Vignettes, Knob, Big button, High card, Switches,
 Fidget spinner, Rubber band, Balloons.
 
-The bar at the bottom pins four games; the grid button opens all 39 and a tile's star
-moves it onto the bar or off it, as many as you like — the bar scrolls. Twelve games
+The bar at the bottom starts with four games pinned; the grid button opens all 39 and a tile's star
+moves it onto the bar or off it, as many as you like — the bar scrolls. Thirteen games
 take setup, and their Options pill opens a sheet you can drag closed, tap away from,
 or dismiss with Escape. Changes are remembered. Anything one tap can lose — a cleared
 history, a cleared best score, a removed option — offers Undo in the same band as the
@@ -72,7 +72,7 @@ skips markdown-only changes.
 The version lives in three places: `package.json`, `src-tauri/tauri.conf.json` and
 `APP_VERSION` in `www/index.html`. Android's `versionName` and `versionCode` are
 derived from `package.json` by `scripts/patch-android.mjs` (code = major·10000 +
-minor·100 + patch) whenever `android:sync`, `android:build` or `android:release` run.
+minor·1000 + patch, so 1.3.0 ships as 13000) whenever `android:sync`, `android:build` or `android:release` run.
 
 ## Releasing
 
