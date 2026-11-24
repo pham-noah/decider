@@ -91,17 +91,50 @@
       x.fillStyle = 'rgba(255,248,230,.78)';
       wrap(x, data[1], cw - 16).slice(0, 2).forEach((ln, k) => x.fillText(ln, 0, ch * 0.355 + k * cw * 0.1));
     } else {
-      x.strokeStyle = 'rgba(255,215,106,.22)'; x.lineWidth = 1;
+      /* a deck back, not a gradient: a lattice field, an inner frame with corner
+         marks, an emblem holding a drawn crescent and its stars */
+      x.strokeStyle = 'rgba(255,215,106,.10)'; x.lineWidth = 1;
       for (let k = -ch; k < cw + ch; k += 9) {
         x.beginPath(); x.moveTo(-cw / 2 + k, -ch / 2); x.lineTo(-cw / 2 + k + ch, ch / 2); x.stroke();
+        x.beginPath(); x.moveTo(-cw / 2 + k, ch / 2); x.lineTo(-cw / 2 + k + ch, -ch / 2); x.stroke();
       }
-      x.beginPath(); x.arc(0, 0, cw * 0.23, 0, Math.PI * 2);
-      x.fillStyle = 'rgba(255,215,106,.12)'; x.fill();
-      x.strokeStyle = 'rgba(255,215,106,.75)'; x.lineWidth = 1.4; x.stroke();
-      x.fillStyle = '#ffd76a'; x.textAlign = 'center'; x.textBaseline = 'middle';
-      x.font = Math.round(cw * 0.26) + 'px system-ui,sans-serif'; x.fillText('☾', 0, cw * 0.01);
-      x.font = '600 ' + Math.round(cw * 0.07) + 'px "Bricolage Grotesque",system-ui,sans-serif';
-      x.fillStyle = 'rgba(255,215,106,.6)'; x.fillText('DECIDER', 0, ch * 0.38);
+      x.strokeStyle = 'rgba(255,215,106,.34)'; x.lineWidth = 1.2;
+      K.rr(x, -cw / 2 + 8, -ch / 2 + 8, cw - 16, ch - 16, 5); x.stroke();
+      /* corner marks */
+      const cm = cw * 0.055, cxx = cw / 2 - 15, cyy = ch / 2 - 15;
+      [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx2, sy2]) => {
+        x.save(); x.translate(sx2 * cxx, sy2 * cyy); x.rotate(Math.PI / 4);
+        x.fillStyle = 'rgba(255,215,106,.55)'; x.fillRect(-cm / 2, -cm / 2, cm, cm); x.restore();
+      });
+      /* emblem */
+      const R = cw * 0.25;
+      const eg = x.createRadialGradient(0, 0, 2, 0, 0, R * 1.5);
+      eg.addColorStop(0, 'rgba(255,215,106,.22)'); eg.addColorStop(1, 'rgba(255,215,106,0)');
+      x.fillStyle = eg; x.beginPath(); x.arc(0, 0, R * 1.5, 0, Math.PI * 2); x.fill();
+      x.beginPath(); x.arc(0, 0, R, 0, Math.PI * 2);
+      x.fillStyle = 'rgba(255,215,106,.10)'; x.fill();
+      x.strokeStyle = 'rgba(255,215,106,.72)'; x.lineWidth = 1.3; x.stroke();
+      /* the crescent is drawn, not typed: two arcs closing on each other */
+      const cr = R * 0.62, off = R * 0.26;
+      x.beginPath();
+      x.arc(0, 0, cr, Math.PI * 0.34, Math.PI * 1.66, false);
+      x.arc(off, 0, cr * 0.92, Math.PI * 1.66, Math.PI * 0.34, true);
+      x.closePath(); x.fillStyle = '#ffd76a'; x.fill();
+      /* stars around it */
+      [[0, -R * 0.82, .9], [R * 0.8, -R * 0.3, .7], [-R * 0.78, R * 0.36, .75], [R * 0.5, R * 0.7, .6]].forEach(([sx2, sy2, s]) => {
+        const r2 = cw * 0.022 * s;
+        x.beginPath();
+        x.moveTo(sx2, sy2 - r2 * 2.2); x.lineTo(sx2 + r2 * .7, sy2 - r2 * .7);
+        x.lineTo(sx2 + r2 * 2.2, sy2); x.lineTo(sx2 + r2 * .7, sy2 + r2 * .7);
+        x.lineTo(sx2, sy2 + r2 * 2.2); x.lineTo(sx2 - r2 * .7, sy2 + r2 * .7);
+        x.lineTo(sx2 - r2 * 2.2, sy2); x.lineTo(sx2 - r2 * .7, sy2 - r2 * .7);
+        x.closePath(); x.fillStyle = 'rgba(255,240,200,.85)'; x.fill();
+      });
+      x.fillStyle = 'rgba(255,215,106,.62)'; x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.font = '700 ' + Math.round(cw * 0.072) + 'px "Bricolage Grotesque",system-ui,sans-serif';
+      x.fillText('DECIDER', 0, ch * 0.40);
+      x.strokeStyle = 'rgba(255,215,106,.30)'; x.lineWidth = 1;
+      x.beginPath(); x.moveTo(-cw * .18, ch * .355); x.lineTo(cw * .18, ch * .355); x.stroke();
     }
     x.restore();
     x.restore();
@@ -140,9 +173,12 @@
     order.forEach(i => {
       const sp = spots[i], chosen = i === pick && state !== 'idle' && state !== 'deck';
       // every card starts in a tight stack in the middle of the table and fans out on the deal
-      const bx = w / 2 + (i - 1) * 5, by = h * 0.55 + (i - 1) * 3.5, brot = (i - 1) * 0.05;
+      /* the stack is three cards, not one: enough offset at rest to show edges */
+      const bx = w / 2 + (i - 1) * 12, by = h * 0.55 + (i - 1) * 4.5, brot = (i - 1) * 0.11;
       let cx = bx + (sp.x - bx) * e, cy = by + (sp.y - by) * e, rot = brot + (sp.rot - brot) * e;
-      let sc = 0.94 + 0.06 * e, sx = 1, alpha = 1;
+      /* the dealt cards settle at their spot size; the stack waiting to be
+         tapped is a shade larger, and eases back to 1 as it fans */
+      let sc = (0.94 + 0.06 * e) * (1 + 0.15 * (1 - e)), sx = 1, alpha = 1;
       if (hov === i && state === 'idle' && e > 0.98) cy -= 5;
       if (chosen) {
         cx = sp.x + (w / 2 - sp.x) * t;

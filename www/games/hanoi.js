@@ -212,6 +212,37 @@
     x.restore();
   }
 
+  /* the three pegs stand on a plinth — without it the assembly floats on the floor */
+  function plinth(x, cam, m) {
+    const L = cam.p(pegX(0) - GAP * 1.2, 0, Z_PEG), R = cam.p(pegX(2) + GAP * 1.2, 0, Z_PEG);
+    const c = cam.p(0, 0, Z_PEG);
+    const rx = Math.abs(R.x - L.x) / 2 + Math.max(4, c.s * .12);
+    const ry = Math.max(4, rx * .12), th = Math.max(6, ry * .62);
+    const cx = (L.x + R.x) / 2, ty = c.y;
+    bodyPath(x, { x: cx, y: ty }, { x: cx, y: ty + th }, rx, rx, ry, ry);
+    if (m.flat) { x.fillStyle = m.s3; x.fill(); x.strokeStyle = '#241a3a'; x.lineWidth = 1.4; x.stroke(); }
+    else {
+      const fg = x.createLinearGradient(0, ty, 0, ty + th + ry);
+      fg.addColorStop(0, '#4a2d1a'); fg.addColorStop(.55, '#352012'); fg.addColorStop(1, '#22140c');
+      x.fillStyle = fg; x.fill();
+      x.strokeStyle = 'rgba(8,4,2,.55)'; x.lineWidth = 1; x.stroke();
+    }
+    x.beginPath(); x.ellipse(cx, ty, rx, ry, 0, 0, TAU);
+    if (m.flat) { x.fillStyle = '#fffdf8'; x.fill(); x.strokeStyle = '#241a3a'; x.lineWidth = 1.4; x.stroke(); }
+    else {
+      const tg = x.createLinearGradient(cx - rx, ty - ry, cx + rx, ty + ry);
+      tg.addColorStop(0, '#7d5228'); tg.addColorStop(.42, '#966437'); tg.addColorStop(1, '#4c2d18');
+      x.fillStyle = tg; x.fill();
+      x.strokeStyle = 'rgba(18,8,4,.5)'; x.lineWidth = 1; x.stroke();
+      for (let i = -1; i <= 1; i++) {
+        x.beginPath(); x.ellipse(cx, ty, Math.max(2, rx * (.34 + Math.abs(i) * .26)), Math.max(1, ry * (.4 + Math.abs(i) * .22)), 0, 0, TAU);
+        x.strokeStyle = 'rgba(24,12,6,.14)'; x.lineWidth = 1; x.stroke();
+      }
+      x.beginPath(); x.ellipse(cx, ty, rx * .9, ry * .82, 0, Math.PI * 1.04, Math.PI * 1.96);
+      x.strokeStyle = 'rgba(255,214,160,.30)'; x.lineWidth = 1.5; x.stroke();
+    }
+  }
+
   function bodyPath(x, t, b, rt, rb, ryT, ryB) {
     x.beginPath();
     x.ellipse(t.x, t.y, rt, ryT, 0, Math.PI, TAU);
@@ -314,6 +345,7 @@
     const x = g.x, w = g.w, h = g.h, m = K.surf(x, w, h), cam = geo.cam;
     x.save(); K.rr(x, 0, 0, w, h, m.radius); x.clip();
     ground(x, cam, m);
+    plinth(x, cam, m);
 
     for (let i = 0; i < 3; i++) post(x, cam, i, m);
 

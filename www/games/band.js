@@ -298,6 +298,23 @@
       x.fillStyle = gl; x.fillRect(0, 0, w, h);
     }
 
+    /* the two posts are clamped to a rail: without it they stand on nothing */
+    if (!flat) {
+      const railY = posts[0].y + 74;
+      K.rr(x, w * .05, railY - 7, w * .90, 26, 8);
+      const rg = x.createLinearGradient(0, railY - 7, 0, railY + 19);
+      rg.addColorStop(0, '#7d5330'); rg.addColorStop(.30, '#603e24'); rg.addColorStop(1, '#2c1b10');
+      x.fillStyle = rg; x.fill();
+      x.strokeStyle = 'rgba(8,4,2,.6)'; x.lineWidth = 1; x.stroke();
+      x.save(); K.rr(x, w * .05, railY - 7, w * .90, 6, 5);
+      x.fillStyle = 'rgba(255,224,178,.20)'; x.fill(); x.restore();
+      /* grain */
+      for (let k = 1; k <= 3; k++) {
+        x.beginPath(); x.moveTo(w * .05, railY - 1 + k * 6); x.lineTo(w * .95, railY - 4 + k * 6);
+        x.strokeStyle = 'rgba(20,10,4,.14)'; x.lineWidth = 1; x.stroke();
+      }
+    }
+
     posts.forEach(p => post(x, p.x, p.y, flat));
     rest.forEach((_, i) => tail(x, i, flat));
 
