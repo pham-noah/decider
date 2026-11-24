@@ -1,61 +1,107 @@
 # Decider
 
-A wheel, a coin, dice, a finger chooser, spin-the-bottle and an oracle — for settling things.
-One web app (`www/`) shipped as a PWA, an Android app (Capacitor 8) and a desktop app (Tauri 2).
+The decision you cannot make, made for you — a wheel, a coin, dice, a finger chooser,
+spin-the-bottle and an oracle, plus thirty toys for when the decision was never the
+point.
 
-Edit **only `www/`**. The version lives in `package.json` (Tauri and Android read it from there),
-`src-tauri/tauri.conf.json` and `APP_VERSION` in `www/index.html`.
+One web app in `www/`, shipped three ways: the browser as an offline PWA, Android
+(`android/`, Capacitor 8) and Windows (`src-tauri/`, Tauri 2). No account, no
+analytics, no ads, nothing on the network but a daily version check you can turn off.
 
-Downloads: [releases](https://github.com/pham-noah/decider/releases) (Windows installer/MSI, Android APK/AAB).
+## What is in it
 
-[Discord](https://discord.gg/tz42eZyNtD) — questions, bug reports and release news.
+**39 tiles.** Six deciders (Wheel, Coin, Dice, Fingers, Bottle, Oracle), three quick
+calls (Truth or dare, Timed call, Face-off), and thirty toys: Darts, Pool, Blackjack,
+Plinko, Pachinko, Slot machine, Gacha, Bubble wrap, Scratch card, Stress ball, Claw,
+Coin Pusher, Bowling, Ring Toss, Skipping stone, Basketball, Tarot, Hanoi, Blek, Line
+Rider, Sandspiel, Windowsill, Vignettes, Knob, Big button, High card, Switches,
+Fidget spinner, Rubber band, Balloons.
 
-The bar pins four games; the grid button opens the rest, and its stars move a game on or off the bar —
-so a seventh game costs nothing. Every game has the same options dock as the wheel: a handle above the bar
-that slides up to hold its setup. Pinch and double-tap zoom are off, and the app owns the viewport (no page
-scrolling). The header can be dismissed for a distraction-free screen — tap the top edge to bring it back.
+The bar at the bottom pins four games; the grid button opens all 39 and a tile's star
+moves it onto the bar or off it, as many as you like — the bar scrolls. Twelve games
+take setup, and their Options pill opens a sheet you can drag closed, tap away from,
+or dismiss with Escape. Changes are remembered. Anything one tap can lose — a cleared
+history, a cleared best score, a removed option — offers Undo in the same band as the
+message, and holding a cabinet tile clears that game's best.
 
-## Run
-```bash
-npm install
-npm run serve          # http://localhost:3000
-npm run desktop:dev    # desktop window (needs Rust)
+Every control is reachable by Tab and fires on Space or Enter. Pinch and double-tap
+zoom are off and the app owns the viewport.
+
+## Running it
+
+```sh
+npm run serve      # http://localhost:3000, after stamping the cache
 ```
 
-## Build
-```bash
-npm run desktop:build  # installers in src-tauri/target/release/bundle/
-npm run android:add    # generates ./android (once)
-npm run android:icons  # launcher icons + splash from ./assets
-npm run android:build  # debug APK
-npm run android:release # signed APK + AAB
+`www/` is the whole app — one `index.html` plus `app-nav.js`, `sw.js` and `games/`
+(one module per toy). Edit nothing else by hand.
+
+## Building
+
+```sh
+npm run android:build     # debug APK on a connected device
+npm run android:release   # signed AAB in android/app/build/outputs/bundle/release
+node scripts/gradle.mjs assembleRelease   # the APK, same keystore
+npm run desktop:build     # NSIS installer in src-tauri/target/release/bundle/nsis
+npm run pwa:bump          # new cache stamp after any www/ change
 ```
-Android signing reads `android/keystore.properties` (`storeFile`, `storePassword`, `keyAlias`,
-`keyPassword`) and falls back to an unsigned build when it is missing. The keystore lives outside the
-repo; without it you cannot update an app already published under the same id.
-`appId` is `app.decider.wheel` and cannot change after the first Play upload.
+
+Android signing reads `android/keystore.properties` (`storeFile`, `storePassword`,
+`keyAlias`, `keyPassword`); without it the release build comes out unsigned. The
+desktop build stops at the MSI step unless the Windows Installer Service is reachable —
+`npx tauri build --bundles nsis` is enough. `npm run prepare:icons` regenerates the
+Android and PWA icons from `assets/icon.png` (needs Pillow) and `npm run prepare:fonts`
+copies the bundled faces.
 
 ## Checks
-```bash
-npm run check          # every file parses (index.html's inline script, app-nav.js, sw.js, games/*)
-npm run ci             # the files still agree: version, game wiring, cache stamp, refs, manifest
-npm run verify         # both — what CI runs
-```
-`.github/workflows/ci.yml` runs `verify` on every push to `main` and every pull request, on Node 22.
-It is static and takes under a minute: no browser, no Rust, no Android SDK.
 
-## Release a version
-1. Bump the version in `package.json`, `tauri.conf.json` and `APP_VERSION`.
-2. `npm run desktop:build` and `npm run android:release`.
-3. `gh release create vX.Y.Z` with the `.exe`/`.msi` and the `.apk`/`.aab`, then bump `CACHE` in the PWA.
+```sh
+npm run check      # every file parses, including the inline script in index.html
+npm run ci         # the files still agree: version, wiring, stamp, refs, manifest
+npm run verify     # both, which is what CI runs on Node 22
+```
+
+`verify` is static and dependency-free on purpose, because the mistakes this app
+actually makes are visible without a browser: a duplicated declaration that kills the
+page at load, a game module that is not linked or precached, the three version strings
+drifting apart, a stamp that no longer matches `www/`, a `src` that is not on disk. CI
+skips markdown-only changes.
+
+## Version
+
+The version lives in three places: `package.json`, `src-tauri/tauri.conf.json` and
+`APP_VERSION` in `www/index.html`. Android's `versionName` and `versionCode` are
+derived from `package.json` by `scripts/patch-android.mjs` (code = major·10000 +
+minor·100 + patch) whenever `android:sync`, `android:build` or `android:release` run.
+
+## Releasing
+
+1. Bump all three, then `npm run pwa:bump` — the new stamp must be committed, or
+   `verify` fails on the runner.
+2. `npm run verify`, then build: AAB, APK, and the Windows installer.
+3. Copy the three artifacts to `dist/<version>/` and attach them to a tag:
+
+```sh
+gh release create v1.3.0 "dist/1.3.0/"* --title "Decider 1.3.0" --notes-file -
+```
+
+Assets are named `Decider-<version>-android.apk`, `-android.aab` and
+`-windows-x64-setup.exe`. Tag only once the artifacts exist.
 
 ## Updates
-The About card checks `github.com/pham-noah/decider` for a newer release once a day (switchable, and the
-only network request the app makes). "Check for updates now" also refreshes the PWA service worker.
-Credits and legal links live in the same card.
+
+The About card asks GitHub for the latest release once a day when the app moves to the
+foreground (switchable, and "Check for updates now" asks on the spot). It reads one
+`releases/latest` response and nothing else; `www/privacy.html` is the Play-ready
+policy, reachable from About.
 
 ## Notes
-- `www/privacy.html` is the Play-ready policy; it and the GitHub links are reachable from About.
-- Placeholder-free icons and splash screens are generated by `npm run prepare:icons` (Pillow) from the
-  wheel mark; `npx tauri icon assets/icon-only.png` refreshes the desktop set.
-- Licence: Apache-2.0.
+
+- The app is offline-first: the service worker serves `www/` from cache, so a version
+  bump is what tells browsers and the installed app to take the new files.
+- Add a game by dropping a module in `www/games/`, registering it, and letting
+  `verify` complain until the wiring is complete.
+- Apache-2.0 — see `LICENSE`.
+
+Questions, bug reports and release news: [Discord](https://discord.gg/tz42eZyNtD).
+Downloads: https://github.com/pham-noah/decider/releases
