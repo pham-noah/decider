@@ -74,14 +74,16 @@
     /* the card behind is black on purpose: every attempt to light it (a single
        pool, then two overlapping ones to break the banding) banded into visible
        rings on an 8-bit ramp, so the steel is lit by its rim alone. */
-    /* the shadow it casts on the table */
-    x.save();
-    const sh = x.createRadialGradient(cx, cy + lobe * 1.55, 3, cx, cy + lobe * 1.55, R * 1.2);
-    if (mat.flat) { sh.addColorStop(0, 'rgba(36,26,58,.22)'); sh.addColorStop(.6, 'rgba(36,26,58,.08)'); sh.addColorStop(1, 'rgba(36,26,58,0)'); }
-    else { sh.addColorStop(0, 'rgba(3,1,12,.70)'); sh.addColorStop(.5, 'rgba(3,1,12,.30)'); sh.addColorStop(1, 'rgba(3,1,12,0)'); }
-    x.fillStyle = sh;
-    x.beginPath(); x.ellipse(cx, cy + lobe * 1.5, R * 1.15, lobe * .95, 0, 0, TAU); x.fill();
-    x.restore();
+    /* on paper it needs a shadow to sit on; on the black card the shadow is the
+       same colour as the card, so it is not drawn at all */
+    if (mat.flat) {
+      x.save();
+      const sh = x.createRadialGradient(cx, cy + lobe * 1.55, 3, cx, cy + lobe * 1.55, R * 1.2);
+      sh.addColorStop(0, 'rgba(36,26,58,.22)'); sh.addColorStop(.6, 'rgba(36,26,58,.08)'); sh.addColorStop(1, 'rgba(36,26,58,0)');
+      x.fillStyle = sh;
+      x.beginPath(); x.ellipse(cx, cy + lobe * 1.5, R * 1.15, lobe * .95, 0, 0, TAU); x.fill();
+      x.restore();
+    }
 
     /* motion blur: the plate itself smears, not the arms */
     const blur = Math.min(3, Math.floor(Math.abs(v) / 0.16));
