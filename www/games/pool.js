@@ -166,6 +166,19 @@
     K.rr(x, fx - rail, fy - rail, fw + rail * 2, fh + rail * 2, rail * 1.2);
     x.strokeStyle = 'rgba(8,4,2,.55)'; x.lineWidth = 1.2; x.stroke();
     x.restore();
+    /* cushion: the cloth wraps the inner half of the frame, which is the one
+       thing a pool table has that a green rectangle does not */
+    K.rr(x, fx - rail * .46, fy - rail * .46, fw + rail * .92, fh + rail * .92, rail * .8);
+    const cg = x.createLinearGradient(0, fy - rail * .46, 0, fy + rail * .46);
+    cg.addColorStop(0, '#2c9866'); cg.addColorStop(.5, '#217c50'); cg.addColorStop(1, '#17603c');
+    x.fillStyle = cg; x.fill();
+    x.strokeStyle = 'rgba(0,26,15,.45)'; x.lineWidth = 1.1; x.stroke();
+    /* the cushion's chamfer: a lit line along the top of each long side */
+    x.beginPath();
+    x.moveTo(fx - rail * .2, fy - rail * .46 + 1.2); x.lineTo(fx + fw + rail * .2, fy - rail * .46 + 1.2);
+    x.moveTo(fx - rail * .2, fy + fh + rail * .46 - 1.2); x.lineTo(fx + fw + rail * .2, fy + fh + rail * .46 - 1.2);
+    x.strokeStyle = 'rgba(210,255,230,.20)'; x.lineWidth = 1.3; x.stroke();
+
     /* felt: the cloth is lit from above and goes into shadow at its edges */
     K.rr(x, fx, fy, fw, fh, 6);
     const fg = x.createLinearGradient(0, fy, 0, fy + fh);
