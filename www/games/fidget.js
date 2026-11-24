@@ -69,11 +69,16 @@
     const x = g.x, G = geo();
     const { cx, cy, R, lobe, tagR } = G;
     x.clearRect(0, 0, g.w, g.h);
+    const mat = (K.mat && K.mat()) || { flat: false };
 
+    /* the card behind is black on purpose: every attempt to light it (a single
+       pool, then two overlapping ones to break the banding) banded into visible
+       rings on an 8-bit ramp, so the steel is lit by its rim alone. */
     /* the shadow it casts on the table */
     x.save();
-    const sh = x.createRadialGradient(cx, cy + lobe * 1.5, 3, cx, cy + lobe * 1.5, R * 1.15);
-    sh.addColorStop(0, 'rgba(18,10,44,.16)'); sh.addColorStop(1, 'rgba(18,10,44,0)');
+    const sh = x.createRadialGradient(cx, cy + lobe * 1.55, 3, cx, cy + lobe * 1.55, R * 1.2);
+    if (mat.flat) { sh.addColorStop(0, 'rgba(36,26,58,.22)'); sh.addColorStop(.6, 'rgba(36,26,58,.08)'); sh.addColorStop(1, 'rgba(36,26,58,0)'); }
+    else { sh.addColorStop(0, 'rgba(3,1,12,.70)'); sh.addColorStop(.5, 'rgba(3,1,12,.30)'); sh.addColorStop(1, 'rgba(3,1,12,0)'); }
     x.fillStyle = sh;
     x.beginPath(); x.ellipse(cx, cy + lobe * 1.5, R * 1.15, lobe * .95, 0, 0, TAU); x.fill();
     x.restore();
@@ -107,6 +112,18 @@
     const hl = x.createLinearGradient(0, cy - R - lobe, 0, cy + R);
     hl.addColorStop(0, 'rgba(255,255,255,.55)'); hl.addColorStop(.45, 'rgba(255,255,255,0)');
     x.fillStyle = hl; x.fillRect(cx - R * 1.5, cy - R * 1.6, R * 3, R * 3.2);
+    x.restore();
+
+    /* a rim light along the outer edge: steel catches the key light on the side
+       facing it and falls dark opposite, which is what makes it a machined part */
+    x.save();
+    const rim = x.createLinearGradient(cx - R, cy - R, cx + R * .8, cy + R);
+    rim.addColorStop(0, 'rgba(255,255,255,.9)');
+    rim.addColorStop(.34, 'rgba(255,255,255,.20)');
+    rim.addColorStop(.72, 'rgba(255,255,255,0)');
+    rim.addColorStop(1, 'rgba(150,160,200,.35)');
+    x.strokeStyle = rim; x.lineWidth = 1.7;
+    bodyShape(x, G, false, 1.02);
     x.restore();
 
     /* bearings in the lobes */

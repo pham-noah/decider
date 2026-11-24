@@ -155,12 +155,30 @@
     /* rail */
     x.save(); x.shadowColor = 'rgba(6,3,18,.55)'; x.shadowBlur = 18; x.shadowOffsetY = 8;
     K.rr(x, fx - rail, fy - rail, fw + rail * 2, fh + rail * 2, rail * 1.2);
-    x.fillStyle = '#4a2c1a'; x.fill(); x.restore();
-    /* felt */
+    const rg = x.createLinearGradient(0, fy - rail, 0, fy + fh + rail);
+    rg.addColorStop(0, '#6f4527'); rg.addColorStop(.16, '#5b3820'); rg.addColorStop(.52, '#432716'); rg.addColorStop(1, '#2c1a0f');
+    x.fillStyle = rg; x.fill(); x.restore();
+    /* the rail's top edge takes the light, the rest of it falls away */
+    x.beginPath();
+    x.moveTo(fx - rail + rail * 1.3, fy - rail + 1.6); x.lineTo(fx + fw + rail - rail * 1.3, fy - rail + 1.6);
+    x.strokeStyle = 'rgba(255,220,170,.26)'; x.lineWidth = 1.6; x.stroke();
+    x.save();
+    K.rr(x, fx - rail, fy - rail, fw + rail * 2, fh + rail * 2, rail * 1.2);
+    x.strokeStyle = 'rgba(8,4,2,.55)'; x.lineWidth = 1.2; x.stroke();
+    x.restore();
+    /* felt: the cloth is lit from above and goes into shadow at its edges */
     K.rr(x, fx, fy, fw, fh, 6);
     const fg = x.createLinearGradient(0, fy, 0, fy + fh);
-    fg.addColorStop(0, '#1e7a4f'); fg.addColorStop(1, '#15603d');
+    fg.addColorStop(0, '#22865a'); fg.addColorStop(.55, '#1a6f47'); fg.addColorStop(1, '#125837');
     x.fillStyle = fg; x.fill();
+    const fl = x.createRadialGradient(fx + fw * .5, fy + fh * .06, fw * .04, fx + fw * .5, fy + fh * .6, fw * .95);
+    fl.addColorStop(0, 'rgba(180,255,214,.15)');
+    fl.addColorStop(.45, 'rgba(130,225,185,.05)');
+    fl.addColorStop(1, 'rgba(0,38,20,.24)');
+    x.fillStyle = fl; x.fill();
+    /* the cloth tucks under the cushion */
+    x.save(); K.rr(x, fx, fy, fw, fh, 6);
+    x.strokeStyle = 'rgba(0,26,15,.34)'; x.lineWidth = 3.5; x.stroke(); x.restore();
     /* baulk line and spots */
     x.strokeStyle = 'rgba(255,255,255,.16)'; x.lineWidth = 1;
     x.beginPath(); x.moveTo(fx + fw * .25, fy + 4); x.lineTo(fx + fw * .25, fy + fh - 4); x.stroke();
