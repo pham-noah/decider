@@ -12,41 +12,41 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/favicon.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="fonts.css?v=3539e07789">
+<link rel="stylesheet" href="fonts.css?v=8f28813335">
 <!-- games:start -->
-<script src="games/_kit.js?v=3539e07789"></script>
-<script src="games/balloons.js?v=3539e07789"></script>
-<script src="games/band.js?v=3539e07789"></script>
-<script src="games/basketball.js?v=3539e07789"></script>
-<script src="games/blackjack.js?v=3539e07789"></script>
-<script src="games/blek.js?v=3539e07789"></script>
-<script src="games/bowling.js?v=3539e07789"></script>
-<script src="games/bubblewrap.js?v=3539e07789"></script>
-<script src="games/claw.js?v=3539e07789"></script>
-<script src="games/coinpusher.js?v=3539e07789"></script>
-<script src="games/dart.js?v=3539e07789"></script>
-<script src="games/fidget.js?v=3539e07789"></script>
-<script src="games/gacha.js?v=3539e07789"></script>
-<script src="games/hanoi.js?v=3539e07789"></script>
-<script src="games/highcard.js?v=3539e07789"></script>
-<script src="games/knob.js?v=3539e07789"></script>
-<script src="games/linerider.js?v=3539e07789"></script>
-<script src="games/pachinko.js?v=3539e07789"></script>
-<script src="games/plinko.js?v=3539e07789"></script>
-<script src="games/pool.js?v=3539e07789"></script>
-<script src="games/press.js?v=3539e07789"></script>
-<script src="games/ringtoss.js?v=3539e07789"></script>
-<script src="games/sandspiel.js?v=3539e07789"></script>
-<script src="games/scratch.js?v=3539e07789"></script>
-<script src="games/skipping.js?v=3539e07789"></script>
-<script src="games/slots.js?v=3539e07789"></script>
-<script src="games/stressball.js?v=3539e07789"></script>
-<script src="games/switch.js?v=3539e07789"></script>
-<script src="games/tarot.js?v=3539e07789"></script>
-<script src="games/vignettes.js?v=3539e07789"></script>
-<script src="games/windowsill.js?v=3539e07789"></script>
+<script src="games/_kit.js?v=8f28813335"></script>
+<script src="games/balloons.js?v=8f28813335"></script>
+<script src="games/band.js?v=8f28813335"></script>
+<script src="games/basketball.js?v=8f28813335"></script>
+<script src="games/blackjack.js?v=8f28813335"></script>
+<script src="games/blek.js?v=8f28813335"></script>
+<script src="games/bowling.js?v=8f28813335"></script>
+<script src="games/bubblewrap.js?v=8f28813335"></script>
+<script src="games/claw.js?v=8f28813335"></script>
+<script src="games/coinpusher.js?v=8f28813335"></script>
+<script src="games/dart.js?v=8f28813335"></script>
+<script src="games/fidget.js?v=8f28813335"></script>
+<script src="games/gacha.js?v=8f28813335"></script>
+<script src="games/hanoi.js?v=8f28813335"></script>
+<script src="games/highcard.js?v=8f28813335"></script>
+<script src="games/knob.js?v=8f28813335"></script>
+<script src="games/linerider.js?v=8f28813335"></script>
+<script src="games/pachinko.js?v=8f28813335"></script>
+<script src="games/plinko.js?v=8f28813335"></script>
+<script src="games/pool.js?v=8f28813335"></script>
+<script src="games/press.js?v=8f28813335"></script>
+<script src="games/ringtoss.js?v=8f28813335"></script>
+<script src="games/sandspiel.js?v=8f28813335"></script>
+<script src="games/scratch.js?v=8f28813335"></script>
+<script src="games/skipping.js?v=8f28813335"></script>
+<script src="games/slots.js?v=8f28813335"></script>
+<script src="games/stressball.js?v=8f28813335"></script>
+<script src="games/switch.js?v=8f28813335"></script>
+<script src="games/tarot.js?v=8f28813335"></script>
+<script src="games/vignettes.js?v=8f28813335"></script>
+<script src="games/windowsill.js?v=8f28813335"></script>
 <!-- games:end -->
-<script src="native-bridge.js?v=3539e07789"></script>
+<script src="native-bridge.js?v=8f28813335"></script>
 <style>
 *{box-sizing:border-box;margin:0}
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--ink:#1d1340;--ink2:rgba(29,19,64,.82);--base:#ece7ff;--g1:rgba(255,255,255,.8);--g2:rgba(255,255,255,.48);--edge:rgba(255,255,255,.85);--sh:rgba(70,40,140,.22);--field:rgba(255,255,255,.62);--b1:#ff5fa2;--b2:#6f8bff;--b3:#2fe0c4;--b4:#ffb347;--a1:#ff5fa2;--a2:#7b6cff;color-scheme:light}
@@ -223,7 +223,18 @@ input[type=text]:focus-visible,button:focus-visible{box-shadow:0 0 0 3px rgba(12
 .dock.swap{opacity:0}
 :root[data-motion="reduce"] .dock{transition:none}.dock::-webkit-scrollbar{display:none}
 .dock button{flex:0 1 auto;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:relative;z-index:1;border:0;background:none;padding:12px 20px;border-radius:999px;font-weight:600;font-size:15px;color:var(--ink2);transition:color .3s}
-.dock #gear,.dock #allbtn{flex:none}
+.dock #gear,.dock #allbtn{flex:none;min-width:46px}
+/* favourites live in their own scroller: pin ten and the strip scrolls sideways
+   instead of squeezing ten labels into a pill that only holds four */
+.dstrip{display:flex;align-items:center;min-width:0;flex:0 1 auto;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.dstrip::-webkit-scrollbar{display:none}
+.dstrip button{flex:0 0 auto;max-width:min(38vw,168px);padding-left:14px;padding-right:14px}
+/* the fade stays put while the labels scroll under it: an edge that has more behind it */
+.dstrip{--fade:14px}
+.dstrip.lfade{-webkit-mask-image:linear-gradient(90deg,transparent,#000 var(--fade));mask-image:linear-gradient(90deg,transparent,#000 var(--fade))}
+.dstrip.rfade{-webkit-mask-image:linear-gradient(270deg,transparent,#000 var(--fade));mask-image:linear-gradient(270deg,transparent,#000 var(--fade))}
+.dstrip.lfade.rfade{-webkit-mask-image:linear-gradient(90deg,transparent,#000 var(--fade),#000 calc(100% - var(--fade)),transparent);mask-image:linear-gradient(90deg,transparent,#000 var(--fade),#000 calc(100% - var(--fade)),transparent)}
+.sw{cursor:pointer}
 .dock button.on{color:#241a55}
 #pill{position:absolute;left:0;top:6px;bottom:6px;border-radius:999px;background:linear-gradient(140deg,rgba(255,255,255,.75),rgba(255,255,255,.25));box-shadow:inset 0 1.5px 0 #fff,0 6px 18px var(--sh);transition:transform .6s cubic-bezier(.3,1.5,.4,1),width .6s cubic-bezier(.3,1.5,.4,1)}
 #cf{position:fixed;inset:0;pointer-events:none;z-index:9}
@@ -416,6 +427,7 @@ body.focus main{padding-top:calc(4px + env(safe-area-inset-top,0px))}
  .wwrap{width:min(100%,560px,max(280px,calc(100vh - 330px)))}
  .dock{left:16px;bottom:auto;top:50%;transform:translateY(-50%);flex-direction:column;border-radius:34px;max-width:none;overflow:visible}
  .dock button{padding:16px 20px}
+ .dstrip{flex-direction:column;overflow-x:hidden;overflow-y:auto;max-height:calc(100vh - 260px)}
  #pill{left:6px;top:0;bottom:auto}
 }
 #pop{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:30;padding:20px;width:min(86vw,340px);text-align:center;animation:popin .4s cubic-bezier(.2,1.6,.4,1)}
@@ -685,7 +697,7 @@ h2{font-size:calc(20px*var(--fs,1))}
  </div>
  <div class="allgrid" id="allgrid"></div>
 </div>
-<nav class="dock glass" id="dock"><span id="pill"></span><button id="fav" data-label="Favourite this toy" aria-label="Favourite this toy" aria-pressed="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.2 1 5.9-5.2-2.9-5.2 2.9 1-5.9L3.5 9.7l5.9-.8z"/></svg></button><button data-v="hist" data-slot="gear" id="gear" data-label="More settings" aria-label="More: settings, history and about"><svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.11a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.11A1.7 1.7 0 0 0 4.6 8.87a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.11a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.11A1.7 1.7 0 0 0 19.4 15z"/></svg></button>
+<nav class="dock glass" id="dock"><span id="pill"></span><button id="fav" data-label="Favourite this toy" aria-label="Favourite this toy" aria-pressed="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.2 1 5.9-5.2-2.9-5.2 2.9 1-5.9L3.5 9.7l5.9-.8z"/></svg></button><div class="dstrip" id="dstrip"></div><button data-v="hist" data-slot="gear" id="gear" data-label="More settings" aria-label="More: settings, history and about"><svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.11a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.11A1.7 1.7 0 0 0 4.6 8.87a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.11a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.11A1.7 1.7 0 0 0 19.4 15z"/></svg></button>
 </nav>
 
 <script>
@@ -1672,12 +1684,61 @@ setFocus(focusOn);
 /* one line each, naming the gesture the card cannot show on its own */
 const TIPS={wheel:'Tap a slice to rename it',coin:'Swipe up to flip',dice:'Tap the dice to roll',fingers:'One finger each, then hold',bottle:'Drag the bottle, let go',oracle:'Tap the orb'};
 let seen=store.get('d.tips',{}),tipT;
-function tip(v){$$('#tips').forEach(e=>e.remove());const m=TIPS[v];if(!m||seen[v])return;seen[v]=1;store.set('d.tips',seen);const d=document.createElement('div');d.id='tips';d.className='glass';d.setAttribute('role','status');d.textContent=m;d.onclick=()=>d.remove();document.body.appendChild(d);clearTimeout(tipT);tipT=setTimeout(()=>d.remove(),5000)}
+function tip(v){
+ $$('#tips').forEach(e=>e.remove());const m=TIPS[v];if(!m||seen[v])return;seen[v]=1;store.set('d.tips',seen);
+ clearTimeout(tipT);
+ /* the card already carries one instruction in its hint line, so the tip borrows
+    that line for five seconds rather than stacking a second one four pixels above */
+ const host=document.querySelector('.view.on [id$="res"]'),hint=host&&host.querySelector('.muted');
+ if(hint){
+  const keep=hint.cloneNode(true);hint.textContent=m;hint.dataset.tip='1';
+  /* if the player already used the toy the hint is gone; then there is nothing to put back */
+  tipT=setTimeout(()=>{const now=host.querySelector('.muted');if(now&&now.dataset.tip)now.replaceWith(keep)},5200);
+  return;
+ }
+ const d=document.createElement('div');d.id='tips';d.className='glass';d.setAttribute('role','status');d.textContent=m;d.onclick=()=>d.remove();document.body.appendChild(d);
+ tipT=setTimeout(()=>d.remove(),5000);
+}
 $('#tipsb').onclick=()=>{seen={};store.set('d.tips',seen);toast('Tips will show again as you visit each tab')};
+/* the row is the control. The label says what the switch does, so the words have
+   to answer a tap: 358px of row that does nothing is a worse target than none. */
+$$('.sw').forEach(r=>{const t=r.querySelector('.tg');if(!t)return;r.onclick=e=>{if(e.target===t||t.contains(e.target))return;t.click()}});
 setTimeout(()=>tip('wheel'),900);
 
 /* nav */
-function pill(){const b=$('.dock button.on'),p=$('#pill');if(!b||!p)return;if(matchMedia('(min-width:1000px)').matches){p.style.width=b.offsetWidth+'px';p.style.height=b.offsetHeight+'px';p.style.transform=`translateY(${b.offsetTop}px)`}else{p.style.height='';p.style.width=b.offsetWidth+'px';p.style.transform=`translateX(${b.offsetLeft}px)`}}
+function pill(){
+ const b=$('.dock button.on'),p=$('#pill'),s=$('#dstrip');if(!b||!p)return;
+ const vert=matchMedia('(min-width:1000px)').matches;
+ /* the active toy may be scrolled out of the strip: bring it back, then measure */
+ if(s){
+  const br=b.getBoundingClientRect(),sr=s.getBoundingClientRect();
+  if(!vert&&s.scrollWidth>s.clientWidth+1){
+   if(br.left<sr.left)s.scrollLeft+=br.left-sr.left-12;
+   else if(br.right>sr.right)s.scrollLeft+=br.right-sr.right+12;
+  }else if(vert&&s.scrollHeight>s.clientHeight+1){
+   if(br.top<sr.top)s.scrollTop+=br.top-sr.top-12;
+   else if(br.bottom>sr.bottom)s.scrollTop+=br.bottom-sr.bottom+12;
+  }
+ }
+ const place=()=>{
+  const d=$('#dock').getBoundingClientRect(),r=b.getBoundingClientRect();
+  if(vert){p.style.width=b.offsetWidth+'px';p.style.height=b.offsetHeight+'px';p.style.transform=`translateY(${Math.round(r.top-d.top)}px)`}
+  else{p.style.height='';p.style.width=Math.round(r.width)+'px';p.style.transform=`translateX(${Math.round(r.left-d.left)}px)`}
+  fadeStrip();
+ };
+ place();requestAnimationFrame(place);   // a scrolled strip settles a frame later
+}
+/* dragging the strip moves the pill under the active toy, so follow it */
+function fadeStrip(){
+ const s=$('#dstrip');if(!s)return;
+ const max=s.scrollWidth-s.clientWidth-1;
+ s.classList.toggle('lfade',s.scrollLeft>4);
+ s.classList.toggle('rfade',s.scrollLeft<max);
+}
+$('#dstrip').addEventListener('scroll',()=>{fadeStrip();const b=$('.dock button.on'),p=$('#pill');if(!b||!p)return;
+ const d=$('#dock').getBoundingClientRect(),r=b.getBoundingClientRect();
+ if(matchMedia('(min-width:1000px)').matches)p.style.transform=`translateY(${Math.round(r.top-d.top)}px)`;
+ else p.style.transform=`translateX(${Math.round(r.left-d.left)}px)`},{passive:true});
 /* which game is on screen: game code guards its timers against this */
 let cur='wheel';
 /* the bar holds four pinned games plus two fixed buttons, so adding a game never widens it */
@@ -1708,8 +1769,7 @@ const GAMES=[{v:'wheel',n:'Wheel'},{v:'coin',n:'Coin'},{v:'dice',n:'Dice'},{v:'f
  window.__gameShake=function(info){const g=by[cur];if(g&&g.shake){g.shake(info||{});return true}return false};
  window.__shakeReady=function(){const g=by[cur];return !!(g&&g.shake)};
 })();
-const MAXPIN=8;
-let pin=store.get('d.pin',['wheel','coin','dice','bottle']).filter(v=>GAMES.some(g=>g.v===v)).slice(0,MAXPIN);
+let pin=store.get('d.pin',['wheel','coin','dice','bottle']).filter(v=>GAMES.some(g=>g.v===v));
 store.set('d.pin',pin);   // first boot keeps the defaults
 if(!pin.length)pin=['wheel'];
 const GRID='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>';
@@ -1737,8 +1797,8 @@ function goTo(v){
  pill();tip(v);renderFav();tone(700,.08,.05,'sine',900);if(v==='face')try{faceEnter()}catch(e){}draw();if(window.__viewHook)try{window.__viewHook(v)}catch(e){}
 }
 function renderDock(){
- const d=$('#dock'),gear=$('#gear');
- d.querySelectorAll('button[data-v]').forEach(x=>{if(x.id!=='gear')x.remove()});
+ const d=$('#dock'),gear=$('#gear'),strip=$('#dstrip');
+ strip.querySelectorAll('button[data-v]').forEach(x=>x.remove());
  const all=$('#allbtn')||document.createElement('button');
  all.id='allbtn';all.dataset.label='All games';all.setAttribute('aria-label','All games');all.innerHTML=GRID;
  all.onclick=()=>{const o=!$('#all').classList.contains('open');$('#all').classList.toggle('open',o);$('#allscrim').classList.toggle('open',o);if(o)renderAll()};
@@ -1746,9 +1806,10 @@ function renderDock(){
  pin.forEach(v=>{
   const b=document.createElement('button');b.dataset.v=v;
   const g=GAMES.find(g=>g.v===v);b.textContent=g.s||g.n;b.title=b.dataset.label=g.n;
-  d.insertBefore(b,all);
+  strip.appendChild(b);
  });
  d.querySelectorAll('button[data-v]').forEach(b=>b.onclick=()=>goTo(b.dataset.v));
+ fadeStrip();
 }
 /* the cabinet is past thirty tiles, so the picker carries its own search and
    splits the deciders from the toys: a name typed in the field narrows the grid
@@ -1832,8 +1893,7 @@ function togglePin(v){
   if(pin.length<2)return toast('Keep at least one on the bar');
   pin=pin.filter(x=>x!==v);
  }else{
-  pin=pin.concat(v);
-  if(pin.length>MAXPIN)pin=pin.slice(-MAXPIN);   // make room rather than refuse
+  pin=pin.concat(v);   // no cap: the strip scrolls, so nothing is ever evicted
  }
  store.set('d.pin',pin);renderDock();renderAll();renderFav();goTo(cur);
  try{buzz(12);tone(680,.06,.05,'sine',900)}catch(e){}
@@ -1897,7 +1957,7 @@ $$('.dock button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v==='whe
 pill();renderHist();draw();
 document.addEventListener('pointermove',e=>{const g=e.target.closest&&e.target.closest('.glass');if(!g)return;const r=g.getBoundingClientRect();g.style.setProperty('--mx',(e.clientX-r.left)+'px');g.style.setProperty('--my',(e.clientY-r.top)+'px')});
 </script>
-<script src="app-nav.js?v=3539e07789"></script>
+<script src="app-nav.js?v=8f28813335"></script>
 <script>
 /* PWA offline support: skipped in the Capacitor/Tauri wrappers, which bundle the files */
 if('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && location.hostname!=='tauri.localhost' && !(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()) && !window.__TAURI_INTERNALS__){
