@@ -39,8 +39,10 @@
   };
 
   /* ---- keyboard ---- */
-  var ACTION = { wheel: '#spin', coin: '#flip', dice: '#roll', bottle: '#bspin', oracle: '#oask',
-                 deck: '#deckgo', tmer: '#tmergo', face: '#fmatch' };
+  /* Space used to click a helper button; those chips were removed, so the seven deciders went
+     dead to the keyboard. Call the named action instead - '#...' still means a real button. */
+  var ACTION = { wheel: 'spin', coin: 'flipCoin', dice: 'rollDice', bottle: 'spinBottle',
+                 oracle: 'askOracle', deck: 'drawCard', tmer: 'startClock', face: '#fmatch' };
   var isTyping = function (el) {
     if (!el) return false;
     var tag = el.tagName;
@@ -58,14 +60,22 @@
     var m = $('.moment');
     if (m && (k === ' ' || k === 'Enter')) { e.preventDefault(); m.click(); return; }
 
+    /* While a sheet, the cabinet or a popup is up, the keyboard belongs to it - Escape is the way
+       out. Without this, Space fired the decider underneath the open cabinet. */
+    if ($('.tune.open') || $('#pop') || ($('#all') && $('#all').classList.contains('open')) ||
+        ($('#sheet') && $('#sheet').classList.contains('open'))) return;
+
     if (k === ' ' || k === 'Spacebar') {
       var hit = e.target && e.target.closest && e.target.closest('button, a, [role="button"]');
       if (hit && !hit.closest('.dock')) return;   // let a focused button handle its own Space
       var view = document.querySelector('.view.on'); if (!view) return;
-      var sel = ACTION[view.id], btn = sel && $(sel);
+      var act = ACTION[view.id];
+      var btn = act && act.charAt(0) === '#' ? $(act) : null;
+      var fn = act && !btn ? window[act] : null;
       if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
-      else if (!sel && window.__gameAction && window.__gameAction()) e.preventDefault();  // plug-in toys
-      else if (sel) e.preventDefault();           // keep the page from scrolling
+      else if (typeof fn === 'function') { e.preventDefault(); fn(); }
+      else if (!act && window.__gameAction && window.__gameAction()) e.preventDefault();  // plug-in toys
+      else if (act) e.preventDefault();           // keep the page from scrolling
       return;
     }
 
