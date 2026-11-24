@@ -12,41 +12,41 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/favicon.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="fonts.css?v=8f28813335">
+<link rel="stylesheet" href="fonts.css?v=48a673f5dd">
 <!-- games:start -->
-<script src="games/_kit.js?v=8f28813335"></script>
-<script src="games/balloons.js?v=8f28813335"></script>
-<script src="games/band.js?v=8f28813335"></script>
-<script src="games/basketball.js?v=8f28813335"></script>
-<script src="games/blackjack.js?v=8f28813335"></script>
-<script src="games/blek.js?v=8f28813335"></script>
-<script src="games/bowling.js?v=8f28813335"></script>
-<script src="games/bubblewrap.js?v=8f28813335"></script>
-<script src="games/claw.js?v=8f28813335"></script>
-<script src="games/coinpusher.js?v=8f28813335"></script>
-<script src="games/dart.js?v=8f28813335"></script>
-<script src="games/fidget.js?v=8f28813335"></script>
-<script src="games/gacha.js?v=8f28813335"></script>
-<script src="games/hanoi.js?v=8f28813335"></script>
-<script src="games/highcard.js?v=8f28813335"></script>
-<script src="games/knob.js?v=8f28813335"></script>
-<script src="games/linerider.js?v=8f28813335"></script>
-<script src="games/pachinko.js?v=8f28813335"></script>
-<script src="games/plinko.js?v=8f28813335"></script>
-<script src="games/pool.js?v=8f28813335"></script>
-<script src="games/press.js?v=8f28813335"></script>
-<script src="games/ringtoss.js?v=8f28813335"></script>
-<script src="games/sandspiel.js?v=8f28813335"></script>
-<script src="games/scratch.js?v=8f28813335"></script>
-<script src="games/skipping.js?v=8f28813335"></script>
-<script src="games/slots.js?v=8f28813335"></script>
-<script src="games/stressball.js?v=8f28813335"></script>
-<script src="games/switch.js?v=8f28813335"></script>
-<script src="games/tarot.js?v=8f28813335"></script>
-<script src="games/vignettes.js?v=8f28813335"></script>
-<script src="games/windowsill.js?v=8f28813335"></script>
+<script src="games/_kit.js?v=48a673f5dd"></script>
+<script src="games/balloons.js?v=48a673f5dd"></script>
+<script src="games/band.js?v=48a673f5dd"></script>
+<script src="games/basketball.js?v=48a673f5dd"></script>
+<script src="games/blackjack.js?v=48a673f5dd"></script>
+<script src="games/blek.js?v=48a673f5dd"></script>
+<script src="games/bowling.js?v=48a673f5dd"></script>
+<script src="games/bubblewrap.js?v=48a673f5dd"></script>
+<script src="games/claw.js?v=48a673f5dd"></script>
+<script src="games/coinpusher.js?v=48a673f5dd"></script>
+<script src="games/dart.js?v=48a673f5dd"></script>
+<script src="games/fidget.js?v=48a673f5dd"></script>
+<script src="games/gacha.js?v=48a673f5dd"></script>
+<script src="games/hanoi.js?v=48a673f5dd"></script>
+<script src="games/highcard.js?v=48a673f5dd"></script>
+<script src="games/knob.js?v=48a673f5dd"></script>
+<script src="games/linerider.js?v=48a673f5dd"></script>
+<script src="games/pachinko.js?v=48a673f5dd"></script>
+<script src="games/plinko.js?v=48a673f5dd"></script>
+<script src="games/pool.js?v=48a673f5dd"></script>
+<script src="games/press.js?v=48a673f5dd"></script>
+<script src="games/ringtoss.js?v=48a673f5dd"></script>
+<script src="games/sandspiel.js?v=48a673f5dd"></script>
+<script src="games/scratch.js?v=48a673f5dd"></script>
+<script src="games/skipping.js?v=48a673f5dd"></script>
+<script src="games/slots.js?v=48a673f5dd"></script>
+<script src="games/stressball.js?v=48a673f5dd"></script>
+<script src="games/switch.js?v=48a673f5dd"></script>
+<script src="games/tarot.js?v=48a673f5dd"></script>
+<script src="games/vignettes.js?v=48a673f5dd"></script>
+<script src="games/windowsill.js?v=48a673f5dd"></script>
 <!-- games:end -->
-<script src="native-bridge.js?v=8f28813335"></script>
+<script src="native-bridge.js?v=48a673f5dd"></script>
 <style>
 *{box-sizing:border-box;margin:0}
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--ink:#1d1340;--ink2:rgba(29,19,64,.82);--base:#ece7ff;--g1:rgba(255,255,255,.8);--g2:rgba(255,255,255,.48);--edge:rgba(255,255,255,.85);--sh:rgba(70,40,140,.22);--field:rgba(255,255,255,.62);--b1:#ff5fa2;--b2:#6f8bff;--b3:#2fe0c4;--b4:#ffb347;--a1:#ff5fa2;--a2:#7b6cff;color-scheme:light}
@@ -95,6 +95,10 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 @keyframes enter{from{opacity:0;transform:translateY(18px) scale(.98)}}
 #wheel.on{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);align-items:start}
 .panel{padding:22px;max-width:720px;width:100%;justify-self:center}
+/* About is about the app, not about settings: it lives in the right-hand stack directly
+   under History on desktop, and keeps that order in the single column on a phone */
+.rcol{display:grid;gap:18px;align-content:start;min-width:0}
+.rcol>.glass{animation:gin .45s ease-out both}
 h2{font-size:20px;font-weight:600;margin-bottom:14px;letter-spacing:-.01em}
 .muted{color:var(--ink2);font-size:14px}
 .stage{padding:22px 20px;display:grid;justify-items:center;gap:14px}
@@ -423,6 +427,7 @@ body.focus main{padding-top:calc(4px + env(safe-area-inset-top,0px))}
 @media(min-width:1000px){
  main{max-width:1200px;padding:18px 20px 40px 112px}
  #hist.on{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}
+ #hist.on>.rcol{grid-column:2;grid-row:1}
  #hist .panel{max-width:none;width:100%}
  .wwrap{width:min(100%,560px,max(280px,calc(100vh - 330px)))}
  .dock{left:16px;bottom:auto;top:50%;transform:translateY(-50%);flex-direction:column;border-radius:34px;max-width:none;overflow:visible}
@@ -664,6 +669,7 @@ h2{font-size:calc(20px*var(--fs,1))}
   <div class="chips" id="fsz"></div>
   <button class="chip" id="tipsb">Replay tips</button>
  </div>
+ <div class="rcol">
  <div class="glass panel">
   <h2>History</h2>
   <div class="stat" id="hstat"></div>
@@ -683,6 +689,7 @@ h2{font-size:calc(20px*var(--fs,1))}
   <button class="hrow link" data-url="https://github.com/pham-noah/decider/issues"><span>Report a problem</span><span>open an issue</span></button>
   <button class="hrow link" data-url="privacy.html"><span>Privacy policy</span><span>no data collected</span></button>
   <p class="muted" style="margin-top:14px;font-size:12.5px;opacity:.85">Bricolage Grotesque by Mathieu Triay, SIL Open Font License 1.1. Built with Capacitor and Tauri.</p>
+ </div>
  </div>
 </section>
 </main>
@@ -1957,7 +1964,7 @@ $$('.dock button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v==='whe
 pill();renderHist();draw();
 document.addEventListener('pointermove',e=>{const g=e.target.closest&&e.target.closest('.glass');if(!g)return;const r=g.getBoundingClientRect();g.style.setProperty('--mx',(e.clientX-r.left)+'px');g.style.setProperty('--my',(e.clientY-r.top)+'px')});
 </script>
-<script src="app-nav.js?v=8f28813335"></script>
+<script src="app-nav.js?v=48a673f5dd"></script>
 <script>
 /* PWA offline support: skipped in the Capacitor/Tauri wrappers, which bundle the files */
 if('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && location.hostname!=='tauri.localhost' && !(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()) && !window.__TAURI_INTERNALS__){
