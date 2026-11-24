@@ -35,6 +35,15 @@ Android signing reads `android/keystore.properties` (`storeFile`, `storePassword
 repo; without it you cannot update an app already published under the same id.
 `appId` is `app.decider.wheel` and cannot change after the first Play upload.
 
+## Checks
+```bash
+npm run check          # every file parses (index.html's inline script, app-nav.js, sw.js, games/*)
+npm run ci             # the files still agree: version, game wiring, cache stamp, refs, manifest
+npm run verify         # both — what CI runs
+```
+`.github/workflows/ci.yml` runs `verify` on every push to `main` and every pull request, on Node 22.
+It is static and takes under a minute: no browser, no Rust, no Android SDK.
+
 ## Release a version
 1. Bump the version in `package.json`, `tauri.conf.json` and `APP_VERSION`.
 2. `npm run desktop:build` and `npm run android:release`.

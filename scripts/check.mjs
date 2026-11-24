@@ -32,6 +32,11 @@ try { check('www/index.html (inline, ' + blocks.length + ' blocks)', tmp); }
 finally { try { unlinkSync(tmp); } catch (e) {} }
 
 check('www/app-nav.js', join(root, 'www', 'app-nav.js'));
+// Top-level scripts that are not game modules: sw.js and native-bridge.js. A
+// syntax error in sw.js is invisible until the PWA stops installing.
+readdirSync(join(root, 'www'))
+  .filter((f) => f.endsWith('.js') && f !== 'app-nav.js')
+  .forEach((f) => check('www/' + f, join(root, 'www', f)));
 const gdir = join(root, 'www', 'games');
 readdirSync(gdir).filter((f) => f.endsWith('.js')).forEach((f) => check('www/games/' + f, join(gdir, f)));
 

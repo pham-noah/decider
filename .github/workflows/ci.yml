@@ -1,0 +1,42 @@
+name: CI
+
+# The gate is static: Decider is one HTML file of inline script plus thirty game
+# modules, and every way it breaks is a cross-file mistake. No browser, no Rust,
+# no Android SDK — so this finishes in well under a minute.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**/*.md', 'LICENSE']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Syntax, wiring and version
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Proves the lockfile still installs what package.json asks for.
+      - name: Install
+        run: npm ci --ignore-scripts
+
+      - name: Syntax gate (scripts/check.mjs)
+        run: npm run check
+
+      - name: Consistency gate (scripts/ci.mjs)
+        run: npm run ci

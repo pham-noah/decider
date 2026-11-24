@@ -4,12 +4,25 @@ import { readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
 
-const walk = d => readdirSync(d).flatMap(n => {
-  const p = join(d, n);
-  return statSync(p).isDirectory() ? walk(p) : [p];
-});
+// Paths are hashed with / separators so the same tree yields the same stamp on
+// Windows and on the Linux runner that checks it (scripts/ci.mjs).
+const walk = (d, prefix = "") =>
+  readdirSync(d).flatMap((n) => {
+    const p = join(d, n);
+    return statSync(p).isDirectory() ? walk(p, prefix + n + "/") : [prefix + n];
+  });
+// index.html carries the stamp inside itself, so it is hashed with the ?v= values
+// stripped: otherwise every bump would change the hash that produced it and the
+// stamp could never settle (scripts/ci.mjs would always be red).
+const content = (rel) => {
+  const c = readFileSync(join("www", ...rel.split("/")));
+  return rel === "index.html" ? c.toString("utf8").replace(/\?v=[0-9a-f]*/g, "") : c;
+};
 const h = createHash("sha1");
-for (const f of walk("www").filter(f => !f.endsWith("sw.js")).sort()) { h.update(f); h.update(readFileSync(f)); }
+for (const rel of walk("www").filter((f) => !f.endsWith("sw.js")).sort()) {
+  h.update(rel);
+  h.update(content(rel));
+}
 const v = "decider-" + h.digest("hex").slice(0, 10);
 
 const sw = readFileSync("www/sw.js", "utf8");
