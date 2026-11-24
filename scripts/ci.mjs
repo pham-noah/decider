@@ -13,11 +13,10 @@
  *
  *   node scripts/ci.mjs      (npm run ci)
  */
-import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
-import { createHash } from "node:crypto";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, dirname, posix } from "node:path";
 import { fileURLToPath } from "node:url";
-
+import { stampOf } from "./stamp.mjs";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const www = join(root, "www");
 let fails = 0;
@@ -81,24 +80,8 @@ else {
 }
 
 // --- 3. the content stamp: CACHE and ?v= must describe www/ right now ------
-// Same hash as scripts/bump-cache.mjs, but with POSIX separators so the value is
-// identical on Windows and on the Linux runner, and with the ?v= stamps stripped
-// out of index.html so the stamp does not depend on itself.
-const walk = (d, prefix = "") =>
-  readdirSync(d).flatMap((n) => {
-    const p = join(d, n);
-    return statSync(p).isDirectory() ? walk(p, prefix + n + "/") : [prefix + n];
-  });
-const content = (rel) => {
-  const c = readFileSync(join(www, ...rel.split("/")));
-  return rel === "index.html" ? c.toString("utf8").replace(/\?v=[0-9a-f]*/g, "") : c;
-};
-const hash = createHash("sha1");
-for (const rel of walk(www).filter((f) => !f.endsWith("sw.js")).sort()) {
-  hash.update(rel);
-  hash.update(content(rel));
-}
-const expected = "decider-" + hash.digest("hex").slice(0, 10);
+// Computed by the same module bump-cache.mjs writes with (scripts/stamp.mjs).
+const expected = stampOf(www);
 
 const cache = (sw.match(/const CACHE = "([^"]*)"/) || [])[1];
 if (cache === expected) ok(`sw.js CACHE ${cache} matches www/`);
