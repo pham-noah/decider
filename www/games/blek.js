@@ -169,8 +169,8 @@
       glow.addColorStop(0, 'rgba(120,96,255,.20)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
       x.fillStyle = glow; x.fillRect(0, 0, w, h);
     }
-    /* faint dot grid, so the pit feels like a place */
-    x.fillStyle = K.inkColor(.055);
+    /* dot grid, so the pit feels like a place rather than an empty field */
+    x.fillStyle = K.inkColor(.09);
     for (let gx = 22; gx < w; gx += 44) for (let gy = 22; gy < h; gy += 44) {
       x.beginPath(); x.arc(gx, gy, 1.1, 0, TAU); x.fill();
     }
@@ -190,14 +190,35 @@
         x.beginPath(); x.arc(t.x, t.y, pr * .34, 0, TAU);
         x.fillStyle = INK(.92); x.fill();
       } else {
+        /* a cold target still reads as an orb: it sits in its own colour */
+        const halo = x.createRadialGradient(t.x, t.y, 1, t.x, t.y, pr);
+        halo.addColorStop(0, t.c); halo.addColorStop(1, 'rgba(0,0,0,0)');
+        x.globalAlpha = .20; x.fillStyle = halo;
+        x.beginPath(); x.arc(t.x, t.y, pr, 0, TAU); x.fill();
+        x.globalAlpha = 1;
         x.beginPath(); x.arc(t.x, t.y, pr, 0, TAU);
-        x.strokeStyle = INK(.22); x.lineWidth = 1.6; x.stroke();
+        x.strokeStyle = INK(.30); x.lineWidth = 1.6; x.stroke();
         x.beginPath(); x.arc(t.x, t.y, pr * .30, 0, TAU);
         x.fillStyle = t.c; x.globalAlpha = .75; x.fill();
         x.globalAlpha = 1;
       }
       x.restore();
     });
+
+    /* before the first stroke a dashed demo curve runs between two targets:
+       the mechanic drawn out, instead of only written under the pit */
+    if (!body && !drawing && pts.length <= 1 && targets.length > 2) {
+      const a = targets[0], b = targets[2] || targets[1];
+      const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+      x.save();
+      x.globalAlpha = .32;
+      x.strokeStyle = '#cbd6ff'; x.lineWidth = 2.4; x.lineCap = 'round';
+      x.setLineDash([7, 10]); x.lineDashOffset = -((pulse * 26) % 17);
+      x.beginPath(); x.moveTo(a.x, a.y);
+      x.quadraticCurveTo(mx + (b.y - a.y) * .30, my - (b.x - a.x) * .30, b.x, b.y);
+      x.stroke();
+      x.setLineDash([]); x.restore();
+    }
 
     /* the line you drew stays as a ghost where you left it */
     if (body && pts.length > 3) {

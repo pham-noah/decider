@@ -249,6 +249,16 @@
     K.rr(x, 0, 0, g.w, g.h, 18);
     K.surf(x, g.w, g.h);
     x.clip();
+    /* a lit room rather than a void: the wall behind the sand takes a gradient,
+       and warm light falls in from above */
+    if (!K.mat().flat) {
+      const bg = x.createLinearGradient(0, 0, 0, g.h);
+      bg.addColorStop(0, 'rgba(54,42,100,.60)'); bg.addColorStop(.52, 'rgba(26,20,52,.20)'); bg.addColorStop(1, 'rgba(11,8,26,.55)');
+      x.fillStyle = bg; x.fillRect(0, 0, g.w, g.h);
+      const lg = x.createRadialGradient(g.w * .5, -g.h * .10, 8, g.w * .5, -g.h * .10, g.h * .95);
+      lg.addColorStop(0, 'rgba(255,232,186,.26)'); lg.addColorStop(.45, 'rgba(255,214,150,.07)'); lg.addColorStop(1, 'rgba(0,0,0,0)');
+      x.fillStyle = lg; x.fillRect(0, 0, g.w, g.h);
+    }
     x.imageSmoothingEnabled = false;
     x.drawImage(off, offX, offY, cols * CELL, rows * CELL);
     x.imageSmoothingEnabled = true;
@@ -257,6 +267,34 @@
       const vg = x.createRadialGradient(g.w / 2, g.h * .42, g.w * .18, g.w / 2, g.h * .5, g.w * .95);
       vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(4,2,14,.55)');
       x.fillStyle = vg; x.fillRect(0, 0, g.w, g.h);
+      /* the shelf below the heap casts its own shadow, so the pile has
+         somewhere to sit instead of floating over dead card */
+      const shelfY = offY + (Math.round(rows * .66) + 2) * CELL;
+      if (shelfY < g.h - 4) {
+        /* a soft blob under the plank, feathered on every side: a straight
+           gradient started a hard line across the card where the plank is not */
+        const px0 = offX + cols * CELL * .26, px1 = offX + cols * CELL * .74;
+        const cx = (px0 + px1) / 2, rx = (px1 - px0) * .72;
+        const g2 = x.createRadialGradient(cx, shelfY + 4, 2, cx, shelfY + 4, rx);
+        g2.addColorStop(0, 'rgba(0,0,0,.68)'); g2.addColorStop(.55, 'rgba(0,0,0,.30)'); g2.addColorStop(1, 'rgba(0,0,0,0)');
+        x.save(); x.translate(cx, shelfY + 8); x.scale(1, .34); x.translate(-cx, -(shelfY + 8));
+        x.fillStyle = g2; x.beginPath(); x.arc(cx, shelfY + 8, rx, 0, TAU); x.fill(); x.restore();
+      }
+      /* side glass — the card is the tank the sand pours into */
+      const wall = Math.max(7, Math.min(11, g.w * .028));
+      let wg = x.createLinearGradient(0, 0, wall, 0);
+      wg.addColorStop(0, 'rgba(8,6,20,.72)'); wg.addColorStop(.62, 'rgba(168,196,255,.20)'); wg.addColorStop(1, 'rgba(8,6,20,.30)');
+      x.fillStyle = wg; x.fillRect(0, 0, wall, g.h);
+      wg = x.createLinearGradient(g.w - wall, 0, g.w, 0);
+      wg.addColorStop(0, 'rgba(8,6,20,.30)'); wg.addColorStop(.38, 'rgba(168,196,255,.20)'); wg.addColorStop(1, 'rgba(8,6,20,.72)');
+      x.fillStyle = wg; x.fillRect(g.w - wall, 0, wall, g.h);
+      const fy = g.h - Math.max(6, wall * .8);
+      const sg = x.createLinearGradient(0, fy - 16, 0, fy);
+      sg.addColorStop(0, 'rgba(0,0,0,0)'); sg.addColorStop(1, 'rgba(0,0,0,.30)');
+      x.fillStyle = sg; x.fillRect(0, fy - 16, g.w, 16);
+      const fg = x.createLinearGradient(0, fy, 0, g.h);
+      fg.addColorStop(0, 'rgba(198,220,255,.30)'); fg.addColorStop(.3, 'rgba(26,20,42,.92)'); fg.addColorStop(1, 'rgba(11,8,20,.96)');
+      x.fillStyle = fg; x.fillRect(0, fy, g.w, g.h - fy);
     }
     x.restore();
     x.save();

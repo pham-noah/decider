@@ -280,6 +280,29 @@
       }
     }
 
+    /* nothing drawn yet: a snow drift and a sled parked at the top of a dashed
+       run, so the card is a place to start from instead of an empty field */
+    if (!strokes.length && !rider) {
+      const gy = h * .80, flat = K.mat().flat;
+      const snow0 = flat ? 'rgba(36,26,58,.11)' : 'rgba(214,232,255,.24)';
+      const snow1 = flat ? 'rgba(36,26,58,.02)' : 'rgba(214,232,255,.02)';
+      const dg = x.createLinearGradient(0, gy - 30, 0, h);
+      dg.addColorStop(0, snow0); dg.addColorStop(1, snow1);
+      x.fillStyle = dg;
+      x.beginPath(); x.moveTo(0, h); x.lineTo(0, gy + 10);
+      x.quadraticCurveTo(w * .18, gy - 16, w * .44, gy + 4);
+      x.quadraticCurveTo(w * .70, gy + 20, w, gy - 8);
+      x.lineTo(w, h); x.closePath(); x.fill();
+      x.setLineDash([5, 10]); x.lineCap = 'round';
+      x.strokeStyle = flat ? 'rgba(36,26,58,.30)' : 'rgba(158,198,255,.32)'; x.lineWidth = 2.2;
+      x.beginPath(); x.moveTo(w * .12, gy - 52);
+      x.bezierCurveTo(w * .34, gy - 48, w * .48, gy - 10, w * .68, gy - 6);
+      x.stroke(); x.setLineDash([]);
+      x.globalAlpha = .92;
+      sled(x, { x: w * .12, y: gy - 52, ang: -.06, speed: 0 });
+      x.globalAlpha = 1;
+    }
+
     parts.forEach(p => {
       x.globalAlpha = Math.max(0, Math.min(1, p.life / p.max)) * .9;
       x.fillStyle = p.c;

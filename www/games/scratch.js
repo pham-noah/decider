@@ -124,25 +124,35 @@
       }
       m.globalAlpha = .85; m.fillStyle = '#241a3a';
     } else {
+      /* a scratch card is foil, not a gradient: metal banding, a fine grain of
+         pitting, and a printed panel for the wordmark to sit on */
       const grd = m.createLinearGradient(B.x, B.y, B.x + B.w, B.y + B.h);
-      grd.addColorStop(0, '#6d5bff'); grd.addColorStop(.4, '#a94bff');
-      grd.addColorStop(.68, '#ff5ea8'); grd.addColorStop(1, '#57cdfd');
+      grd.addColorStop(0, '#8d90b6'); grd.addColorStop(.16, '#dfe3f8');
+      grd.addColorStop(.33, '#a98fdd'); grd.addColorStop(.5, '#f2f4ff');
+      grd.addColorStop(.67, '#c98fd2'); grd.addColorStop(.84, '#9fb6e6'); grd.addColorStop(1, '#e6e9ff');
       m.fillStyle = grd; m.fillRect(B.x, B.y, B.w, B.h);
-      m.globalAlpha = .15; m.strokeStyle = K.light(1); m.lineWidth = 1;
-      for (let i = -B.h; i < B.w + B.h; i += 7) {
+      m.globalAlpha = .10; m.strokeStyle = '#ffffff'; m.lineWidth = 1;
+      for (let i = -B.h; i < B.w + B.h; i += 4) {
         m.beginPath(); m.moveTo(B.x + i, B.y); m.lineTo(B.x + i + B.h, B.y + B.h); m.stroke();
       }
-      m.globalAlpha = .5; m.fillStyle = K.light(1);
-      for (let i = 0; i < 60; i++) {
-        m.beginPath(); m.arc(B.x + Math.random() * B.w, B.y + Math.random() * B.h, Math.random() * 1.3, 0, TAU); m.fill();
+      for (let i = 0; i < 1400; i++) {
+        m.globalAlpha = .05 + Math.random() * .22;
+        m.fillStyle = Math.random() < .5 ? '#ffffff' : '#4b3a6e';
+        m.beginPath();
+        m.arc(B.x + Math.random() * B.w, B.y + Math.random() * B.h, .22 + Math.random() * .55, 0, TAU);
+        m.fill();
       }
+      /* the printed panel holds the wordmark and the invitation to rub, so
+         neither floats on bare foil */
+      m.globalAlpha = .28; m.fillStyle = '#150e2c';
+      K.rr(m, g.w / 2 - 92, B.y + B.h * .5 - 34, 184, 72, 16); m.fill();
       m.globalAlpha = .95; m.fillStyle = K.light(1);
     }
     m.textAlign = 'center'; m.textBaseline = 'middle';
     m.font = font(13);
     const word = 'SCRATCH';
     for (let i = 0; i < word.length; i++) m.fillText(word[i], g.w / 2 + (i - 3) * 15, B.y + B.h * 0.5);
-    m.globalAlpha = .6; m.font = '600 10px system-ui,sans-serif';
+    m.globalAlpha = .78; m.font = '600 10px system-ui,sans-serif';
     m.fillText('rub here', g.w / 2, B.y + B.h * 0.5 + 26);
     m.globalAlpha = .45; m.lineWidth = 2; m.setLineDash([5, 6]);
     K.rr(m, B.x + 8, B.y + 8, B.w - 16, B.h - 16, rad - 6);
