@@ -1,8 +1,8 @@
 {
   "name": "decider",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
-  "description": "Decider \u2013 wheel, bottle & decision toolkit",
+  "description": "Decider – wheel, bottle & decision toolkit",
   "scripts": {
     "prepare:fonts": "node scripts/copy-fonts.mjs",
     "prepare:icons": "python3 scripts/make-icons.py",
